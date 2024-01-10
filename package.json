@@ -1,0 +1,15 @@
+{
+  "name": "donbot-coverage",
+  "module": "main.ts",
+  "type": "module",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@xata.io/client": "^0.28.3",
+    "binance-api-node": "^0.12.7"
+  }
+}

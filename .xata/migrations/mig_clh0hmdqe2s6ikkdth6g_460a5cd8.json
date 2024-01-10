@@ -1,0 +1,17 @@
+{
+  "id": "mig_clh0hmdqe2s6ikkdth6g",
+  "parentID": "mig_clh0hj8hodmhb2t0oek0",
+  "checksum": "1:460a5cd8145097110da6b3da2adf1132dfa3a6d14a4bd38c1d3c7f38aa7db508",
+  "operations": [
+    {
+      "addColumn": {
+        "column": {
+          "name": "secret",
+          "type": "string",
+          "defaultValue": "\"\""
+        },
+        "table": "users"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "mig_clkg871jg8te41be5dog",
+  "parentID": "mig_clkf0mpjg8te41be55jg",
+  "checksum": "1:b7350bb66d058dde8b3a1675a833a192f10ca6f908fbbc4c454bda04ae9e8bc2",
+  "operations": [
+    {
+      "addColumn": {
+        "column": {
+          "name": "authorized",
+          "type": "bool",
+          "notNull": true,
+          "defaultValue": "false"
+        },
+        "table": "users"
+      }
+    }
+  ]
+}

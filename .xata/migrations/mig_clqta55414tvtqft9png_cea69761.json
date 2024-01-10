@@ -1,0 +1,13 @@
+{
+  "id": "mig_clqta55414tvtqft9png",
+  "parentID": "mig_clqt0dt414tvtqft9oi0",
+  "checksum": "1:cea697614867d80912151f6388f5f6d061e26bd6df2b076b3d46e2374eaa132c",
+  "operations": [
+    {
+      "removeColumn": {
+        "column": "strategy",
+        "table": "users"
+      }
+    }
+  ]
+}

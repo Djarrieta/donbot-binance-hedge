@@ -1,0 +1,16 @@
+{
+  "id": "mig_clqt0dt414tvtqft9oi0",
+  "parentID": "mig_clm8pe2dgbq7spn5ch20",
+  "checksum": "1:260b7bde292859583399322c6c4a45e9ed98da61946f63626d4773ffb328484a",
+  "operations": [
+    {
+      "addColumn": {
+        "column": {
+          "name": "branch",
+          "type": "string"
+        },
+        "table": "users"
+      }
+    }
+  ]
+}

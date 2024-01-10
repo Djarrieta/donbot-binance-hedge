@@ -1,0 +1,16 @@
+{
+  "id": "mig_cltmufr9oa72492s6vv0",
+  "parentID": "mig_cltmucb9oa72492s6vu0",
+  "checksum": "1:31e7b6136072e24b6b9dd5836136783c14d49a6ed5a49d216dcb2cc2bee6a2d4",
+  "operations": [
+    {
+      "addColumn": {
+        "column": {
+          "name": "endTime",
+          "type": "datetime"
+        },
+        "table": "users"
+      }
+    }
+  ]
+}
