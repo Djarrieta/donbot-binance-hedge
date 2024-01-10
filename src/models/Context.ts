@@ -30,7 +30,6 @@ export class Context {
 	public static fee = 0.0005;
 
 	symbolList: Symbol[] = [];
-	usersOpeningPosition: string[] = [];
 	userList: User[] = [];
 	strategyStats: StrategyStat[] = [];
 }

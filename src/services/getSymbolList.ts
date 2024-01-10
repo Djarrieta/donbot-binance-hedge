@@ -1,16 +1,12 @@
 import Binance from "binance-api-node";
-import { Symbol } from "../models/Symbol";
 import { Context } from "../models/Context";
+import { Symbol } from "../models/Symbol";
 import { getCandlestick } from "./getCandlestick";
-import { Interval } from "../models/Interval";
 
 export const getSymbolList = async () => {
 	let symbolList: Symbol[] = [];
 
-	const exchange = Binance({
-		apiKey: "",
-		apiSecret: "",
-	});
+	const exchange = Binance();
 
 	const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
 
@@ -34,10 +30,10 @@ export const getSymbolList = async () => {
 		const candlestick = await getCandlestick({
 			pair,
 			lookBackLength: Context.lookBackLength,
-			interval: Interval["1m"],
+			interval: Context.interval,
 		});
 
-		const currentPrice = Number(candlestick[candlestick.length - 1]) || 0;
+		const currentPrice = Number(candlestick[candlestick.length - 1].close) || 0;
 		const minQuantityUSD = minQty * currentPrice;
 
 		if (
@@ -62,8 +58,7 @@ export const getSymbolList = async () => {
 		const max = Math.max(...array);
 		const min = Math.min(...array);
 
-		const change24Hours =
-			Math.abs(max - min) / candlestick[candlestick.length - 1].close;
+		const volatility = Math.abs(max - min) / currentPrice || 0;
 
 		symbolList.push({
 			pair,
@@ -73,7 +68,7 @@ export const getSymbolList = async () => {
 			pricePrecision,
 			quantityPrecision,
 			candlestick,
-			change24Hours,
+			volatility,
 		});
 	}
 

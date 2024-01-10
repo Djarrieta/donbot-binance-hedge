@@ -8,6 +8,6 @@ export interface Symbol {
 	minNotional: number;
 
 	candlestick: Candle[];
-	change24Hours: number;
+	volatility: number;
 	currentPrice: number;
 }

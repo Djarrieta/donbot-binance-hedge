@@ -14,10 +14,7 @@ export const getCandlestick: (
 ) => Promise<Candle[]> = async ({ pair, interval, lookBackLength }) => {
 	let candlestick: Candle[] = [];
 	const API_LIMIT = 500;
-	const exchange = Binance({
-		apiKey: "",
-		apiSecret: "",
-	});
+	const exchange = Binance();
 
 	let n = lookBackLength;
 	do {
