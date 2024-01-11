@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@xata.io/client": "^0.28.3",
-    "binance-api-node": "^0.12.7"
+    "binance-api-node": "^0.12.7",
+    "node-binance-api": "^0.13.1"
   }
 }

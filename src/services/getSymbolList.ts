@@ -70,6 +70,11 @@ export const getSymbolList = async () => {
 			candlestick,
 			volatility,
 		});
+
+		if (symbolList.length >= 5) {
+			//temporal break
+			break;
+		}
 	}
 
 	return symbolList;
