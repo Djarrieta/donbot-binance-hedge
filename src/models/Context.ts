@@ -19,7 +19,7 @@ export class Context {
 
 	public static interval = Interval["1m"];
 	public static leverage = 10;
-	public static lookBackLength = 200;
+	public static lookBackLength = 3;
 	public static maxOpenPos = 1;
 	public static amountToTradeMultiplier = 0.25;
 	public static maxTradeLength = 100;

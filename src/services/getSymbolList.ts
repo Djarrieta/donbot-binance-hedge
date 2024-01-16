@@ -51,27 +51,17 @@ export const getSymbolList = async () => {
 		const symbolInfo = pairs.filter((p) => p.symbol === pair)[0];
 		const { pricePrecision, quantityPrecision } = symbolInfo;
 
-		const array = [
-			...candlestick.map((c) => c.close),
-			...candlestick.map((c) => c.open),
-		];
-		const max = Math.max(...array);
-		const min = Math.min(...array);
-
-		const volatility = Math.abs(max - min) / currentPrice || 0;
-
 		symbolList.push({
 			pair,
 			minQuantityUSD,
 			minNotional,
-			currentPrice,
 			pricePrecision,
 			quantityPrecision,
 			candlestick,
-			volatility,
+			currentPrice,
 		});
 
-		if (symbolList.length >= 5) {
+		if (symbolList.length >= 3) {
 			//temporal break
 			break;
 		}
