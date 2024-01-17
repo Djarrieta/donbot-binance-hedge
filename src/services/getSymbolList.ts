@@ -59,12 +59,8 @@ export const getSymbolList = async () => {
 			quantityPrecision,
 			candlestick,
 			currentPrice,
+			isReady: true,
 		});
-
-		if (symbolList.length >= 3) {
-			//temporal break
-			break;
-		}
 	}
 
 	return symbolList;

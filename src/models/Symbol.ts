@@ -9,4 +9,5 @@ export interface Symbol {
 
 	candlestick: Candle[];
 	currentPrice: number;
+	isReady: boolean;
 }
