@@ -9,7 +9,7 @@ export const getSymbolList = async () => {
 
 	const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
 
-	for (const symbol of unformattedList.slice(0, 10)) {
+	for (const symbol of unformattedList) {
 		const {
 			symbol: pair,
 			status,
