@@ -1,11 +1,10 @@
 import Binance from "binance-api-node";
 import { Context } from "../models/Context";
-import { Symbol } from "../models/Symbol";
 import { getCandlestick } from "./getCandlestick";
+import { updateSymbol } from "./updateSymbol";
 
 export const getSymbolList = async () => {
-	let symbolList: Symbol[] = [];
-
+	const context = await Context.getInstance();
 	const exchange = Binance();
 
 	const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
@@ -51,7 +50,7 @@ export const getSymbolList = async () => {
 		const symbolInfo = pairs.filter((p) => p.symbol === pair)[0];
 		const { pricePrecision, quantityPrecision } = symbolInfo;
 
-		symbolList.push({
+		context.symbolList.push({
 			pair,
 			minQuantityUSD,
 			minNotional,
@@ -61,7 +60,7 @@ export const getSymbolList = async () => {
 			currentPrice,
 			isReady: true,
 		});
-	}
 
-	return symbolList;
+		updateSymbol({ pair, interval: Context.interval });
+	}
 };

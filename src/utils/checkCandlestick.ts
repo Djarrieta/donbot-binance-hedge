@@ -12,7 +12,7 @@ export const checkCandlestick = ({
 		(getDate({}).dateMs - getDate({ date: lastOpenTime }).dateMs) /
 		Context.interval;
 
-	if (lastDiff > 3) {
+	if (lastDiff > 2) {
 		return false;
 	}
 

@@ -4,6 +4,7 @@ import { Symbol } from "./Symbol";
 import { User } from "./User";
 
 export class Context {
+	private constructor() {}
 	private static instance: Context | null = null;
 	public static async getInstance() {
 		if (Context.instance === null) {
@@ -13,19 +14,15 @@ export class Context {
 		return Context.instance;
 	}
 
-	private constructor() {}
-
 	public static branch: "main" | "test" | "risk" = "test";
-
 	public static interval = Interval["1m"];
 	public static leverage = 10;
-	public static lookBackLength = 3;
+	public static lookBackLength = Interval["1d"] / Interval["5m"];
 	public static maxOpenPos = 1;
 	public static amountToTradeMultiplier = 0.25;
-	public static maxTradeLength = 100;
+	public static maxTradeLength = 1000;
 	public static minChange24Hours = 10 / 100;
 	public static backTestLookBackDays = 2;
-
 	public static minAmountToTrade = 5;
 	public static fee = 0.0005;
 

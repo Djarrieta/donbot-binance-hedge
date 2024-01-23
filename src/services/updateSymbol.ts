@@ -4,7 +4,7 @@ import { Interval } from "../models/Interval";
 import { Context } from "../models/Context";
 import { getDate } from "../utils/getDate";
 
-export const updateSymbolList = async ({
+export const updateSymbol = async ({
 	pair,
 	interval,
 }: {
@@ -19,11 +19,19 @@ export const updateSymbolList = async ({
 		handleSymbolUpdate
 	);
 };
+
 const handleSymbolUpdate = async (data: any) => {
 	const context = await Context.getInstance();
 	const symbolIndex = context.symbolList.findIndex((s) => s.pair === data.s);
+	if (symbolIndex === -1) return;
+	const symbol = context.symbolList[symbolIndex];
 
-	if (!data.k.x) {
+	const prevOpenTime = getDate({
+		date: symbol.candlestick[symbol.candlestick.length - 1].openTime,
+	}).dateString;
+	const newOpenTime = getDate({ dateMs: Number(data.k.t) }).dateString;
+
+	if (!data.k.x || newOpenTime === prevOpenTime) {
 		context.symbolList[symbolIndex].currentPrice = Number(data.k.c);
 		return;
 	}
