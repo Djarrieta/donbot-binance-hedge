@@ -10,13 +10,14 @@
   },
   "scripts": {
     "trade": "bun run src/main.ts",
-    "lint":"bunx oxlint && tsc"
+    "lint": "bunx oxlint && tsc"
   },
   "dependencies": {
     "@types/node-cron": "^3.0.11",
     "@xata.io/client": "^0.28.3",
     "binance-api-node": "^0.12.7",
     "node-binance-api": "^0.13.1",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "technicalindicators": "^3.1.0"
   }
 }
