@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { Context } from "./models/Context";
 import { getSymbolList } from "./services/getSymbolList";
+import { getSymbolListVolatility } from "./services/getSymbolListVolatility";
 import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
@@ -25,7 +26,7 @@ console.log(
 	"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 );
 
-cron.schedule("*/1 * * * *", async () => {
+cron.schedule("*/5 * * * *", async () => {
 	await delay(2000);
 	console.log("");
 	console.log(getDate({}).dateString, "Checking for trades!");
@@ -34,8 +35,16 @@ cron.schedule("*/1 * * * *", async () => {
 	);
 
 	await markUnreadySymbols();
-	await checkForTrades({
-		readySymbols: context.symbolList.filter((s) => s.isReady && !s.isLoading),
-	}); // WIP: should return an array of symbols
+	await getSymbolListVolatility();
+
+	const readySymbols = context.symbolList
+		.filter((s) => s.isReady && !s.isLoading)
+		.sort((a, b) => Number(b.volatility) - Number(a.volatility));
+
+	const tradeArray = await checkForTrades({
+		readySymbols,
+	});
+
+	console.log(tradeArray.map((s) => s.symbol.pair + "->" + s.shouldTrade));
 	await updateUnreadySymbols();
 });

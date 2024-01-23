@@ -15,13 +15,13 @@ export class Context {
 	}
 
 	public static branch: "main" | "test" | "risk" = "test";
-	public static interval = Interval["1m"];
+	public static interval = Interval["5m"];
 	public static leverage = 10;
 	public static lookBackLength = Interval["1d"] / Interval["5m"];
 	public static maxOpenPos = 1;
 	public static amountToTradeMultiplier = 0.25;
 	public static maxTradeLength = 1000;
-	public static minChange24Hours = 10 / 100;
+	public static minVolatility = 10 / 100;
 	public static backTestLookBackDays = 2;
 	public static minAmountToTrade = 5;
 	public static fee = 0.0005;

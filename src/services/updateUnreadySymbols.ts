@@ -18,12 +18,11 @@ export const updateUnreadySymbols = async () => {
 				interval: Context.interval,
 			});
 
-			context.symbolList[index] = {
-				...context.symbolList[index],
-				currentPrice: candlestick[candlestick.length - 1].close,
-				candlestick,
-				isReady: true,
-			};
+			context.symbolList[index].currentPrice =
+				candlestick[candlestick.length - 1].close;
+			context.symbolList[index].candlestick = candlestick;
+			context.symbolList[index].isReady = true;
+
 			updateSymbol({ pair: symbol.pair, interval: Context.interval });
 		}
 	}

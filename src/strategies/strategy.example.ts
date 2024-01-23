@@ -13,7 +13,7 @@ const strategyQuitCriteria: StrategyQuitCriteria = ({ candlestick }) => {
 	}
 	return response;
 };
-const STG_NAME = "stg_name";
+const STG_NAME = "strategyNameHere";
 
 const stg: Strategy = {
 	name: STG_NAME,

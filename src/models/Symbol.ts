@@ -11,4 +11,5 @@ export interface Symbol {
 	currentPrice: number;
 	isReady: boolean;
 	isLoading: boolean;
+	volatility?: number;
 }
