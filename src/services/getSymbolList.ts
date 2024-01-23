@@ -9,7 +9,7 @@ export const getSymbolList = async () => {
 
 	const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
 
-	for (const symbol of unformattedList) {
+	for (const symbol of unformattedList.slice(0, 10)) {
 		const {
 			symbol: pair,
 			status,
@@ -59,6 +59,7 @@ export const getSymbolList = async () => {
 			candlestick,
 			currentPrice,
 			isReady: true,
+			isLoading: true,
 		});
 
 		updateSymbol({ pair, interval: Context.interval });

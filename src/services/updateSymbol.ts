@@ -23,6 +23,7 @@ export const updateSymbol = async ({
 const handleSymbolUpdate = async (data: any) => {
 	const context = await Context.getInstance();
 	const symbolIndex = context.symbolList.findIndex((s) => s.pair === data.s);
+
 	if (symbolIndex === -1) return;
 	const symbol = context.symbolList[symbolIndex];
 
@@ -33,6 +34,8 @@ const handleSymbolUpdate = async (data: any) => {
 
 	if (!data.k.x || newOpenTime === prevOpenTime) {
 		context.symbolList[symbolIndex].currentPrice = Number(data.k.c);
+		context.symbolList[symbolIndex].isLoading = false;
+
 		return;
 	}
 
@@ -46,8 +49,8 @@ const handleSymbolUpdate = async (data: any) => {
 	};
 
 	const currentCandlestick = context.symbolList[symbolIndex].candlestick;
-
 	const newCandlestick = [...currentCandlestick.slice(1), newCandle];
 
 	context.symbolList[symbolIndex].candlestick = newCandlestick;
+	context.symbolList[symbolIndex].isReady = true;
 };

@@ -17,7 +17,7 @@ export class Context {
 	public static branch: "main" | "test" | "risk" = "test";
 	public static interval = Interval["1m"];
 	public static leverage = 10;
-	public static lookBackLength = Interval["1d"] / Interval["5m"];
+	public static lookBackLength = 10; // Interval["1d"] / Interval["5m"];
 	public static maxOpenPos = 1;
 	public static amountToTradeMultiplier = 0.25;
 	public static maxTradeLength = 1000;
