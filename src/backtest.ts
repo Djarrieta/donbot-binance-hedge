@@ -17,8 +17,6 @@ export const backtest = async ({
 	strategy: Strategy;
 	log?: boolean;
 }) => {
-	const context = Context.getInstance();
-
 	const lookBackLength =
 		(Context.backTestLookBackDays * Interval["1d"]) / strategy.interval;
 	const startTime = getDate({}).dateMs - lookBackLength * strategy.interval;
