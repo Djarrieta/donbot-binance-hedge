@@ -13,6 +13,9 @@ export class Context {
 
 		return Context.instance;
 	}
+	symbolList: Symbol[] = [];
+	userList: User[] = [];
+	strategyStats: StrategyStat[] = [];
 
 	public static branch: "main" | "test" | "risk" = "test";
 	public static interval = Interval["5m"];
@@ -27,8 +30,4 @@ export class Context {
 	public static fee = 0.0005;
 	public static defaultSL = 10 / 100;
 	public static defaultTP = 1 / 10;
-
-	symbolList: Symbol[] = [];
-	userList: User[] = [];
-	strategyStats: StrategyStat[] = [];
 }

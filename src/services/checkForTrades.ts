@@ -15,8 +15,7 @@ export const checkForTrades = async ({
 					readySymbols[1].pair +
 					", ...(" +
 					(readySymbols.length - 2) +
-					" more) " +
-					readySymbols
+					" more) "
 		  )
 		: console.log(
 				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")

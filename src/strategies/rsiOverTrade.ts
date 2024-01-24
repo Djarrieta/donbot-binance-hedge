@@ -3,8 +3,9 @@ import { Interval } from "../models/Interval";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { getVolatility } from "../services/getSymbolListVolatility";
 
+const STG_NAME = "rsiOverTrade";
 const stg: Strategy = {
-	name: "trendWithEma8",
+	name: STG_NAME,
 	lookBackLength: Interval["1d"] / Interval["5m"],
 	interval: Interval["5m"],
 	validate: ({ candlestick, pair }) => {
@@ -12,7 +13,7 @@ const stg: Strategy = {
 			shouldTrade: null,
 			sl: 1 / 100,
 			tp: 10 / 100,
-			stg: "trendWithEma8",
+			stg: STG_NAME,
 		};
 
 		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
