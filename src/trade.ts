@@ -45,7 +45,17 @@ cron.schedule("*/5 * * * *", async () => {
 		readySymbols,
 	});
 
-	console.log(tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade));
+	if (tradeArray.length) {
+		for (const user of context.userList) {
+			console.log(
+				"Should trade " +
+					user.name +
+					" " +
+					tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade)
+			);
+		}
+	}
+
 	await updateUnreadySymbols();
 	context.userList = await getUserList();
 });

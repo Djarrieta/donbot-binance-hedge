@@ -7,7 +7,20 @@ export const checkForTrades = async ({
 }: {
 	readySymbols: Symbol[];
 }) => {
-	console.log("Checking for trades in  " + readySymbols.length + " symbols");
+	readySymbols.length > 4
+		? console.log(
+				"Checking for trades in  " +
+					readySymbols[0].pair +
+					", " +
+					readySymbols[1].pair +
+					", ...(" +
+					(readySymbols.length - 2) +
+					" more) " +
+					readySymbols
+		  )
+		: console.log(
+				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
+		  );
 
 	const response: { symbol: Symbol; shouldTrade: PositionSide }[] = [];
 	for (const stg of chosenStrategies) {
@@ -15,7 +28,6 @@ export const checkForTrades = async ({
 			const stgResponse = stg.validate({
 				candlestick: symbol.candlestick,
 				pair: symbol.pair,
-				volatility: symbol.volatility,
 			});
 			if (stgResponse.shouldTrade !== null) {
 				response.push({ symbol, shouldTrade: stgResponse.shouldTrade });

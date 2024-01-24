@@ -1,31 +1,19 @@
 import { rsi } from "technicalindicators";
 import { Interval } from "../models/Interval";
-import {
-	Strategy,
-	StrategyResponse,
-	StrategyQuitCriteria,
-} from "../models/Strategy";
-
-const strategyQuitCriteria: StrategyQuitCriteria = ({ candlestick }) => {
-	let response: boolean = false;
-	if (candlestick.length) {
-		response = true;
-	}
-	return response;
-};
-const STG_NAME = "strategyNameHere";
+import { Strategy, StrategyResponse } from "../models/Strategy";
 
 const stg: Strategy = {
-	name: STG_NAME,
+	name: "stg_name",
 	lookBackLength: Interval["1d"] / Interval["5m"],
 	interval: Interval["5m"],
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			name: STG_NAME,
-			sl: { val: 1 / 100 }, // Can be a static value or quit criteria function
-			tp: { quitCriteria: strategyQuitCriteria }, // Can be a static value or quit criteria function
-			tr: { val: 1 / 100, callback: 1 / 100 }, // add optionals tr and callback rate for adding trailing order to your position
+			sl: 0, // 0 / 100,
+			tp: 0,
+			tr: 0,
+			callback: 0,
+			stg: "stg_name",
 		};
 
 		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
@@ -40,6 +28,7 @@ const stg: Strategy = {
 			response.shouldTrade = "SHORT";
 		}
 
+		// add tr for adding trailing order to your position. Remove it if trailing order is not required
 		return response;
 	},
 };

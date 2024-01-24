@@ -1,32 +1,23 @@
 import { rsi } from "technicalindicators";
 import { Interval } from "../models/Interval";
-import {
-	Strategy,
-	StrategyResponse,
-	StrategyQuitCriteria,
-} from "../models/Strategy";
-import { Context } from "../models/Context";
-
-const strategyQuitCriteria: StrategyQuitCriteria = ({ candlestick }) => {
-	let response: boolean = false;
-	if (candlestick.length) {
-		response = true;
-	}
-	return response;
-};
-const STG_NAME = "rsiOverTrade";
+import { Strategy, StrategyResponse } from "../models/Strategy";
+import { getVolatility } from "../services/getSymbolListVolatility";
 
 const stg: Strategy = {
-	name: STG_NAME,
+	name: "trendWithEma8",
 	lookBackLength: Interval["1d"] / Interval["5m"],
 	interval: Interval["5m"],
-	validate: ({ candlestick, pair, volatility }) => {
+	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			name: STG_NAME,
-			sl: { val: 0.5 / 100 },
-			tp: { val: 0.5 / 100 },
+			sl: 1 / 100,
+			tp: 10 / 100,
+			stg: "trendWithEma8",
 		};
+
+		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
+		const MIN_VOL = 10 / 100;
+		const volatility = getVolatility({ candlestick });
 
 		const prices = candlestick.map((candle) => candle.close);
 
@@ -38,10 +29,9 @@ const stg: Strategy = {
 		const areRsiOverbought =
 			rsi8[rsi8.length - 2] <= overboughtRsi &&
 			rsi8[rsi8.length - 1] > overboughtRsi &&
-			rsi200[rsi200.length - 1] < middleRsi &&
-			Number(volatility) > Context.minVolatility;
+			rsi200[rsi200.length - 1] < middleRsi;
 
-		if (areRsiOverbought) {
+		if (volatility > MIN_VOL && areRsiOverbought) {
 			response.shouldTrade = "LONG";
 		}
 
@@ -49,10 +39,9 @@ const stg: Strategy = {
 		const areRsiOversold =
 			rsi8[rsi8.length - 2] >= oversoldRsi &&
 			rsi8[rsi8.length - 1] < oversoldRsi &&
-			rsi200[rsi200.length - 1] > middleRsi &&
-			Number(volatility) > Context.minVolatility;
+			rsi200[rsi200.length - 1] > middleRsi;
 
-		if (areRsiOversold) {
+		if (volatility > MIN_VOL && areRsiOversold) {
 			response.shouldTrade = "SHORT";
 		}
 
@@ -61,3 +50,20 @@ const stg: Strategy = {
 };
 
 export default stg;
+
+// {
+// 	strategy: "trendWithEma8",
+// 	sl: "1.00%",
+// 	tp: "10.00%",
+// 	backTestLookBackDays: 30,
+// 	lookBackLength: 8640,
+// 	startTime: "2023 12 16 15:28:17",
+// 	interval: "5m",
+// 	maxTradeLength: 1000,
+// 	fee: "0.05%",
+// 	avWinRate: "11.07%",
+// 	avPnl: "0.11%",
+// 	totalPnl: "1860.26%",
+// 	tradesQty: 17612,
+// 	avTradeLength: 94,
+//   }

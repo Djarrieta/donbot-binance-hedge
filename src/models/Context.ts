@@ -25,6 +25,8 @@ export class Context {
 	public static backTestLookBackDays = 2;
 	public static minAmountToTrade = 5;
 	public static fee = 0.0005;
+	public static defaultSL = 10 / 100;
+	public static defaultTP = 1 / 10;
 
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
