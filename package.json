@@ -1,24 +1,24 @@
 {
-  "name": "donbot-coverage",
-  "module": "main.ts",
-  "type": "module",
-  "devDependencies": {
-    "bun-types": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "scripts": {
-    "trade": "bun src/trade.ts",
-    "backtest": "bun src/backtest.ts",
-    "lint": "bunx oxlint && tsc"
-  },
-  "dependencies": {
-    "@types/node-cron": "^3.0.11",
-    "@xata.io/client": "^0.28.3",
-    "binance-api-node": "^0.12.7",
-    "node-binance-api": "^0.13.1",
-    "node-cron": "^3.0.3",
-    "technicalindicators": "^3.1.0"
-  }
+	"name": "donbot-coverage",
+	"module": "main.ts",
+	"type": "module",
+	"devDependencies": {
+		"bun-types": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"scripts": {
+		"trade": "bun src/trade.ts",
+		"backtest": "bun src/backtest.ts",
+		"lint": "bunx oxlint && tsc"
+	},
+	"dependencies": {
+		"@types/node-cron": "^3.0.11",
+		"@xata.io/client": "^0.28.3",
+		"binance-api-node": "^0.12.7",
+		"node-binance-api": "^0.13.1",
+		"node-cron": "^3.0.3",
+		"technicalindicators": "^3.1.0"
+	}
 }

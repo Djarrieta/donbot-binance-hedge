@@ -47,4 +47,5 @@ cron.schedule("*/5 * * * *", async () => {
 
 	console.log(tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade));
 	await updateUnreadySymbols();
+	context.userList = await getUserList();
 });

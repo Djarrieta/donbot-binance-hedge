@@ -38,9 +38,10 @@ const stg: Strategy = {
 		const areRsiOverbought =
 			rsi8[rsi8.length - 2] <= overboughtRsi &&
 			rsi8[rsi8.length - 1] > overboughtRsi &&
-			rsi200[rsi200.length - 1] < middleRsi;
+			rsi200[rsi200.length - 1] < middleRsi &&
+			Number(volatility) > Context.minVolatility;
 
-		if (Number(volatility) > Context.minVolatility && areRsiOverbought) {
+		if (areRsiOverbought) {
 			response.shouldTrade = "LONG";
 		}
 
@@ -48,9 +49,10 @@ const stg: Strategy = {
 		const areRsiOversold =
 			rsi8[rsi8.length - 2] >= oversoldRsi &&
 			rsi8[rsi8.length - 1] < oversoldRsi &&
-			rsi200[rsi200.length - 1] > middleRsi;
+			rsi200[rsi200.length - 1] > middleRsi &&
+			Number(volatility) > Context.minVolatility;
 
-		if (Number(volatility) > Context.minVolatility && areRsiOversold) {
+		if (areRsiOversold) {
 			response.shouldTrade = "SHORT";
 		}
 
