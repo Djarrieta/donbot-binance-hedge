@@ -1,10 +1,11 @@
 import Binance from "binance-api-node";
-import { PositionSide, Position, PositionStatus } from "../models/Position";
+import { Context } from "../models/Context";
+import { Order } from "../models/Order";
+import { Position, PositionSide, PositionStatus } from "../models/Position";
 import { User } from "../models/User";
 import { getDate } from "../utils/getDate";
 import { getXataClient } from "../xata";
 import { getHistoricalPnl } from "./getHistoricalPnl";
-import { Order } from "../models/Order";
 
 export const getUserList = async () => {
 	const xata = getXataClient();
@@ -20,6 +21,7 @@ export const getUserList = async () => {
 			"branch",
 			"startTime",
 		])
+		.filter({ branch: Context.branch })
 		.getPaginated({
 			pagination: {
 				size: 10,

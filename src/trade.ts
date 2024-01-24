@@ -5,7 +5,7 @@ import { getSymbolListVolatility } from "./services/getSymbolListVolatility";
 import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
-import { checkForTrades } from "./useCase/checkForTrades";
+import { checkForTrades } from "./services/checkForTrades";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
 
@@ -45,6 +45,6 @@ cron.schedule("*/5 * * * *", async () => {
 		readySymbols,
 	});
 
-	console.log(tradeArray.map((s) => s.symbol.pair + "->" + s.shouldTrade));
+	console.log(tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade));
 	await updateUnreadySymbols();
 });

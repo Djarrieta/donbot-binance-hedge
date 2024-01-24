@@ -9,7 +9,8 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "trade": "bun run src/main.ts",
+    "trade": "bun src/trade.ts",
+    "backtest": "bun src/backtest.ts",
     "lint": "bunx oxlint && tsc"
   },
   "dependencies": {
