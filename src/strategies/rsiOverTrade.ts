@@ -1,4 +1,5 @@
 import { rsi } from "technicalindicators";
+import { Context } from "../models/Context";
 import { Interval } from "../models/Interval";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { getVolatility } from "../services/getSymbolListVolatility";
@@ -11,9 +12,9 @@ const stg: Strategy = {
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: 1 / 100,
-			tp: 10 / 100,
-			stg: STG_NAME,
+			sl: Context.defaultTP,
+			tp: Context.defaultTP,
+			name: STG_NAME,
 		};
 
 		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;

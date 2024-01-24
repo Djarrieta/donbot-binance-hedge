@@ -5,10 +5,12 @@ import { PositionSide } from "./Position";
 export interface StrategyResponse {
 	shouldTrade: PositionSide | null;
 	sl: number;
-	tp: number;
-	tr?: number;
-	callback?: number;
-	stg?: string;
+	tp?: number;
+	tr?: {
+		tr: number;
+		callback: number;
+	};
+	name: string;
 }
 
 export interface Strategy {

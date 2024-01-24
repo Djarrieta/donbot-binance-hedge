@@ -54,6 +54,8 @@ cron.schedule("*/5 * * * *", async () => {
 					tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade)
 			);
 		}
+	} else {
+		console.log(getDate({}).dateString, "No trades found");
 	}
 
 	await updateUnreadySymbols();

@@ -7,15 +7,13 @@ const STG_NAME = "stg_name";
 const stg: Strategy = {
 	name: STG_NAME,
 	lookBackLength: Interval["1d"] / Interval["5m"],
-	interval: Interval["5m"],
+	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
 			sl: Context.defaultTP,
-			tp: Context.defaultTP,
-			tr: 0,
-			callback: 0,
-			stg: STG_NAME,
+			tp: Context.defaultTP, // undefined to have dynamic tp with quitCriteria
+			name: STG_NAME,
 		};
 
 		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
