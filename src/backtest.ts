@@ -23,8 +23,6 @@ export const backtest = async ({
 		(Context.backTestLookBackDays * Interval["1d"]) / strategy.interval;
 	const startTime = getDate({}).dateMs - lookBackLength * strategy.interval;
 
-	console.log("Back testing with " + strategy.name);
-
 	const { sl, tp, tr } = strategy.validate({
 		candlestick: [
 			{ open: 0, close: 0, high: 0, low: 0, openTime: new Date(), volume: 0 },
