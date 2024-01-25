@@ -35,7 +35,7 @@ export const backtest = async ({
 		console.table({
 			strategy: strategy.name,
 			sl: formatPercent(sl),
-			tp: formatPercent(tp),
+			tp: tp ? formatPercent(tp) : "Dynamic",
 			backTestLookBackDays: Context.backTestLookBackDays,
 			lookBackLength,
 			startTime: getDate({ dateMs: startTime }).dateString,
@@ -48,8 +48,7 @@ export const backtest = async ({
 
 	let stats: Stat[] = [];
 
-	for (let index = 0; index < completePairList.length; index++) {
-		const symbol = completePairList[index];
+	for (const symbol of completePairList) {
 		const { pair } = symbol;
 
 		const completeCandlestick = await getCandlestick({
@@ -62,15 +61,15 @@ export const backtest = async ({
 		do {
 			const endIndex = candleIndex + strategy.lookBackLength;
 			const candlestick = completeCandlestick.slice(candleIndex, endIndex);
+
+			const { shouldTrade, sl, tp, name } = strategy.validate({
+				candlestick,
+				pair,
+			});
 			const profitStick = completeCandlestick.slice(
 				endIndex,
 				endIndex + Context.maxTradeLength
 			);
-
-			const { shouldTrade, sl, tp, stg } = strategy.validate({
-				candlestick,
-				pair,
-			});
 
 			if (shouldTrade) {
 				const stat: Stat = getProfitStickAnalysis({
@@ -80,7 +79,7 @@ export const backtest = async ({
 					sl,
 					tp,
 					fee: Context.fee,
-					stg: stg || "",
+					stgName: name,
 				});
 
 				stats.push(stat);
@@ -107,7 +106,7 @@ export const backtest = async ({
 	const result = {
 		strategy: strategy.name,
 		sl: formatPercent(sl),
-		tp: formatPercent(tp),
+		tp: tp ? formatPercent(tp) : "Dynamic",
 		backTestLookBackDays: Context.backTestLookBackDays,
 		lookBackLength,
 		startTime: getDate({ dateMs: startTime }).dateString,

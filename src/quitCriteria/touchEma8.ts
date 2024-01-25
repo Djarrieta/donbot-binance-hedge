@@ -1,17 +1,15 @@
-import { Interval } from "../models/Interval";
+import { EMA } from "technicalindicators";
+import { Context } from "../models/Context";
 import { QuitStrategy, QuitStrategyResponse } from "../models/QuitStrategy";
-import { rsi, EMA } from "technicalindicators";
 
 const stg: QuitStrategy = {
 	name: "touchEma8",
-	lookBackLength: Interval["1d"] / Interval["5m"],
-	interval: Interval["5m"],
+	lookBackLength: Context.lookBackLength,
+	interval: Context.interval,
 	validate: ({ candlestick, pair, side }) => {
 		const response: QuitStrategyResponse = {
 			shouldQuit: false,
 		};
-
-		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
 
 		const ema5Array = EMA.calculate({
 			period: 5,

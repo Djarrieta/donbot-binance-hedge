@@ -1,5 +1,6 @@
 import { Candle } from "../models/Candle";
 import { PositionSide } from "../models/Position";
+import { chosenQuitStrategy } from "../quitCriteria";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 
@@ -8,9 +9,9 @@ interface GetProfitStickAnalysisProps {
 	shouldTrade: PositionSide;
 	profitStick: Candle[];
 	sl: number;
-	tp: number;
+	tp?: number;
 	fee: number;
-	stg: string;
+	stgName: string;
 }
 export interface Stat {
 	pair: string;
@@ -27,7 +28,7 @@ export const getProfitStickAnalysis = ({
 	sl,
 	tp,
 	fee,
-	stg,
+	stgName,
 }: GetProfitStickAnalysisProps) => {
 	let stat: Stat = {
 		pair,
@@ -45,8 +46,11 @@ export const getProfitStickAnalysis = ({
 
 	const stopLoss =
 		shouldTrade === "LONG" ? entryPrice * (1 - sl) : entryPrice * (1 + sl);
-	const takeProfit =
-		shouldTrade === "LONG" ? entryPrice * (1 + tp) : entryPrice * (1 - tp);
+	const takeProfit = tp
+		? shouldTrade === "LONG"
+			? entryPrice * (1 + tp)
+			: entryPrice * (1 - tp)
+		: 0;
 
 	let pnl = 0;
 	let tradeLength = 0;
@@ -63,13 +67,14 @@ export const getProfitStickAnalysis = ({
 
 			break;
 		}
+
 		if (
 			(shouldTrade === "LONG" &&
 				(candle.high >= takeProfit || candle.close >= takeProfit)) ||
 			(shouldTrade === "SHORT" &&
 				(candle.low <= takeProfit || candle.close <= takeProfit))
 		) {
-			pnl = tp - fee;
+			pnl = -fee; //WIP dynamic
 
 			break;
 		}
@@ -90,7 +95,7 @@ export const getProfitStickAnalysis = ({
 			getDate({ date: profitStick[0].openTime }).dateString
 		} ${shouldTrade} ${status} E:${entryPrice.toFixed(3)} SL:${stopLoss.toFixed(
 			3
-		)}-TP:${takeProfit.toFixed(3)}-PNL:${formatPercent(pnl)} ${stg}`,
+		)}-TP:${takeProfit.toFixed(3)}-PNL:${formatPercent(pnl)} ${stgName}`,
 		status,
 	};
 
