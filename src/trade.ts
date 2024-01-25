@@ -9,55 +9,61 @@ import { checkForTrades } from "./services/checkForTrades";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
 
-console.log(
-	getDate({}).dateString,
-	"Starting in " + Context.branch + " branch..."
-);
-const context = await Context.getInstance();
+export const trade = async () => {
+	console.log(
+		getDate({}).dateString,
+		"Starting in " + Context.branch + " branch..."
+	);
+	const context = await Context.getInstance();
 
-console.log("");
-await getSymbolList();
-console.log(getDate({}).dateString, "Symbol list updated!");
+	await getSymbolList();
+	console.log(
+		getDate({}).dateString,
+		context.symbolList.length + " symbols updated!"
+	);
 
-console.log("");
-context.userList = await getUserList();
-console.log(getDate({}).dateString, "User list updated!");
-console.log(
-	"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
-);
-
-cron.schedule("*/5 * * * *", async () => {
-	await delay(2000);
-	console.log("");
-	console.log(getDate({}).dateString, "Checking for trades!");
+	context.userList = await getUserList();
+	console.log(getDate({}).dateString, "User list updated!");
 	console.log(
 		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 	);
 
-	await markUnreadySymbols();
-	await getSymbolListVolatility();
+	cron.schedule("*/5 * * * *", async () => {
+		await delay(2000);
+		console.log("");
+		console.log(getDate({}).dateString, "Checking for trades!");
+		console.log(
+			"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
+		);
 
-	const readySymbols = context.symbolList
-		.filter((s) => s.isReady && !s.isLoading)
-		.sort((a, b) => Number(b.volatility) - Number(a.volatility));
+		await markUnreadySymbols();
+		await getSymbolListVolatility();
+		context.symbolList.length + " symbols.";
 
-	const tradeArray = await checkForTrades({
-		readySymbols,
-	});
+		const readySymbols = context.symbolList
+			.filter((s) => s.isReady && !s.isLoading)
+			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 
-	if (tradeArray.length) {
-		for (const user of context.userList) {
-			console.log(
-				"Should trade " +
-					user.name +
-					" " +
-					tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade)
-			);
+		const tradeArray = await checkForTrades({
+			readySymbols,
+		});
+
+		if (tradeArray.length) {
+			for (const user of context.userList) {
+				console.log(
+					"Should trade " +
+						user.name +
+						" " +
+						tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade)
+				);
+			}
+		} else {
+			console.log(getDate({}).dateString, "No trades found");
 		}
-	} else {
-		console.log(getDate({}).dateString, "No trades found");
-	}
 
-	await updateUnreadySymbols();
-	context.userList = await getUserList();
-});
+		await updateUnreadySymbols();
+		context.userList = await getUserList();
+	});
+};
+
+trade();
