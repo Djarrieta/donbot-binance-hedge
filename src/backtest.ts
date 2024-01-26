@@ -12,7 +12,7 @@ import { getDate } from "./utils/getDate";
 
 export const backtest = async ({
 	strategy,
-	log,
+	log = true,
 }: {
 	strategy: Strategy;
 	log?: boolean;
@@ -20,6 +20,8 @@ export const backtest = async ({
 	const lookBackLength =
 		(Context.backTestLookBackDays * Interval["1d"]) / strategy.interval;
 	const startTime = getDate({}).dateMs - lookBackLength * strategy.interval;
+
+	console.log("Back testing with " + strategy.name);
 
 	const { sl, tp, tr } = strategy.validate({
 		candlestick: [
@@ -35,7 +37,7 @@ export const backtest = async ({
 		console.table({
 			strategy: strategy.name,
 			sl: formatPercent(sl),
-			tp: tp ? formatPercent(tp) : "Dynamic",
+			tp: formatPercent(Number(tp)),
 			backTestLookBackDays: Context.backTestLookBackDays,
 			lookBackLength,
 			startTime: getDate({ dateMs: startTime }).dateString,
@@ -61,15 +63,15 @@ export const backtest = async ({
 		do {
 			const endIndex = candleIndex + strategy.lookBackLength;
 			const candlestick = completeCandlestick.slice(candleIndex, endIndex);
+			const profitStick = completeCandlestick.slice(
+				endIndex,
+				endIndex + Context.maxTradeLength
+			);
 
 			const { shouldTrade, sl, tp, name } = strategy.validate({
 				candlestick,
 				pair,
 			});
-			const profitStick = completeCandlestick.slice(
-				endIndex,
-				endIndex + Context.maxTradeLength
-			);
 
 			if (shouldTrade) {
 				const stat: Stat = getProfitStickAnalysis({
@@ -106,7 +108,7 @@ export const backtest = async ({
 	const result = {
 		strategy: strategy.name,
 		sl: formatPercent(sl),
-		tp: tp ? formatPercent(tp) : "Dynamic",
+		tp: formatPercent(Number(tp)),
 		backTestLookBackDays: Context.backTestLookBackDays,
 		lookBackLength,
 		startTime: getDate({ dateMs: startTime }).dateString,

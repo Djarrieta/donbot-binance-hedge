@@ -12,7 +12,7 @@ const stg: Strategy = {
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: Context.defaultTP,
+			sl: Context.defaultSL,
 			tp: Context.defaultTP,
 			name: STG_NAME,
 		};
