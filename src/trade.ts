@@ -1,11 +1,12 @@
 import cron from "node-cron";
 import { Context } from "./models/Context";
+import { checkForTrades } from "./services/checkForTrades";
 import { getSymbolList } from "./services/getSymbolList";
 import { getSymbolListVolatility } from "./services/getSymbolListVolatility";
 import { getUserList } from "./services/getUserList";
+import { manageAccounts } from "./services/manageAccounts";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
-import { checkForTrades } from "./services/checkForTrades";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
 
@@ -58,10 +59,11 @@ export const trade = async () => {
 				);
 			}
 		} else {
-			console.log(getDate({}).dateString, "No trades found");
+			console.log("No trades found");
 		}
 
 		await updateUnreadySymbols();
+		await manageAccounts();
 		context.userList = await getUserList();
 	});
 };
