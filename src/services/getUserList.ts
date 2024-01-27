@@ -6,6 +6,8 @@ import { User } from "../models/User";
 import { getDate } from "../utils/getDate";
 import { getXataClient } from "../xata";
 import { getHistoricalPnl } from "./getHistoricalPnl";
+import { Interval } from "../models/Interval";
+import { formatPercent } from "../utils/formatPercent";
 
 export const getUserList = async () => {
 	const xata = getXataClient();
@@ -69,6 +71,7 @@ export const getUserList = async () => {
 			};
 		});
 
+		const pricesList = await authExchange.futuresPrices();
 		for (let index = 0; index < openPositions.length; index++) {
 			const position = openPositions[index];
 
@@ -119,12 +122,51 @@ export const getUserList = async () => {
 			  (balanceUSDT - historicalPnl[historicalPnl.length - 1].value)
 			: 0;
 
+		const openPosPnl = openPositions?.reduce((acc, val) => {
+			const currentPrice = Number(pricesList[val.pair]) || 0;
+
+			const pnl =
+				val.positionSide === "LONG"
+					? (currentPrice - val.entryPriceUSDT) / currentPrice
+					: (val.entryPriceUSDT - currentPrice) / currentPrice;
+
+			return (
+				acc +
+				((pnl - Context.fee / 2) * (currentPrice * Number(val.coinQuantity))) /
+					Context.leverage
+			);
+		}, 0);
+		const openPosPnlPt = Number(openPosPnl) / Number(balanceUSDT);
+
+		const daysAgo = (
+			(getDate({}).dateMs -
+				getDate({ date: user.startTime || new Date() }).dateMs) /
+			Interval["1d"]
+		).toFixed();
+
+		const text =
+			(user.name?.split(" ")[0] || "") +
+			" (" +
+			user.branch +
+			") " +
+			daysAgo +
+			" days $" +
+			(balanceUSDT || 0).toFixed(2) +
+			"; Today " +
+			formatPercent(Number(todayPnlPt || 0)) +
+			"; Total  " +
+			formatPercent(Number(totalPnlPt || 0)) +
+			"; OpenPosPnl " +
+			formatPercent(Number(openPosPnlPt));
+
 		userList[index] = {
 			...user,
 			openPositions,
 			totalPnlPt,
 			todayPnlPt,
 			balanceUSDT,
+			text,
+			isAddingPosition: false,
 		};
 	}
 

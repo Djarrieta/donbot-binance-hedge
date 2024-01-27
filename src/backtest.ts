@@ -21,7 +21,7 @@ export const backtest = async ({
 		(Context.backTestLookBackDays * Interval["1d"]) / strategy.interval;
 	const startTime = getDate({}).dateMs - lookBackLength * strategy.interval;
 
-	console.log("Back testing with " + strategy.name);
+	console.log("Back testing with " + strategy);
 
 	const { sl, tp, tr } = strategy.validate({
 		candlestick: [
@@ -35,7 +35,6 @@ export const backtest = async ({
 
 	log &&
 		console.table({
-			strategy: strategy.name,
 			sl: formatPercent(sl),
 			tp: formatPercent(Number(tp)),
 			backTestLookBackDays: Context.backTestLookBackDays,
@@ -68,7 +67,7 @@ export const backtest = async ({
 				endIndex + Context.maxTradeLength
 			);
 
-			const { shouldTrade, sl, tp, name } = strategy.validate({
+			const { shouldTrade, sl, tp, stgName } = strategy.validate({
 				candlestick,
 				pair,
 			});
@@ -81,7 +80,7 @@ export const backtest = async ({
 					sl,
 					tp,
 					fee: Context.fee,
-					stgName: name,
+					stgName,
 				});
 
 				stats.push(stat);
@@ -106,7 +105,6 @@ export const backtest = async ({
 		stats.reduce((acc, a) => acc + a.tradeLength, 0) / tradesQty || 0;
 
 	const result = {
-		strategy: strategy.name,
 		sl: formatPercent(sl),
 		tp: formatPercent(Number(tp)),
 		backTestLookBackDays: Context.backTestLookBackDays,

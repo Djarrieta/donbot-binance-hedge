@@ -18,16 +18,16 @@ export class Context {
 	strategyStats: StrategyStat[] = [];
 
 	public static branch: "main" | "test" | "risk" = "test";
-	public static interval = Interval["5m"];
+	public static interval = Interval["1m"];
 	public static leverage = 10;
 	public static lookBackLength = Interval["1d"] / Interval["5m"];
 	public static maxOpenPos = 1;
-	public static amountToTradeMultiplier = 0.25;
+	public static amountToTradePt = 0.25;
 	public static maxTradeLength = 1000;
 	public static minVolatility = 10 / 100;
 	public static backTestLookBackDays = 2;
 	public static minAmountToTrade = 5;
 	public static fee = 0.0005;
-	public static defaultSL = 10 / 100;
-	public static defaultTP = 1 / 100;
+	public static defaultSL = 0.1 / 100;
+	public static defaultTP = 0.1 / 100;
 }

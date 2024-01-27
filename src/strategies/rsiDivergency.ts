@@ -2,11 +2,9 @@ import { rsi } from "technicalindicators";
 import { Context } from "../models/Context";
 import { Interval } from "../models/Interval";
 import { Strategy, StrategyResponse } from "../models/Strategy";
-import { getVolatility } from "../services/getSymbolListVolatility";
+import { getVolatility } from "../services/getSymbolList";
 
-const STG_NAME = "rsiDivergency";
 const stg: Strategy = {
-	name: STG_NAME,
 	lookBackLength: Interval["1d"] / Interval["5m"],
 	interval: Interval["5m"],
 	validate: ({ candlestick, pair }) => {
@@ -14,7 +12,7 @@ const stg: Strategy = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
 			tp: Context.defaultTP,
-			name: STG_NAME,
+			stgName: "rsiDivergency",
 		};
 
 		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
@@ -35,8 +33,8 @@ const stg: Strategy = {
 		const volatility = getVolatility({ candlestick });
 
 		if (
-			volatility > MIN_VOL &&
-			volatility < MAX_VOL &&
+			// volatility > MIN_VOL &&
+			// volatility < MAX_VOL &&
 			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
 			rsiArray[rsiArray.length - 2] <= MIN_RSI &&
 			rsiArray[rsiArray.length - 1] > rsiArray[rsiArray.length - 2]
@@ -64,8 +62,8 @@ const stg: Strategy = {
 		}
 
 		if (
-			volatility > MIN_VOL &&
-			volatility < MAX_VOL &&
+			// volatility > MIN_VOL &&
+			// volatility < MAX_VOL &&
 			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 2] >= 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 1] < rsiArray[rsiArray.length - 2]
@@ -97,20 +95,3 @@ const stg: Strategy = {
 };
 
 export default stg;
-
-// {
-// 	strategy: "rsiDivergency",
-// 	sl: "10.00%",
-// 	tp: "1.00%",
-// 	backTestLookBackDays: 30,
-// 	lookBackLength: 8640,
-// 	startTime: "2023 12 15 10:08:00",
-// 	interval: "5m",
-// 	maxTradeLength: 1000,
-// 	fee: "0.05%",
-// 	avWinRate: "94.61%",
-// 	avPnl: "0.38%",
-// 	totalPnl: "848.46%",
-// 	tradesQty: 2228,
-// 	avTradeLength: 40,
-//   }

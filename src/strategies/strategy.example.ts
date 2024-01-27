@@ -1,11 +1,8 @@
 import { rsi } from "technicalindicators";
-import { Interval } from "../models/Interval";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { Context } from "../models/Context";
 
-const STG_NAME = "stg_name";
 const stg: Strategy = {
-	name: STG_NAME,
 	lookBackLength: Context.lookBackLength,
 	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
@@ -13,7 +10,7 @@ const stg: Strategy = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
 			tp: Context.defaultTP, // undefined to have dynamic tp with quitCriteria
-			name: STG_NAME,
+			stgName: "stg_name",
 		};
 
 		if (candlestick.length < Context.lookBackLength) return response;

@@ -1,14 +1,17 @@
 import cron from "node-cron";
 import { Context } from "./models/Context";
 import { checkForTrades } from "./services/checkForTrades";
-import { getSymbolList } from "./services/getSymbolList";
-import { getSymbolListVolatility } from "./services/getSymbolListVolatility";
+import {
+	getSymbolList,
+	getSymbolListVolatility,
+} from "./services/getSymbolList";
 import { getUserList } from "./services/getUserList";
 import { manageAccounts } from "./services/manageAccounts";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
+import { openPosition } from "./services/openPosition";
 
 export const trade = async () => {
 	console.log(
@@ -50,13 +53,42 @@ export const trade = async () => {
 		});
 
 		if (tradeArray.length) {
+			tradeArray.length > 4
+				? console.log(
+						"+ Should trade " +
+							tradeArray[0].symbol.pair +
+							", " +
+							tradeArray[1].symbol.pair +
+							", ...(" +
+							(tradeArray.length - 2) +
+							" more) "
+				  )
+				: console.log(
+						"+ Should trade " +
+							tradeArray.map(
+								(t) =>
+									t.symbol.pair +
+									" " +
+									t.stgResponse.stgName +
+									" -> " +
+									t.stgResponse.shouldTrade +
+									"; "
+							)
+				  );
+
 			for (const user of context.userList) {
-				console.log(
-					"Should trade " +
-						user.name +
-						" " +
-						tradeArray.map((s) => s.symbol.pair + " -> " + s.shouldTrade)
-				);
+				for (const trade of tradeArray) {
+					trade.stgResponse.shouldTrade &&
+						openPosition({
+							user,
+							symbol: trade.symbol,
+							shouldTrade: trade.stgResponse.shouldTrade,
+							sl: trade.stgResponse.sl,
+							tp: Number(trade.stgResponse.tp),
+							tr: Number(trade.stgResponse.tr),
+							callback: Number(trade.stgResponse.sl),
+						});
+				}
 			}
 		} else {
 			console.log("No trades found");

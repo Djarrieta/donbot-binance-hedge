@@ -3,6 +3,7 @@ import { Interval } from "./Interval";
 import { PositionSide } from "./Position";
 
 export interface StrategyResponse {
+	stgName: string;
 	shouldTrade: PositionSide | null;
 	sl: number;
 	tp?: number;
@@ -10,11 +11,9 @@ export interface StrategyResponse {
 		tr: number;
 		callback: number;
 	};
-	name: string;
 }
 
 export interface Strategy {
-	name: string;
 	lookBackLength: number;
 	interval: Interval;
 	validate: (props: {
@@ -24,6 +23,6 @@ export interface Strategy {
 }
 
 export interface StrategyStat {
-	name: string;
+	stgName: string;
 	status: boolean;
 }

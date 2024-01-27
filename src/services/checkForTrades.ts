@@ -1,4 +1,4 @@
-import { PositionSide } from "../models/Position";
+import { StrategyResponse } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
 import { chosenStrategies } from "../strategies";
 
@@ -21,15 +21,15 @@ export const checkForTrades = async ({
 				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
 		  );
 
-	const response: { symbol: Symbol; shouldTrade: PositionSide }[] = [];
-	for (const stg of chosenStrategies) {
+	const response: { symbol: Symbol; stgResponse: StrategyResponse }[] = [];
+	for (const strategy of chosenStrategies) {
 		for (const symbol of readySymbols) {
-			const stgResponse = stg.validate({
+			const stgResponse = strategy.validate({
 				candlestick: symbol.candlestick,
 				pair: symbol.pair,
 			});
 			if (stgResponse.shouldTrade !== null) {
-				response.push({ symbol, shouldTrade: stgResponse.shouldTrade });
+				response.push({ symbol, stgResponse });
 			}
 		}
 	}
