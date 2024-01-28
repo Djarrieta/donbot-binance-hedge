@@ -1,4 +1,5 @@
 import { Users } from "../xata";
+import { Order } from "./Order";
 import { Position } from "./Position";
 
 export interface User extends Users {
@@ -7,6 +8,7 @@ export interface User extends Users {
 	todayPnlPt: number;
 	totalPnlPt: number;
 	openPosPnlPt: number;
+	openOrders: Order[];
 	isAddingPosition: boolean;
 	text: string;
 }

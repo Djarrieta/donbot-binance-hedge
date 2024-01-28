@@ -1,13 +1,13 @@
 import Binance from "binance-api-node";
 import { Context } from "../models/Context";
+import { Interval } from "../models/Interval";
 import { Order } from "../models/Order";
-import { Position, PositionSide, PositionStatus } from "../models/Position";
+import { Position, PositionSide } from "../models/Position";
 import { User } from "../models/User";
+import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { getXataClient } from "../xata";
 import { getHistoricalPnl } from "./getHistoricalPnl";
-import { Interval } from "../models/Interval";
-import { formatPercent } from "../utils/formatPercent";
 
 export const getUserList = async () => {
 	const xata = getXataClient();
@@ -50,6 +50,7 @@ export const getUserList = async () => {
 			apiSecret: user.secret || "",
 		});
 
+		//Open Positions
 		const positionRisk = await authExchange.futuresPositionRisk({
 			recvWindow: 59999,
 		});
@@ -66,51 +67,19 @@ export const getUserList = async () => {
 				coinQuantity: Math.abs(Math.abs(Number(p.positionAmt))).toString(),
 				startTime: getDate({ dateMs: p.updateTime }).date,
 				entryPriceUSDT: Number(p.entryPrice),
-				status: "unknown",
-				orders: [],
 			};
 		});
 
+		//Balance
 		const pricesList = await authExchange.futuresPrices();
-		for (let index = 0; index < openPositions.length; index++) {
-			const position = openPositions[index];
-
-			const openOrders = await authExchange.futuresOpenOrders({});
-			const unformattedOrdersForThisPosition = openOrders.filter(
-				(o) => o.symbol === position.pair
-			);
-
-			const ordersForThisPositions: Order[] =
-				unformattedOrdersForThisPosition.map((o) => {
-					return {
-						pair: o.symbol,
-						clientOrderId: o.clientOrderId,
-						price: Number(o.stopPrice || o.clientOrderId.split("-")[2] || ""),
-						coinQuantity: Number(o.origQty),
-						orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
-					};
-				});
-			let status: PositionStatus = "unknown";
-			if (
-				ordersForThisPositions.length === 2 ||
-				ordersForThisPositions.find((o) => o.orderType === "SL") ||
-				ordersForThisPositions.find((o) => o.orderType === "TP")
-			) {
-				status = "open";
-			}
-			openPositions[index] = {
-				...position,
-				orders: ordersForThisPositions,
-				status,
-			};
-		}
-
 		const futuresUser = await authExchange.futuresAccountBalance({
 			recvWindow: 59999,
 		});
 		const balanceUSDT = Number(
 			futuresUser.filter((pair) => pair.asset === "USDT")[0].balance
 		);
+
+		//PNL
 		const { historicalPnl } = await getHistoricalPnl({ user });
 
 		const totalPnlPt = historicalPnl.length
@@ -138,12 +107,26 @@ export const getUserList = async () => {
 		}, 0);
 		const openPosPnlPt = Number(openPosPnl) / Number(balanceUSDT);
 
+		//Days working
 		const daysAgo = (
 			(getDate({}).dateMs -
 				getDate({ date: user.startTime || new Date() }).dateMs) /
 			Interval["1d"]
 		).toFixed();
 
+		//Open Orders
+		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
+		const openOrders: Order[] = unformattedOpenOrders.map((o) => {
+			return {
+				pair: o.symbol,
+				clientOrderId: o.clientOrderId,
+				price: Number(o.stopPrice || o.clientOrderId.split("-")[2] || ""),
+				coinQuantity: Number(o.origQty),
+				orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
+			};
+		});
+
+		//Text
 		const text =
 			(user.name?.split(" ")[0] || "") +
 			" (" +
@@ -162,12 +145,13 @@ export const getUserList = async () => {
 		userList[index] = {
 			...user,
 			openPositions,
+			openOrders,
 			totalPnlPt,
 			todayPnlPt,
 			openPosPnlPt,
 			balanceUSDT,
-			text,
 			isAddingPosition: false,
+			text,
 		};
 	}
 
