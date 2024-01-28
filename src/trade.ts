@@ -8,10 +8,10 @@ import {
 import { getUserList } from "./services/getUserList";
 import { manageAccounts } from "./services/manageAccounts";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
+import { openPosition } from "./services/openPosition";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
-import { openPosition } from "./services/openPosition";
 
 export const trade = async () => {
 	console.log(
@@ -93,9 +93,12 @@ export const trade = async () => {
 		} else {
 			console.log("No trades found");
 		}
-
 		await updateUnreadySymbols();
-		await manageAccounts();
+		await delay(5000);
+		context.userList = await getUserList();
+		for (const user of context.userList) {
+			manageAccounts({ user });
+		}
 		context.userList = await getUserList();
 	});
 };
