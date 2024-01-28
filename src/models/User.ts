@@ -6,6 +6,7 @@ export interface User extends Users {
 	openPositions: Position[];
 	todayPnlPt: number;
 	totalPnlPt: number;
+	openPosPnlPt: number;
 	isAddingPosition: boolean;
 	text: string;
 }

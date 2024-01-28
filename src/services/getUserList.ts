@@ -164,6 +164,7 @@ export const getUserList = async () => {
 			openPositions,
 			totalPnlPt,
 			todayPnlPt,
+			openPosPnlPt,
 			balanceUSDT,
 			text,
 			isAddingPosition: false,
