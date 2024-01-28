@@ -48,33 +48,12 @@ export const trade = async () => {
 			.filter((s) => s.isReady && !s.isLoading)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 
-		const tradeArray = await checkForTrades({
+		const { text: tradeArrayText, tradeArray } = await checkForTrades({
 			readySymbols,
 		});
 
 		if (tradeArray.length) {
-			tradeArray.length > 4
-				? console.log(
-						"+ Should trade " +
-							tradeArray[0].symbol.pair +
-							", " +
-							tradeArray[1].symbol.pair +
-							", ...(" +
-							(tradeArray.length - 2) +
-							" more) "
-				  )
-				: console.log(
-						"+ Should trade " +
-							tradeArray.map(
-								(t) =>
-									t.symbol.pair +
-									" " +
-									t.stgResponse.stgName +
-									" -> " +
-									t.stgResponse.shouldTrade +
-									"; "
-							)
-				  );
+			console.log(tradeArrayText);
 
 			for (const user of context.userList) {
 				for (const trade of tradeArray) {
