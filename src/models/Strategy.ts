@@ -14,6 +14,7 @@ export interface StrategyResponse {
 }
 
 export interface Strategy {
+	stgName: string;
 	lookBackLength: number;
 	interval: Interval;
 	validate: (props: {

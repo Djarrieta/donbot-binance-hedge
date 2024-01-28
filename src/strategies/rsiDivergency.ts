@@ -4,7 +4,9 @@ import { Interval } from "../models/Interval";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { getVolatility } from "../services/getSymbolList";
 
+const STG_NAME = "rsiDivergency";
 const stg: Strategy = {
+	stgName: STG_NAME,
 	lookBackLength: Interval["1d"] / Interval["5m"],
 	interval: Interval["5m"],
 	validate: ({ candlestick, pair }) => {
@@ -12,7 +14,7 @@ const stg: Strategy = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
 			tp: Context.defaultTP,
-			stgName: "rsiDivergency",
+			stgName: STG_NAME,
 		};
 
 		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;

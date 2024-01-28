@@ -3,7 +3,9 @@ import { Context } from "../models/Context";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { getVolatility } from "../services/getSymbolList";
 
+const STG_NAME = "rsiOverTrade";
 const stg: Strategy = {
+	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
 	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
@@ -11,7 +13,7 @@ const stg: Strategy = {
 			shouldTrade: null,
 			sl: Context.defaultTP,
 			tp: Context.defaultTP,
-			stgName: "rsiOverTrade",
+			stgName: STG_NAME,
 		};
 
 		if (candlestick.length < Context.interval) return response;
