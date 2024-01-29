@@ -59,11 +59,9 @@ export const getUserList = async () => {
 		);
 
 		const openPositions: Position[] = openPositionsUnformatted.map((p) => {
-			const positionSide: PositionSide =
-				Number(p.entryPrice) > Number(p.liquidationPrice) ? "LONG" : "SHORT";
 			return {
 				pair: p.symbol,
-				positionSide,
+				positionSide: p.positionSide as PositionSide,
 				coinQuantity: Math.abs(Math.abs(Number(p.positionAmt))).toString(),
 				startTime: getDate({ dateMs: p.updateTime }).date,
 				entryPriceUSDT: Number(p.entryPrice),

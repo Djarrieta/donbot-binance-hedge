@@ -33,11 +33,13 @@ export const manageAccounts = async ({ user }: { user: User }) => {
 			const openPosPairShort = user.openPositions.filter(
 				(p) => p.pair === pair && p.positionSide === "SHORT"
 			);
+			const openOrders = user.openOrders.filter((o) => o.pair === pair);
 
 			if (
 				openPosPairLong.length === 1 &&
 				openPosPairShort.length === 1 &&
-				openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity
+				openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity &&
+				openOrders.length
 			) {
 				console.log("Canceling orders for " + user.name + " in " + pair);
 				await authExchange.futuresCancelAllOpenOrders({

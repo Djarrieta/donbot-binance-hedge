@@ -4,7 +4,7 @@ import { Interval } from "../models/Interval";
 import { Context } from "../models/Context";
 import { getDate } from "../utils/getDate";
 
-export const updateSymbol = async ({
+export const subscribeToSymbolUpdates = async ({
 	pair,
 	interval,
 }: {

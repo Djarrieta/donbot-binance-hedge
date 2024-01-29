@@ -1,7 +1,7 @@
 import { Context } from "../models/Context";
 import { checkCandlestick } from "../utils/checkCandlestick";
 import { getCandlestick } from "./getCandlestick";
-import { updateSymbol } from "./updateSymbol";
+import { subscribeToSymbolUpdates } from "./subscribeToSymbolUpdates";
 
 export const updateUnreadySymbols = async () => {
 	const context = await Context.getInstance();
@@ -23,7 +23,10 @@ export const updateUnreadySymbols = async () => {
 			context.symbolList[index].candlestick = candlestick;
 			context.symbolList[index].isReady = true;
 
-			updateSymbol({ pair: symbol.pair, interval: Context.interval });
+			subscribeToSymbolUpdates({
+				pair: symbol.pair,
+				interval: Context.interval,
+			});
 		}
 	}
 };

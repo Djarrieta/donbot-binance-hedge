@@ -32,6 +32,10 @@ export const trade = async () => {
 		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 	);
 
+	for (const user of context.userList) {
+		manageAccounts({ user });
+	}
+
 	cron.schedule("*/5 * * * *", async () => {
 		await delay(2000);
 		console.log("");

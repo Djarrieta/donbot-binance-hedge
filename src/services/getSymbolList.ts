@@ -2,7 +2,7 @@ import Binance from "binance-api-node";
 import { Candle } from "../models/Candle";
 import { Context } from "../models/Context";
 import { getCandlestick } from "./getCandlestick";
-import { updateSymbol } from "./updateSymbol";
+import { subscribeToSymbolUpdates } from "./subscribeToSymbolUpdates";
 
 export const getSymbolList = async () => {
 	const context = await Context.getInstance();
@@ -29,7 +29,7 @@ export const getSymbolList = async () => {
 			isLoading: true,
 		});
 
-		updateSymbol({ pair: symbol.pair, interval: Context.interval });
+		subscribeToSymbolUpdates({ pair: symbol.pair, interval: Context.interval });
 	}
 };
 
