@@ -39,11 +39,31 @@ export const manageAccounts = async ({ user }: { user: User }) => {
 				openPosPairShort.length === 1 &&
 				openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity
 			) {
+				console.log("Canceling orders for " + user.name + " in " + pair);
 				await authExchange.futuresCancelAllOpenOrders({
 					symbol: pair,
 				});
 			}
 		}
-		return;
+	}
+
+	//Protect positions with no orders
+	if (user.openPositions.length) {
+		const openPosUniquePairs = Array.from(
+			new Set(user.openPositions.map((x) => x.pair))
+		);
+		for (const pair of openPosUniquePairs) {
+			const openPos = user.openPositions.filter((p) => p.pair === pair);
+			const openOrders = user.openOrders.filter((o) => o.pair === pair);
+
+			if (openPos.length === 1 && openOrders.length === 0) {
+				console.log("Protecting position for " + user.name + " in " + pair);
+				await authExchange.futuresCancelAllOpenOrders({
+					symbol: pair,
+				});
+
+				return;
+			}
+		}
 	}
 };

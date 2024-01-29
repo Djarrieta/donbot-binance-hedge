@@ -54,18 +54,29 @@ export const openPosition = async ({
 		precision: symbol.quantityPrecision,
 	});
 
-	const SLPriceNumber =
+	const HEPriceNumber =
 		shouldTrade === "LONG"
 			? symbol.currentPrice * (1 - sl)
 			: symbol.currentPrice * (1 + sl);
 
-	const SLPrice = fixPrecision({
-		value: SLPriceNumber,
+	const HEPrice = fixPrecision({
+		value: HEPriceNumber,
 		precision: symbol.pricePrecision,
 	});
 
 	try {
 		await authExchange.futuresCancelAllOpenOrders({ symbol: symbol.pair });
+		const PosOrderResponse = await authExchange.futuresOrder({
+			type: "MARKET",
+			side: shouldTrade === "LONG" ? "BUY" : "SELL",
+			positionSide: shouldTrade,
+			symbol: symbol.pair,
+			quantity,
+			recvWindow: 59999,
+			newClientOrderId: "PS-" + symbol.pair,
+			newOrderRespType: "FULL",
+		});
+		console.log({ PosOrderResponse });
 
 		const slOrderResponse = await authExchange.futuresOrder({
 			type: "STOP_MARKET",
@@ -73,9 +84,9 @@ export const openPosition = async ({
 			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
 			symbol: symbol.pair,
 			quantity,
-			stopPrice: SLPrice,
+			stopPrice: HEPrice,
 			recvWindow: 59999,
-			newClientOrderId: "HE-" + symbol.pair + "-" + SLPrice,
+			newClientOrderId: "HE-" + symbol.pair + "-" + HEPrice,
 			timeInForce: "GTC",
 			newOrderRespType: "FULL",
 		});
@@ -105,17 +116,6 @@ export const openPosition = async ({
 			});
 			console.log({ tpOrderResponse });
 		}
-		const PosOrderResponse = await authExchange.futuresOrder({
-			type: "MARKET",
-			side: shouldTrade === "LONG" ? "BUY" : "SELL",
-			positionSide: shouldTrade,
-			symbol: symbol.pair,
-			quantity,
-			recvWindow: 59999,
-			newClientOrderId: "PS-" + symbol.pair,
-			newOrderRespType: "FULL",
-		});
-		console.log({ PosOrderResponse });
 	} catch (e) {
 		console.log(
 			"Problem opening position for " + user.name + " in " + symbol.pair

@@ -1,26 +1,25 @@
 import { rsi } from "technicalindicators";
 import { Context } from "../models/Context";
-import { Interval } from "../models/Interval";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { getVolatility } from "../services/getSymbolList";
 
 const STG_NAME = "rsiDivergency";
 const stg: Strategy = {
 	stgName: STG_NAME,
-	lookBackLength: Interval["1d"] / Interval["5m"],
-	interval: Interval["5m"],
+	lookBackLength: Context.lookBackLength,
+	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: Context.defaultSL,
+			sl: Context.defaultTP,
 			tp: Context.defaultTP,
 			stgName: STG_NAME,
 		};
 
-		if (candlestick.length < Interval["1d"] / Interval["5m"]) return response;
+		if (candlestick.length < Context.interval) return response;
 		const MIN_RSI = 30;
 		const CANDLESTICK_SIZE = 50;
-		const MIN_VOL = 10 / 100;
+		const MIN_VOL = Context.minVolatility;
 		const MAX_VOL = 25 / 100;
 
 		const closePrices = candlestick.map((candle) => candle.close);

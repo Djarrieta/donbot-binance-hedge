@@ -18,7 +18,7 @@ export class Context {
 	strategyStats: StrategyStat[] = [];
 
 	public static branch: "main" | "test" | "risk" = "test";
-	public static interval = Interval["1m"];
+	public static interval = Interval["5m"];
 	public static leverage = 10;
 	public static lookBackLength = Interval["1d"] / Interval["5m"];
 	public static maxOpenPos = 1;
