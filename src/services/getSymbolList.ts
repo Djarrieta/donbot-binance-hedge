@@ -45,7 +45,8 @@ export const getCompletePairList = async () => {
 	const exchange = Binance();
 
 	const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
-	for (const symbol of unformattedList.slice(0, 20)) {
+
+	for (const symbol of unformattedList) {
 		const {
 			symbol: pair,
 			status,
@@ -89,7 +90,7 @@ export const getCompletePairList = async () => {
 			currentPrice,
 		});
 	}
-	return symbolList;
+	return symbolList.slice(0, 10);
 };
 
 export const getSymbolListVolatility = async () => {

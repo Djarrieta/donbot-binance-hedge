@@ -34,7 +34,7 @@ const stg: Strategy = {
 		if (volatility >= MIN_VOL && MIN_RSI) {
 			response.shouldTrade = "SHORT";
 		}
-		//response.shouldTrade = "SHORT";
+		response.shouldTrade = "LONG";
 
 		return response;
 	},

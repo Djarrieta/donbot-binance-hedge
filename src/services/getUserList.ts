@@ -68,6 +68,18 @@ export const getUserList = async () => {
 			};
 		});
 
+		//Open Orders
+		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
+		const openOrders: Order[] = unformattedOpenOrders.map((o) => {
+			return {
+				pair: o.symbol,
+				clientOrderId: o.clientOrderId,
+				price: Number(o.stopPrice || o.clientOrderId.split("-")[2] || ""),
+				coinQuantity: Number(o.origQty),
+				orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
+			};
+		});
+
 		//Balance
 		const pricesList = await authExchange.futuresPrices();
 		const futuresUser = await authExchange.futuresAccountBalance({
@@ -111,18 +123,6 @@ export const getUserList = async () => {
 				getDate({ date: user.startTime || new Date() }).dateMs) /
 			Interval["1d"]
 		).toFixed();
-
-		//Open Orders
-		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
-		const openOrders: Order[] = unformattedOpenOrders.map((o) => {
-			return {
-				pair: o.symbol,
-				clientOrderId: o.clientOrderId,
-				price: Number(o.stopPrice || o.clientOrderId.split("-")[2] || ""),
-				coinQuantity: Number(o.origQty),
-				orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
-			};
-		});
 
 		//Text
 		const text =

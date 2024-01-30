@@ -24,24 +24,124 @@ export const openPosition = async ({
 }) => {
 	const context = await Context.getInstance();
 
+	const authExchange = Binance({
+		apiKey: user.key,
+		apiSecret: user.secret || "",
+	});
+	const userIndex = context.userList.findIndex((u) => u.id === user.id);
+
+	if (user.openPositions.length) {
+		const openPosUniquePairs = Array.from(
+			new Set(user.openPositions.map((x) => x.pair))
+		);
+
+		for (const pair of openPosUniquePairs) {
+			const openPosPairLong = user.openPositions.filter(
+				(p) => p.pair === pair && p.positionSide === "LONG"
+			);
+			const openPosPairShort = user.openPositions.filter(
+				(p) => p.pair === pair && p.positionSide === "SHORT"
+			);
+
+			if (
+				symbol.pair === pair &&
+				openPosPairLong.length === 1 &&
+				openPosPairShort.length === 1 &&
+				openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity
+			) {
+				console.log(
+					"Keeping " +
+						shouldTrade +
+						" position for " +
+						user.name +
+						" in " +
+						pair
+				);
+				context.userList[userIndex].isAddingPosition = true;
+				try {
+					await authExchange.futuresOrder({
+						type: "MARKET",
+						side: shouldTrade === "LONG" ? "SELL" : "BUY",
+						positionSide: shouldTrade,
+						symbol: symbol.pair,
+						quantity: openPosPairLong[0].coinQuantity,
+						recvWindow: 59999,
+						newClientOrderId: "KP-" + symbol.pair,
+						newOrderRespType: "FULL",
+					});
+
+					const SLPriceNumber =
+						shouldTrade === "LONG"
+							? symbol.currentPrice * (1 - sl)
+							: symbol.currentPrice * (1 + sl);
+
+					const SLPrice = fixPrecision({
+						value: SLPriceNumber,
+						precision: symbol.pricePrecision,
+					});
+
+					await authExchange.futuresOrder({
+						type: "STOP_MARKET",
+						side: shouldTrade === "LONG" ? "SELL" : "BUY",
+						positionSide: shouldTrade,
+						symbol: symbol.pair,
+						quantity: openPosPairLong[0].coinQuantity,
+						stopPrice: SLPrice,
+						recvWindow: 59999,
+						newClientOrderId: "SL-" + symbol.pair + "-" + SLPrice,
+						timeInForce: "GTC",
+						newOrderRespType: "FULL",
+					});
+
+					if (tp) {
+						const TPPriceNumber =
+							shouldTrade === "LONG"
+								? symbol.currentPrice * (1 + tp)
+								: symbol.currentPrice * (1 - tp);
+
+						const TPPrice = fixPrecision({
+							value: TPPriceNumber,
+							precision: symbol.pricePrecision,
+						});
+
+						await authExchange.futuresOrder({
+							type: "TAKE_PROFIT_MARKET",
+							side: shouldTrade === "LONG" ? "SELL" : "BUY",
+							positionSide: shouldTrade,
+							symbol: symbol.pair,
+							quantity: openPosPairLong[0].coinQuantity,
+							stopPrice: TPPrice,
+							recvWindow: 59999,
+							newClientOrderId: "TP-" + symbol.pair + "-" + TPPrice,
+							newOrderRespType: "FULL",
+						});
+					}
+				} catch (e) {
+					console.log(
+						"Problem keeping " +
+							shouldTrade +
+							" position for " +
+							user.name +
+							" in " +
+							symbol.pair
+					);
+					console.log(e);
+				}
+			}
+		}
+	}
+
 	if (
 		user.isAddingPosition ||
 		Number(user.openPositions?.length) >= Context.maxOpenPos ||
 		user.openPositions?.map((p) => p.pair).includes(symbol.pair)
 	) {
-		console.log(symbol.pair + ": Skip " + user.text);
 		return;
 	}
 
 	console.log("Open  position for " + user.name + " in " + symbol.pair);
 
-	const userIndex = context.userList.findIndex((u) => u.id === user.id);
 	context.userList[userIndex].isAddingPosition = true;
-
-	const authExchange = Binance({
-		apiKey: user.key,
-		apiSecret: user.secret || "",
-	});
 
 	let quantityNumber =
 		Math.max(
@@ -66,7 +166,7 @@ export const openPosition = async ({
 
 	try {
 		await authExchange.futuresCancelAllOpenOrders({ symbol: symbol.pair });
-		const PosOrderResponse = await authExchange.futuresOrder({
+		await authExchange.futuresOrder({
 			type: "MARKET",
 			side: shouldTrade === "LONG" ? "BUY" : "SELL",
 			positionSide: shouldTrade,
@@ -76,12 +176,11 @@ export const openPosition = async ({
 			newClientOrderId: "PS-" + symbol.pair,
 			newOrderRespType: "FULL",
 		});
-		console.log({ PosOrderResponse });
 
-		const slOrderResponse = await authExchange.futuresOrder({
+		await authExchange.futuresOrder({
 			type: "STOP_MARKET",
 			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
+			positionSide: shouldTrade,
 			symbol: symbol.pair,
 			quantity,
 			stopPrice: HEPrice,
@@ -90,7 +189,6 @@ export const openPosition = async ({
 			timeInForce: "GTC",
 			newOrderRespType: "FULL",
 		});
-		console.log({ slOrder: slOrderResponse });
 
 		if (tp) {
 			const TPPriceNumber =
@@ -103,7 +201,7 @@ export const openPosition = async ({
 				precision: symbol.pricePrecision,
 			});
 
-			const tpOrderResponse = await authExchange.futuresOrder({
+			await authExchange.futuresOrder({
 				type: "TAKE_PROFIT_MARKET",
 				side: shouldTrade === "LONG" ? "SELL" : "BUY",
 				positionSide: shouldTrade,
@@ -114,7 +212,6 @@ export const openPosition = async ({
 				newClientOrderId: "TP-" + symbol.pair + "-" + TPPrice,
 				newOrderRespType: "FULL",
 			});
-			console.log({ tpOrderResponse });
 		}
 	} catch (e) {
 		console.log(

@@ -36,8 +36,8 @@ export const trade = async () => {
 		manageAccounts({ user });
 	}
 
-	cron.schedule("*/5 * * * *", async () => {
-		await delay(2000);
+	cron.schedule("*/1 * * * *", async () => {
+		await delay(1000);
 		console.log("");
 		console.log(getDate({}).dateString, "Checking for trades!");
 		console.log(
