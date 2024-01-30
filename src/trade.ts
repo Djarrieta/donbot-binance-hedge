@@ -48,7 +48,7 @@ export const trade = async () => {
 		await getSymbolListVolatility();
 		context.symbolList.length + " symbols.";
 
-		const readySymbols = context.symbolList
+		const readySymbols = [...context.symbolList]
 			.filter((s) => s.isReady && !s.isLoading)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 

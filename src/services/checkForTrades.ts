@@ -48,15 +48,16 @@ export const checkForTrades = async ({
 			(response.tradeArray.length - 2) +
 			" more) ";
 	}
-	if (response.tradeArray.length > 0 && response.tradeArray.length <= 4) {
-		"+ Should trade " +
+	if (response.tradeArray.length && response.tradeArray.length <= 4) {
+		response.text =
+			"+ Should trade " +
 			response.tradeArray.map(
 				(t) =>
-					t.symbol.pair +
-					" " +
-					t.stgResponse.stgName +
-					" -> " +
 					t.stgResponse.shouldTrade +
+					" in " +
+					t.symbol.pair +
+					" with " +
+					t.stgResponse.stgName +
 					"; "
 			);
 	}

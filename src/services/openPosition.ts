@@ -29,112 +29,104 @@ export const openPosition = async ({
 		apiSecret: user.secret || "",
 	});
 	const userIndex = context.userList.findIndex((u) => u.id === user.id);
+	const openPosUniquePairs = Array.from(
+		new Set(user.openPositions.map((x) => x.pair))
+	);
 
-	if (user.openPositions.length) {
-		const openPosUniquePairs = Array.from(
-			new Set(user.openPositions.map((x) => x.pair))
+	for (const pair of openPosUniquePairs) {
+		const openPosPairLong = user.openPositions.filter(
+			(p) => p.pair === pair && p.positionSide === "LONG"
+		);
+		const openPosPairShort = user.openPositions.filter(
+			(p) => p.pair === pair && p.positionSide === "SHORT"
 		);
 
-		for (const pair of openPosUniquePairs) {
-			const openPosPairLong = user.openPositions.filter(
-				(p) => p.pair === pair && p.positionSide === "LONG"
+		if (
+			symbol.pair === pair &&
+			openPosPairLong.length === 1 &&
+			openPosPairShort.length === 1 &&
+			openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity
+		) {
+			console.log(
+				"Keeping " + shouldTrade + " position for " + user.name + " in " + pair
 			);
-			const openPosPairShort = user.openPositions.filter(
-				(p) => p.pair === pair && p.positionSide === "SHORT"
-			);
+			context.userList[userIndex].isAddingPosition = true;
+			try {
+				await authExchange.futuresOrder({
+					type: "MARKET",
+					side: shouldTrade === "LONG" ? "SELL" : "BUY",
+					positionSide: shouldTrade,
+					symbol: symbol.pair,
+					quantity: openPosPairLong[0].coinQuantity,
+					recvWindow: 59999,
+					newClientOrderId: "KP-" + symbol.pair,
+					newOrderRespType: "FULL",
+				});
 
-			if (
-				symbol.pair === pair &&
-				openPosPairLong.length === 1 &&
-				openPosPairShort.length === 1 &&
-				openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity
-			) {
-				console.log(
-					"Keeping " +
-						shouldTrade +
-						" position for " +
-						user.name +
-						" in " +
-						pair
-				);
-				context.userList[userIndex].isAddingPosition = true;
-				try {
-					await authExchange.futuresOrder({
-						type: "MARKET",
-						side: shouldTrade === "LONG" ? "SELL" : "BUY",
-						positionSide: shouldTrade,
-						symbol: symbol.pair,
-						quantity: openPosPairLong[0].coinQuantity,
-						recvWindow: 59999,
-						newClientOrderId: "KP-" + symbol.pair,
-						newOrderRespType: "FULL",
-					});
+				const SLPriceNumber =
+					shouldTrade === "LONG"
+						? symbol.currentPrice * (1 - sl)
+						: symbol.currentPrice * (1 + sl);
 
-					const SLPriceNumber =
+				const SLPrice = fixPrecision({
+					value: SLPriceNumber,
+					precision: symbol.pricePrecision,
+				});
+
+				await authExchange.futuresOrder({
+					type: "STOP_MARKET",
+					side: shouldTrade === "LONG" ? "SELL" : "BUY",
+					positionSide: shouldTrade,
+					symbol: symbol.pair,
+					quantity: openPosPairLong[0].coinQuantity,
+					stopPrice: SLPrice,
+					recvWindow: 59999,
+					newClientOrderId: "SL-" + symbol.pair + "-" + SLPrice,
+					timeInForce: "GTC",
+					newOrderRespType: "FULL",
+				});
+
+				if (tp) {
+					const TPPriceNumber =
 						shouldTrade === "LONG"
-							? symbol.currentPrice * (1 - sl)
-							: symbol.currentPrice * (1 + sl);
+							? symbol.currentPrice * (1 + tp)
+							: symbol.currentPrice * (1 - tp);
 
-					const SLPrice = fixPrecision({
-						value: SLPriceNumber,
+					const TPPrice = fixPrecision({
+						value: TPPriceNumber,
 						precision: symbol.pricePrecision,
 					});
 
 					await authExchange.futuresOrder({
-						type: "STOP_MARKET",
+						type: "TAKE_PROFIT_MARKET",
 						side: shouldTrade === "LONG" ? "SELL" : "BUY",
 						positionSide: shouldTrade,
 						symbol: symbol.pair,
 						quantity: openPosPairLong[0].coinQuantity,
-						stopPrice: SLPrice,
+						stopPrice: TPPrice,
 						recvWindow: 59999,
-						newClientOrderId: "SL-" + symbol.pair + "-" + SLPrice,
-						timeInForce: "GTC",
+						newClientOrderId: "TP-" + symbol.pair + "-" + TPPrice,
 						newOrderRespType: "FULL",
 					});
-
-					if (tp) {
-						const TPPriceNumber =
-							shouldTrade === "LONG"
-								? symbol.currentPrice * (1 + tp)
-								: symbol.currentPrice * (1 - tp);
-
-						const TPPrice = fixPrecision({
-							value: TPPriceNumber,
-							precision: symbol.pricePrecision,
-						});
-
-						await authExchange.futuresOrder({
-							type: "TAKE_PROFIT_MARKET",
-							side: shouldTrade === "LONG" ? "SELL" : "BUY",
-							positionSide: shouldTrade,
-							symbol: symbol.pair,
-							quantity: openPosPairLong[0].coinQuantity,
-							stopPrice: TPPrice,
-							recvWindow: 59999,
-							newClientOrderId: "TP-" + symbol.pair + "-" + TPPrice,
-							newOrderRespType: "FULL",
-						});
-					}
-				} catch (e) {
-					console.log(
-						"Problem keeping " +
-							shouldTrade +
-							" position for " +
-							user.name +
-							" in " +
-							symbol.pair
-					);
-					console.log(e);
 				}
+			} catch (e) {
+				console.log(
+					"Problem keeping " +
+						shouldTrade +
+						" position for " +
+						user.name +
+						" in " +
+						symbol.pair
+				);
+				console.log(e);
 			}
 		}
 	}
 
 	if (
 		user.isAddingPosition ||
-		Number(user.openPositions?.length) >= Context.maxOpenPos ||
-		user.openPositions?.map((p) => p.pair).includes(symbol.pair)
+		openPosUniquePairs.length >= Context.maxOpenPos ||
+		openPosUniquePairs.includes(symbol.pair)
 	) {
 		return;
 	}
@@ -179,8 +171,8 @@ export const openPosition = async ({
 
 		await authExchange.futuresOrder({
 			type: "STOP_MARKET",
-			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			positionSide: shouldTrade,
+			side: shouldTrade === "LONG" ? "BUY" : "SELL",
+			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
 			symbol: symbol.pair,
 			quantity,
 			stopPrice: HEPrice,

@@ -31,10 +31,12 @@ const stg: Strategy = {
 		) {
 			response.shouldTrade = "LONG";
 		}
-		if (volatility >= MIN_VOL && MIN_RSI) {
+		if (
+			volatility >= MIN_VOL
+			//&& rsiArray[rsiArray.length - 1] <= MIN_RSI
+		) {
 			response.shouldTrade = "SHORT";
 		}
-		response.shouldTrade = "LONG";
 
 		return response;
 	},

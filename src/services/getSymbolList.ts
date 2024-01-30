@@ -90,7 +90,7 @@ export const getCompletePairList = async () => {
 			currentPrice,
 		});
 	}
-	return symbolList.slice(0, 10);
+	return symbolList;
 };
 
 export const getSymbolListVolatility = async () => {
