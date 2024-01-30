@@ -146,16 +146,6 @@ export const openPosition = async ({
 		precision: symbol.quantityPrecision,
 	});
 
-	const HEPriceNumber =
-		shouldTrade === "LONG"
-			? symbol.currentPrice * (1 - sl)
-			: symbol.currentPrice * (1 + sl);
-
-	const HEPrice = fixPrecision({
-		value: HEPriceNumber,
-		precision: symbol.pricePrecision,
-	});
-
 	try {
 		await authExchange.futuresCancelAllOpenOrders({ symbol: symbol.pair });
 		await authExchange.futuresOrder({
@@ -166,12 +156,20 @@ export const openPosition = async ({
 			quantity,
 			recvWindow: 59999,
 			newClientOrderId: "PS-" + symbol.pair,
-			newOrderRespType: "FULL",
+		});
+		const HEPriceNumber =
+			shouldTrade === "LONG"
+				? symbol.currentPrice * (1 - sl)
+				: symbol.currentPrice * (1 + sl);
+
+		const HEPrice = fixPrecision({
+			value: HEPriceNumber,
+			precision: symbol.pricePrecision,
 		});
 
 		await authExchange.futuresOrder({
 			type: "STOP_MARKET",
-			side: shouldTrade === "LONG" ? "BUY" : "SELL",
+			side: shouldTrade === "LONG" ? "SELL" : "BUY",
 			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
 			symbol: symbol.pair,
 			quantity,
@@ -179,7 +177,6 @@ export const openPosition = async ({
 			recvWindow: 59999,
 			newClientOrderId: "HE-" + symbol.pair + "-" + HEPrice,
 			timeInForce: "GTC",
-			newOrderRespType: "FULL",
 		});
 
 		if (tp) {
@@ -202,7 +199,6 @@ export const openPosition = async ({
 				stopPrice: TPPrice,
 				recvWindow: 59999,
 				newClientOrderId: "TP-" + symbol.pair + "-" + TPPrice,
-				newOrderRespType: "FULL",
 			});
 		}
 	} catch (e) {
