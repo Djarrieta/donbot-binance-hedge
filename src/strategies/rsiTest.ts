@@ -47,3 +47,20 @@ const stg: Strategy = {
 };
 
 export default stg;
+
+// ┌────────────────────────┬─────────────────────┐
+// │                        │ Values              │
+// ├────────────────────────┼─────────────────────┤
+// │                     sl │ 0.50%               │
+// │                     tp │ 0.50%               │
+// │ lookBackLengthBacktest │ 1440                │
+// │              startTime │ 2024 01 31 15:30:16 │
+// │               interval │ 1m                  │
+// │         maxTradeLength │ 1000                │
+// │                    fee │ 0.05%               │
+// │              avWinRate │ 50.55%              │
+// │                  avPnl │ -0.04%              │
+// │               totalPnl │ -55.73%             │
+// │              tradesQty │ 1274                │
+// │          avTradeLength │ 5                   │
+// └────────────────────────┴─────────────────────┘

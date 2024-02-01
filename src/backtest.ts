@@ -17,9 +17,8 @@ export const backtest = async ({
 	strategy: Strategy;
 	log?: boolean;
 }) => {
-	const lookBackLength =
-		(Context.backTestLookBackDays * Interval["1d"]) / strategy.interval;
-	const startTime = getDate({}).dateMs - lookBackLength * strategy.interval;
+	const startTime =
+		getDate({}).dateMs - Context.lookBackLengthBacktest * strategy.interval;
 
 	console.log("Back testing with " + strategy);
 
@@ -33,15 +32,14 @@ export const backtest = async ({
 		console.table({
 			sl: formatPercent(sl),
 			tp: formatPercent(Number(tp)),
-			backTestLookBackDays: Context.backTestLookBackDays,
-			lookBackLength,
+			lookBack: Context.lookBackLengthBacktest,
 			startTime: getDate({ dateMs: startTime }).dateString,
 			interval: Interval[strategy.interval],
 			maxTradeLength: Context.maxTradeLength,
 			fee: formatPercent(Context.fee),
 		});
 
-	const completePairList = await getCompletePairList();
+	const completePairList = await getCompletePairList(false);
 
 	let stats: Stat[] = [];
 
@@ -51,7 +49,7 @@ export const backtest = async ({
 		const completeCandlestick = await getCandlestick({
 			pair,
 			interval: strategy.interval,
-			lookBackLength,
+			lookBackLength: Context.lookBackLengthBacktest,
 		});
 
 		let candleIndex = 0;
@@ -103,8 +101,7 @@ export const backtest = async ({
 	const result = {
 		sl: formatPercent(sl),
 		tp: formatPercent(Number(tp)),
-		backTestLookBackDays: Context.backTestLookBackDays,
-		lookBackLength,
+		lookBack: Context.lookBackLengthBacktest,
 		startTime: getDate({ dateMs: startTime }).dateString,
 		interval: Interval[strategy.interval],
 		maxTradeLength: Context.maxTradeLength,

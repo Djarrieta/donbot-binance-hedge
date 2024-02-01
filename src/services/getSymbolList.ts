@@ -33,7 +33,7 @@ export const getSymbolList = async () => {
 	}
 };
 
-export const getCompletePairList = async () => {
+export const getCompletePairList = async (priceReq: boolean = true) => {
 	const symbolList: {
 		pair: string;
 		minQuantityUSD: number;
@@ -63,13 +63,16 @@ export const getCompletePairList = async () => {
 			filters.find((f: any) => f.filterType === "MIN_NOTIONAL").notional
 		);
 
-		const candlestick = await getCandlestick({
-			pair,
-			lookBackLength: Context.lookBackLength,
-			interval: Context.interval,
-		});
+		const candlestick = priceReq
+			? await getCandlestick({
+					pair,
+					lookBackLength: Context.lookBackLength,
+					interval: Context.interval,
+			  })
+			: [];
 
-		const currentPrice = Number(candlestick[candlestick.length - 1].close) || 0;
+		const currentPrice =
+			Number(candlestick[candlestick.length - 1]?.close) || 0;
 		const minQuantityUSD = minQty * currentPrice;
 
 		if (

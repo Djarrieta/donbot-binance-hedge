@@ -1,3 +1,4 @@
+import { Context } from "../models/Context";
 import { StrategyResponse } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
 import { chosenStrategies } from "../strategies";
@@ -29,7 +30,9 @@ export const checkForTrades = async ({
 		"Strategies: " + chosenStrategies.map((s) => s.stgName).join(", ")
 	);
 
-	for (const strategy of chosenStrategies) {
+	for (const strategy of chosenStrategies.filter(
+		(s) => s.interval === Context.interval
+	)) {
 		for (const symbol of readySymbols) {
 			const stgResponse = strategy.validate({
 				candlestick: symbol.candlestick,
