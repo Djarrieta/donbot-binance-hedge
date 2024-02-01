@@ -1,6 +1,5 @@
 import { Candle } from "../models/Candle";
 import { PositionSide } from "../models/Position";
-import { chosenQuitStrategy } from "../quitCriteria";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 
@@ -9,7 +8,7 @@ interface GetProfitStickAnalysisProps {
 	shouldTrade: PositionSide;
 	profitStick: Candle[];
 	sl: number;
-	tp?: number;
+	tp: number;
 	fee: number;
 	stgName: string;
 }
@@ -74,7 +73,7 @@ export const getProfitStickAnalysis = ({
 			(shouldTrade === "SHORT" &&
 				(candle.low <= takeProfit || candle.close <= takeProfit))
 		) {
-			pnl = -fee; //WIP dynamic
+			pnl = tp - fee;
 
 			break;
 		}

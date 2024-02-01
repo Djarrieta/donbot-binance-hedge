@@ -18,7 +18,7 @@ const stg: Strategy = {
 
 		if (candlestick.length < Context.lookBackLength) return response;
 
-		const MIN_VOL = 10 / 100;
+		const MIN_VOL = 5 / 100;
 		const MIN_RSI = 30;
 
 		const volatility = getVolatility({ candlestick });
@@ -29,14 +29,14 @@ const stg: Strategy = {
 
 		if (
 			volatility >= MIN_VOL &&
-			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
 			ema100Array[ema100Array.length - 1] > currentPrice
 		) {
 			response.shouldTrade = "LONG";
 		}
 		if (
 			volatility >= MIN_VOL &&
-			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
+			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
 			ema100Array[ema100Array.length - 1] < currentPrice
 		) {
 			response.shouldTrade = "SHORT";
