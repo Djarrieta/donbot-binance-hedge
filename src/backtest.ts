@@ -20,8 +20,6 @@ export const backtest = async ({
 	const startTime =
 		getDate({}).dateMs - Context.lookBackLengthBacktest * strategy.interval;
 
-	console.log("Back testing with " + strategy);
-
 	const { sl, tp } = strategy.validate({
 		candlestick: [
 			{ open: 0, close: 0, high: 0, low: 0, openTime: new Date(), volume: 0 },
@@ -30,6 +28,7 @@ export const backtest = async ({
 
 	log &&
 		console.table({
+			stgName: strategy.stgName,
 			sl: formatPercent(sl),
 			tp: formatPercent(Number(tp)),
 			lookBack: Context.lookBackLengthBacktest,
@@ -99,6 +98,7 @@ export const backtest = async ({
 		stats.reduce((acc, a) => acc + a.tradeLength, 0) / tradesQty || 0;
 
 	const result = {
+		stgName: strategy.stgName,
 		sl: formatPercent(sl),
 		tp: formatPercent(Number(tp)),
 		lookBack: Context.lookBackLengthBacktest,
