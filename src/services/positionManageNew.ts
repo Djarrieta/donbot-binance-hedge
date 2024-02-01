@@ -43,6 +43,7 @@ export const positionManageNew = async ({
 		);
 
 		if (
+			!user.isAddingPosition &&
 			symbol.pair === pair &&
 			openPosPairLong.length === 1 &&
 			openPosPairShort.length === 1 &&
