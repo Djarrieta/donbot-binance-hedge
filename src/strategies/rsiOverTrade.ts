@@ -24,22 +24,20 @@ const stg: Strategy = {
 		const volatility = getVolatility({ candlestick });
 		const closePrices = candlestick.map((candle) => candle.close);
 		const rsiArray = rsi({ period: 14, values: closePrices });
-		const emaArray = EMA.calculate({ period: 100, values: closePrices });
+		const emaArray = EMA.calculate({ period: 200, values: closePrices });
 		const currentPrice = candlestick[candlestick.length - 1].close;
 
 		if (
 			volatility >= MIN_VOL &&
 			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 2] < 100 - MIN_RSI &&
-			currentPrice > emaArray[emaArray.length - 1]
+			rsiArray[rsiArray.length - 2] < 100 - MIN_RSI
 		) {
 			response.shouldTrade = "LONG";
 		}
 		if (
 			volatility >= MIN_VOL &&
 			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
-			rsiArray[rsiArray.length - 2] >= MIN_RSI &&
-			currentPrice < emaArray[emaArray.length - 1]
+			rsiArray[rsiArray.length - 2] >= MIN_RSI
 		) {
 			response.shouldTrade = "SHORT";
 		}
@@ -57,13 +55,13 @@ export default stg;
 // │             sl │ 0.50%               │
 // │             tp │ 0.50%               │
 // │       lookBack │ 1440                │
-// │      startTime │ 2024 01 31 16:56:36 │
+// │      startTime │ 2024 01 31 17:11:15 │
 // │       interval │ 1m                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 55.56%              │
-// │          avPnl │ 0.01%               │
-// │       totalPnl │ 1.25%               │
-// │      tradesQty │ 225                 │
-// │  avTradeLength │ 9                   │
+// │      avWinRate │ 53.53%              │
+// │          avPnl │ -0.01%              │
+// │       totalPnl │ -17.35%             │
+// │      tradesQty │ 1203                │
+// │  avTradeLength │ 7                   │
 // └────────────────┴─────────────────────┘
