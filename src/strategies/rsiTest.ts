@@ -31,12 +31,12 @@ const stg: Strategy = {
 		) {
 			response.shouldTrade = "LONG";
 		}
-		if (
-			volatility >= MIN_VOL
-			//&& rsiArray[rsiArray.length - 1] <= MIN_RSI
-		) {
+		if (volatility >= MIN_VOL && rsiArray[rsiArray.length - 1] <= MIN_RSI) {
 			response.shouldTrade = "SHORT";
 		}
+		// if (pair === "AGLDUSDT") {
+		// 	response.shouldTrade = "LONG";
+		// }
 
 		return response;
 	},

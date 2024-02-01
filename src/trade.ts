@@ -12,6 +12,15 @@ import { openPosition } from "./services/openPosition";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
+import { CronInterval } from "./models/Interval";
+import { positionClean } from "./services/positionClean";
+
+import Binance from "binance-api-node";
+import { positionProtect } from "./services/positionProtect";
+import { positionOpen } from "./services/positionOpen";
+import { subscribeToUserUpdates } from "./services/subscribeToUserUpdates";
+import { positionManageNew } from "./services/positionManageNew";
+import { positionKeep } from "./services/positionKeep";
 
 export const trade = async () => {
 	console.log(
@@ -32,11 +41,51 @@ export const trade = async () => {
 		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 	);
 
+	///test start
+	const symbol = context.symbolList.find((s) => s.pair === "AGLDUSDT");
+	if (!symbol) return;
+
+	const authExchange = Binance({
+		apiKey: context.userList[0].key,
+		apiSecret: context.userList[0].secret || "",
+	});
+
+	await positionKeep({
+		authExchange,
+		symbol: symbol,
+		tp: Context.defaultTP,
+		sl: Context.defaultSL,
+		shouldTrade: "LONG",
+		quantity: "5",
+		price: symbol.currentPrice,
+	});
+
+	// await positionOpen({
+	// 	authExchange,
+	// 	symbol: symbol,
+	// 	tp: Context.defaultTP,
+	// 	sl: Context.defaultSL,
+	// 	shouldTrade: "LONG",
+	// 	quantity: "5",
+	// 	price: symbol.currentPrice,
+	// });
+
+	// await positionProtect({
+	// 	authExchange,
+	// 	symbol: symbol,
+	// 	tp: Context.defaultTP,
+	// 	sl: Context.defaultSL,
+	// 	shouldTrade: "SHORT",
+	// 	quantity: "10",
+	// 	price: symbol.currentPrice,
+	// });
+	//positionClean({ authExchange, symbol: symbol[0] });
+	return;
 	for (const user of context.userList) {
 		manageAccounts({ user });
 	}
 
-	cron.schedule("*/1 * * * *", async () => {
+	cron.schedule(CronInterval["1m"], async () => {
 		await delay(1000);
 		console.log("");
 		console.log(getDate({}).dateString, "Checking for trades!");
@@ -46,7 +95,6 @@ export const trade = async () => {
 
 		await markUnreadySymbols();
 		await getSymbolListVolatility();
-		context.symbolList.length + " symbols.";
 
 		const readySymbols = [...context.symbolList]
 			.filter((s) => s.isReady && !s.isLoading)
@@ -62,7 +110,7 @@ export const trade = async () => {
 			for (const user of context.userList) {
 				for (const trade of tradeArray) {
 					trade.stgResponse.shouldTrade &&
-						openPosition({
+						positionManageNew({
 							user,
 							symbol: trade.symbol,
 							shouldTrade: trade.stgResponse.shouldTrade,

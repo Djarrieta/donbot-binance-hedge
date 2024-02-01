@@ -25,6 +25,9 @@ export const checkForTrades = async ({
 		: console.log(
 				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
 		  );
+	console.log(
+		"Strategies: " + chosenStrategies.map((s) => s.stgName).join(", ")
+	);
 
 	for (const strategy of chosenStrategies) {
 		for (const symbol of readySymbols) {

@@ -8,6 +8,7 @@ import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { getXataClient } from "../xata";
 import { getHistoricalPnl } from "./getHistoricalPnl";
+import { subscribeToUserUpdates } from "./subscribeToUserUpdates";
 
 export const getUserList = async () => {
 	const xata = getXataClient();
@@ -151,6 +152,7 @@ export const getUserList = async () => {
 			isAddingPosition: false,
 			text,
 		};
+		subscribeToUserUpdates({ user });
 	}
 
 	return userList;

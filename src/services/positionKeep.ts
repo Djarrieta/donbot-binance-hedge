@@ -1,0 +1,73 @@
+import { PlacePosition, PosType } from "../models/Position";
+import { fixPrecision } from "../utils/fixPrecision";
+
+export const positionKeep = async ({
+	symbol,
+	shouldTrade,
+	authExchange,
+	quantity,
+	price,
+	sl,
+	tp,
+}: PlacePosition) => {
+	try {
+		await authExchange.futuresCancelAllOpenOrders({
+			symbol: symbol.pair,
+		});
+		await authExchange.futuresOrder({
+			type: "MARKET",
+			side: shouldTrade === "LONG" ? "BUY" : "SELL",
+			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
+			symbol: symbol.pair,
+			quantity,
+			recvWindow: 59999,
+			newClientOrderId: PosType["KP"] + symbol.currentPrice,
+		});
+
+		const HEPriceNumber =
+			shouldTrade === "LONG" ? price * (1 - sl) : price * (1 + sl);
+
+		const HEPrice = fixPrecision({
+			value: HEPriceNumber,
+			precision: symbol.pricePrecision,
+		});
+
+		await authExchange.futuresOrder({
+			type: "STOP_MARKET",
+			side: shouldTrade === "LONG" ? "SELL" : "BUY",
+			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
+			symbol: symbol.pair,
+			quantity,
+			stopPrice: HEPrice,
+			recvWindow: 59999,
+			newClientOrderId: PosType.HE + "__" + HEPrice,
+			timeInForce: "GTC",
+		});
+
+		if (tp) {
+			const TPPriceNumber =
+				shouldTrade === "LONG" ? price * (1 + tp) : price * (1 - tp);
+
+			const TPPrice = fixPrecision({
+				value: TPPriceNumber,
+				precision: symbol.pricePrecision,
+			});
+
+			await authExchange.futuresOrder({
+				type: "TAKE_PROFIT_MARKET",
+				side: shouldTrade === "LONG" ? "SELL" : "BUY",
+				positionSide: shouldTrade,
+				symbol: symbol.pair,
+				quantity,
+				stopPrice: TPPrice,
+				recvWindow: 59999,
+				newClientOrderId: PosType.TP + "__" + TPPrice,
+			});
+		}
+	} catch (e) {
+		console.log(
+			"Problem keeping " + shouldTrade + " position for " + symbol.pair
+		);
+		console.log(e);
+	}
+};
