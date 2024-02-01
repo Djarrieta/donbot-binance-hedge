@@ -68,7 +68,8 @@ export const positionManageNew = async ({
 	if (
 		user.isAddingPosition ||
 		openPosUniquePairs.length >= Context.maxOpenPos ||
-		openPosUniquePairs.includes(symbol.pair)
+		openPosUniquePairs.includes(symbol.pair) ||
+		Context.shouldStop
 	) {
 		return;
 	}

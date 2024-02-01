@@ -30,4 +30,5 @@ export class Context {
 	public static fee = 0.0005;
 	public static defaultSL = 0.5 / 100;
 	public static defaultTP = 0.5 / 100;
+	public static shouldStop = true;
 }
