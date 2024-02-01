@@ -23,15 +23,11 @@ export const backtest = async ({
 
 	console.log("Back testing with " + strategy);
 
-	const { sl, tp, tr } = strategy.validate({
+	const { sl, tp } = strategy.validate({
 		candlestick: [
 			{ open: 0, close: 0, high: 0, low: 0, openTime: new Date(), volume: 0 },
 		],
 	});
-
-	log &&
-		tr &&
-		console.log("**Trailing value are not taken into account in the analysis.");
 
 	log &&
 		console.table({

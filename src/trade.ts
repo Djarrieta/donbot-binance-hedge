@@ -12,7 +12,7 @@ import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
 import { positionManageNew } from "./services/positionManageNew";
-import { positionManage } from "./services/positionManage";
+import { positionManageExisting } from "./services/positionManageExisting";
 
 export const trade = async () => {
 	console.log(
@@ -34,7 +34,7 @@ export const trade = async () => {
 	);
 
 	for (const user of context.userList) {
-		await positionManage({ user });
+		await positionManageExisting({ user });
 	}
 
 	cron.schedule(CronInterval["1m"], async () => {
@@ -68,7 +68,6 @@ export const trade = async () => {
 							shouldTrade: trade.stgResponse.shouldTrade,
 							sl: trade.stgResponse.sl,
 							tp: Number(trade.stgResponse.tp),
-							tr: Number(trade.stgResponse.tr),
 							callback: Number(trade.stgResponse.sl),
 						});
 				}
@@ -80,7 +79,7 @@ export const trade = async () => {
 		await delay(5000);
 		context.userList = await getUserList();
 		for (const user of context.userList) {
-			positionManage({ user });
+			positionManageExisting({ user });
 		}
 		context.userList = await getUserList();
 	});

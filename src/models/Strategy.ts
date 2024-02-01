@@ -6,11 +6,7 @@ export interface StrategyResponse {
 	stgName: string;
 	shouldTrade: PositionSide | null;
 	sl: number;
-	tp?: number;
-	tr?: {
-		tr: number;
-		callback: number;
-	};
+	tp: number;
 }
 
 export interface Strategy {

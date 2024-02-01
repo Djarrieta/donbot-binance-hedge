@@ -1,10 +1,9 @@
 import Binance from "binance-api-node";
 import { Context } from "../models/Context";
 import { User } from "../models/User";
-import { fixPrecision } from "../utils/fixPrecision";
 import { positionProtect } from "./positionProtect";
 
-export const positionManage = async ({ user }: { user: User }) => {
+export const positionManageExisting = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
 		apiKey: user.key,
 		apiSecret: user.secret || "",

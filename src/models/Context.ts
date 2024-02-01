@@ -19,11 +19,11 @@ export class Context {
 
 	public static branch: "main" | "test" | "risk" = "test";
 	public static interval = Interval["1m"];
-	public static leverage = 10;
-	public static lookBackLength = Interval["1d"] / Interval["5m"];
+	public static leverage = 10; //WIP: Implement
+	public static lookBackLength = 200;
 	public static maxOpenPos = 1;
 	public static amountToTradePt = 0.25;
-	public static maxTradeLength = 1000;
+	public static maxTradeLength = 1000; // Implement in trade
 	public static minVolatility = 10 / 100;
 	public static backTestLookBackDays = 2;
 	public static minAmountToTrade = 5;

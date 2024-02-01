@@ -1,4 +1,4 @@
-import { rsi } from "technicalindicators";
+import { rsi, EMA } from "technicalindicators";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
@@ -24,19 +24,23 @@ const stg: Strategy = {
 		const volatility = getVolatility({ candlestick });
 		const closePrices = candlestick.map((candle) => candle.close);
 		const rsiArray = rsi({ period: 14, values: closePrices });
+		const ema100Array = EMA.calculate({ period: 100, values: closePrices });
+		const currentPrice = candlestick[candlestick.length - 1].close;
 
 		if (
 			volatility >= MIN_VOL &&
-			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI
+			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
+			ema100Array[ema100Array.length - 1] > currentPrice
 		) {
 			response.shouldTrade = "LONG";
 		}
-		if (volatility >= MIN_VOL && rsiArray[rsiArray.length - 1] <= MIN_RSI) {
+		if (
+			volatility >= MIN_VOL &&
+			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
+			ema100Array[ema100Array.length - 1] < currentPrice
+		) {
 			response.shouldTrade = "SHORT";
 		}
-		// if (pair === "AGLDUSDT") {
-		// 	response.shouldTrade = "LONG";
-		// }
 
 		return response;
 	},

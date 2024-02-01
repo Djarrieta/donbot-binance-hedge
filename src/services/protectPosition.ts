@@ -82,31 +82,4 @@ export const protectPosition = async ({
 			newClientOrderId: "DonBotTP-" + pair + "-" + TPPrice,
 		});
 	}
-
-	if (tr && callback) {
-		const TRPriceNumber =
-			shouldTrade === "LONG"
-				? Number(entryPrice) * (1 + tr)
-				: Number(entryPrice) * (1 - tr);
-		const TRPrice = fixPrecision({
-			value: TRPriceNumber,
-			precision: Number(pricePrecision),
-		});
-
-		const callbackRate = fixPrecision({
-			value: Number(callback) * 100,
-			precision: 1,
-		});
-		await authExchange.futuresOrder({
-			type: "TRAILING_STOP_MARKET",
-			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			symbol: pair,
-			quantity,
-			callbackRate,
-			activationPrice: TRPrice,
-			recvWindow: 59999,
-			reduceOnly: "true",
-			newClientOrderId: "DonBotTR-" + pair + "-" + TRPrice,
-		});
-	}
 };
