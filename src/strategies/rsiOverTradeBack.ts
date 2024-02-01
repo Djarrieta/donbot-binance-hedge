@@ -27,19 +27,20 @@ const stg: Strategy = {
 
 		if (
 			volatility >= MIN_VOL &&
-			rsiArray[rsiArray.length - 1] < 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 2] > 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 3] > MIN_RSI
-		) {
-			response.shouldTrade = "SHORT";
-		}
-		if (
-			volatility >= MIN_VOL &&
 			rsiArray[rsiArray.length - 1] > MIN_RSI &&
 			rsiArray[rsiArray.length - 2] < MIN_RSI &&
 			rsiArray[rsiArray.length - 3] < MIN_RSI
 		) {
 			response.shouldTrade = "LONG";
+		}
+
+		if (
+			volatility >= MIN_VOL &&
+			rsiArray[rsiArray.length - 1] < 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 2] > 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 3] > MIN_RSI
+		) {
+			response.shouldTrade = "SHORT";
 		}
 
 		return response;
