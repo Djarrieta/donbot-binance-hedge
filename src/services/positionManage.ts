@@ -2,8 +2,9 @@ import Binance from "binance-api-node";
 import { Context } from "../models/Context";
 import { User } from "../models/User";
 import { fixPrecision } from "../utils/fixPrecision";
+import { positionProtect } from "./positionProtect";
 
-export const manageAccounts = async ({ user }: { user: User }) => {
+export const positionManage = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
 		apiKey: user.key,
 		apiSecret: user.secret || "",
@@ -18,7 +19,6 @@ export const manageAccounts = async ({ user }: { user: User }) => {
 		new Set(user.openOrders.map((x) => x.pair))
 	);
 
-	// Cancel orders if no open positions
 	if (openOrdersUniquePairs.length && !openPosUniquePairs.length) {
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
@@ -70,51 +70,14 @@ export const manageAccounts = async ({ user }: { user: User }) => {
 			const symbol = context.symbolList.find((s) => s.pair === openPos[0].pair);
 			if (!symbol) return;
 
-			console.log("Non-protected position for " + user.name + " in " + pair);
-
-			const SLPriceNumber =
-				openPos[0].positionSide === "LONG"
-					? symbol.currentPrice * (1 - Context.defaultSL)
-					: symbol.currentPrice * (1 + Context.defaultSL);
-
-			const SLPrice = fixPrecision({
-				value: SLPriceNumber,
-				precision: symbol.pricePrecision,
-			});
-
-			await authExchange.futuresOrder({
-				type: "STOP_MARKET",
-				side: openPos[0].positionSide === "LONG" ? "SELL" : "BUY",
-				positionSide: openPos[0].positionSide,
-				symbol: symbol.pair,
+			await positionProtect({
+				symbol,
+				shouldTrade: openPos[0].positionSide,
+				authExchange,
 				quantity: openPos[0].coinQuantity,
-				stopPrice: SLPrice,
-				recvWindow: 59999,
-				newClientOrderId: "SL-" + symbol.pair + "-" + SLPrice,
-				timeInForce: "GTC",
-				newOrderRespType: "FULL",
-			});
-			const TPPriceNumber =
-				openPos[0].positionSide === "LONG"
-					? symbol.currentPrice * (1 + Context.defaultSL)
-					: symbol.currentPrice * (1 - Context.defaultSL);
-
-			const TPPrice = fixPrecision({
-				value: TPPriceNumber,
-				precision: symbol.pricePrecision,
-			});
-
-			await authExchange.futuresOrder({
-				type: "TAKE_PROFIT_MARKET",
-				side: openPos[0].positionSide === "LONG" ? "SELL" : "BUY",
-				positionSide: openPos[0].positionSide,
-				symbol: symbol.pair,
-				quantity: openPos[0].coinQuantity,
-				stopPrice: TPPrice,
-				recvWindow: 59999,
-				newClientOrderId: "SL-" + symbol.pair + "-" + SLPrice,
-				timeInForce: "GTC",
-				newOrderRespType: "FULL",
+				price: symbol.currentPrice,
+				sl: Context.defaultSL,
+				tp: Context.defaultTP,
 			});
 		}
 	}

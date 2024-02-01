@@ -1,8 +1,7 @@
-import OldBinance from "node-binance-api";
 import Binance, { Binance as IBinance } from "binance-api-node";
+import OldBinance from "node-binance-api";
 import { PosType } from "../models/Position";
 import { User } from "../models/User";
-import { positionClean } from "./positionClean";
 
 export const subscribeToUserUpdates = async ({ user }: { user: User }) => {
 	const oldExchange = new OldBinance().options({
