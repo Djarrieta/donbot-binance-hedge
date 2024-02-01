@@ -1,6 +1,6 @@
-import { rsi } from "technicalindicators";
-import { Context } from "../models/Context";
+import { rsi, EMA } from "technicalindicators";
 import { Strategy, StrategyResponse } from "../models/Strategy";
+import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
 
 const STG_NAME = "rsiOverTrade";
@@ -11,34 +11,35 @@ const stg: Strategy = {
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: Context.defaultTP,
+			sl: Context.defaultSL,
 			tp: Context.defaultTP,
 			stgName: STG_NAME,
 		};
 
-		if (candlestick.length < Context.interval) return response;
-		const MIN_VOL = 10 / 100;
-		const MIN_RSI = 30;
+		if (candlestick.length < Context.lookBackLength) return response;
+
+		const MIN_VOL = 5 / 100;
+		const MIN_RSI = 60;
 
 		const volatility = getVolatility({ candlestick });
-		const prices = candlestick.map((candle) => candle.close);
-		const rsi8 = rsi({ period: 8, values: prices });
-		const rsi200 = rsi({ period: 200, values: prices });
+		const closePrices = candlestick.map((candle) => candle.close);
+		const rsiArray = rsi({ period: 14, values: closePrices });
+		const emaArray = EMA.calculate({ period: 100, values: closePrices });
+		const currentPrice = candlestick[candlestick.length - 1].close;
 
 		if (
-			volatility > MIN_VOL &&
-			rsi8[rsi8.length - 2] <= 100 - MIN_RSI &&
-			rsi8[rsi8.length - 1] > 100 - MIN_RSI &&
-			rsi200[rsi200.length - 1] < 50
+			volatility >= MIN_VOL &&
+			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 2] < 100 - MIN_RSI &&
+			currentPrice > emaArray[emaArray.length - 1]
 		) {
 			response.shouldTrade = "LONG";
 		}
-
 		if (
-			volatility > MIN_VOL &&
-			rsi8[rsi8.length - 2] >= MIN_RSI &&
-			rsi8[rsi8.length - 1] < MIN_RSI &&
-			rsi200[rsi200.length - 1] < 50
+			volatility >= MIN_VOL &&
+			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
+			rsiArray[rsiArray.length - 2] >= MIN_RSI &&
+			currentPrice < emaArray[emaArray.length - 1]
 		) {
 			response.shouldTrade = "SHORT";
 		}
@@ -48,3 +49,21 @@ const stg: Strategy = {
 };
 
 export default stg;
+
+// ┌────────────────┬─────────────────────┐
+// │                │ Values              │
+// ├────────────────┼─────────────────────┤
+// │        stgName │ rsiOverTrade        │
+// │             sl │ 0.50%               │
+// │             tp │ 0.50%               │
+// │       lookBack │ 1440                │
+// │      startTime │ 2024 01 31 16:56:36 │
+// │       interval │ 1m                  │
+// │ maxTradeLength │ 1000                │
+// │            fee │ 0.05%               │
+// │      avWinRate │ 55.56%              │
+// │          avPnl │ 0.01%               │
+// │       totalPnl │ 1.25%               │
+// │      tradesQty │ 225                 │
+// │  avTradeLength │ 9                   │
+// └────────────────┴─────────────────────┘
