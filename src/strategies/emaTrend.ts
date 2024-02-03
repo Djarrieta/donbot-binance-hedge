@@ -20,6 +20,7 @@ const stg: Strategy = {
 
 		const MIN_RSI = 30;
 		const MIN_VOL = 2 / 100;
+		const MAX_VOL = 5 / 100;
 
 		const closePrices = candlestick.map((candle) => candle.close);
 		const ema20Array = EMA.calculate({ period: 20, values: closePrices });
@@ -34,23 +35,18 @@ const stg: Strategy = {
 
 		if (
 			volatility > MIN_VOL &&
-			ema200DiffPt < 0.2 / 100 &&
-			ema200DiffPt > 0 &&
-			currentPrice < ema20Array[ema20Array.length - 1] &&
-			rsiArray[rsiArray.length - 1] < MIN_RSI &&
-			rsiArray[rsiArray.length - 2] < rsiArray[rsiArray.length - 1]
+			volatility < MAX_VOL &&
+			currentPrice > ema200Array[ema200Array.length - 1] &&
+			currentPrice < ema20Array[ema20Array.length - 1]
 		) {
 			response.shouldTrade = "LONG";
 		}
 
 		if (
 			volatility > MIN_VOL &&
-			ema200DiffPt > -0.2 / 100 &&
-			ema200DiffPt < 0 &&
+			volatility < MAX_VOL &&
 			currentPrice < ema200Array[ema200Array.length - 1] &&
-			currentPrice > ema20Array[ema20Array.length - 1] &&
-			rsiArray[rsiArray.length - 1] > 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 2] > rsiArray[rsiArray.length - 1]
+			currentPrice > ema20Array[ema20Array.length - 1]
 		) {
 			response.shouldTrade = "SHORT";
 		}
@@ -68,13 +64,13 @@ export default stg;
 // │             sl │ 0.50%               │
 // │             tp │ 0.50%               │
 // │       lookBack │ 1440                │
-// │      startTime │ 2024 01 31 18:13:01 │
+// │      startTime │ 2024 02 02 11:50:39 │
 // │       interval │ 1m                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 59.09%              │
-// │          avPnl │ 0.04%               │
-// │       totalPnl │ 0.90%               │
-// │      tradesQty │ 22                  │
-// │  avTradeLength │ 15                  │
+// │      avWinRate │ 50.40%              │
+// │          avPnl │ -0.04%              │
+// │       totalPnl │ -861.22%            │
+// │      tradesQty │ 19319               │
+// │  avTradeLength │ 35                  │
 // └────────────────┴─────────────────────┘
