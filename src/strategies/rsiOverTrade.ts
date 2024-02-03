@@ -18,7 +18,9 @@ const stg: Strategy = {
 
 		if (candlestick.length < Context.lookBackLength) return response;
 
-		const MIN_VOL = 5 / 100;
+		const MIN_VOL = 3 / 100;
+		const MAX_VOL = 10 / 100;
+
 		const MIN_RSI = 40;
 
 		const volatility = getVolatility({ candlestick });
@@ -27,8 +29,18 @@ const stg: Strategy = {
 		const emaArray = EMA.calculate({ period: 200, values: closePrices });
 		const currentPrice = candlestick[candlestick.length - 1].close;
 
+		const average =
+			candlestick
+				.map((c) => c.close + c.high + c.low + c.open)
+				.reduce((acc, val) => acc + val, 0) /
+			candlestick.length /
+			4;
+
+		const avDiff = (currentPrice - average) / currentPrice;
+
 		if (
 			volatility >= MIN_VOL &&
+			volatility <= MAX_VOL &&
 			rsiArray[rsiArray.length - 1] >= MIN_RSI &&
 			rsiArray[rsiArray.length - 2] < MIN_RSI
 		) {
@@ -36,6 +48,7 @@ const stg: Strategy = {
 		}
 		if (
 			volatility >= MIN_VOL &&
+			volatility <= MAX_VOL &&
 			rsiArray[rsiArray.length - 1] <= 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 2] > 100 - MIN_RSI
 		) {
