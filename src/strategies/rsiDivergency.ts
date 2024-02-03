@@ -8,7 +8,7 @@ const STG_NAME = "rsiDivergency";
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
-	interval: Interval["5m"],
+	interval: Interval["1m"],
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
@@ -21,8 +21,8 @@ const stg: Strategy = {
 
 		const MIN_RSI = 30;
 		const CANDLESTICK_SIZE = 50;
-		const MIN_VOL = 10 / 100;
-		const MAX_VOL = 25 / 100;
+		const MIN_VOL = 3 / 100;
+		const MAX_VOL = 10 / 100;
 
 		const volatility = getVolatility({ candlestick });
 		const closePrices = candlestick.map((candle) => candle.close);
@@ -103,16 +103,16 @@ export default stg;
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ rsiDivergency       │
-// │             sl │ 1.00%               │
-// │             tp │ 1.00%               │
-// │       lookBack │ 576                 │
-// │      startTime │ 2024 02 01 17:42:35 │
-// │       interval │ 5m                  │
+// │             sl │ 0.50%               │
+// │             tp │ 0.50%               │
+// │       lookBack │ 1440                │
+// │      startTime │ 2024 02 02 18:06:52 │
+// │       interval │ 1m                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 62.50%              │
-// │          avPnl │ 0.20%               │
-// │       totalPnl │ 4.80%               │
-// │      tradesQty │ 24                  │
-// │  avTradeLength │ 4                   │
+// │      avWinRate │ 43.33%              │
+// │          avPnl │ -0.11%              │
+// │       totalPnl │ -10.02%             │
+// │      tradesQty │ 90                  │
+// │  avTradeLength │ 13                  │
 // └────────────────┴─────────────────────┘
