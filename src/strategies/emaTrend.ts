@@ -9,6 +9,7 @@ const stg: Strategy = {
 	lookBackLength: Context.lookBackLength,
 	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
+		const lastOpen = candlestick[candlestick.length - 1].openTime;
 		const response: StrategyResponse = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
@@ -18,9 +19,9 @@ const stg: Strategy = {
 
 		if (candlestick.length < Context.lookBackLength) return response;
 
-		const MIN_RSI = 30;
 		const MIN_VOL = 2 / 100;
-		const MAX_VOL = 5 / 100;
+		const MAX_VOL = 10 / 100;
+		const MIN_AV_DIFF = 0.5 / 100;
 
 		const closePrices = candlestick.map((candle) => candle.close);
 		const ema20Array = EMA.calculate({ period: 20, values: closePrices });
@@ -32,12 +33,22 @@ const stg: Strategy = {
 
 		const ema200DiffPt =
 			(currentPrice - ema200Array[ema200Array.length - 1]) / currentPrice;
+		const average =
+			candlestick
+				.map((c) => c.close + c.high + c.low + c.open)
+				.reduce((acc, val) => acc + val, 0) /
+			candlestick.length /
+			4;
+
+		const avDiff = (currentPrice - average) / currentPrice;
 
 		if (
 			volatility > MIN_VOL &&
 			volatility < MAX_VOL &&
-			currentPrice > ema200Array[ema200Array.length - 1] &&
-			currentPrice < ema20Array[ema20Array.length - 1]
+			currentPrice < ema20Array[ema20Array.length - 1] &&
+			rsiArray[rsiArray.length - 1] > rsiArray[rsiArray.length - 2] &&
+			avDiff > MIN_AV_DIFF / 100 &&
+			currentPrice > average
 		) {
 			response.shouldTrade = "LONG";
 		}
@@ -45,8 +56,10 @@ const stg: Strategy = {
 		if (
 			volatility > MIN_VOL &&
 			volatility < MAX_VOL &&
-			currentPrice < ema200Array[ema200Array.length - 1] &&
-			currentPrice > ema20Array[ema20Array.length - 1]
+			currentPrice > ema20Array[ema20Array.length - 1] &&
+			rsiArray[rsiArray.length - 1] < rsiArray[rsiArray.length - 2] &&
+			avDiff < -MIN_AV_DIFF / 100 &&
+			currentPrice < average
 		) {
 			response.shouldTrade = "SHORT";
 		}
@@ -56,21 +69,20 @@ const stg: Strategy = {
 };
 
 export default stg;
-
 // ┌────────────────┬─────────────────────┐
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ emaTrend            │
-// │             sl │ 0.50%               │
-// │             tp │ 0.50%               │
-// │       lookBack │ 1440                │
-// │      startTime │ 2024 02 02 11:50:39 │
-// │       interval │ 1m                  │
+// │             sl │ 1.00%               │
+// │             tp │ 1.00%               │
+// │       lookBack │ 576                 │
+// │      startTime │ 2024 02 01 13:02:42 │
+// │       interval │ 5m                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 50.40%              │
-// │          avPnl │ -0.04%              │
-// │       totalPnl │ -861.22%            │
-// │      tradesQty │ 19319               │
-// │  avTradeLength │ 35                  │
+// │      avWinRate │ 43.99%              │
+// │          avPnl │ -0.12%              │
+// │       totalPnl │ -971.40%            │
+// │      tradesQty │ 7948                │
+// │  avTradeLength │ 46                  │
 // └────────────────┴─────────────────────┘
