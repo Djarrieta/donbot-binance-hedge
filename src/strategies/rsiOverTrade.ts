@@ -68,13 +68,13 @@ export default stg;
 // │             sl │ 0.50%               │
 // │             tp │ 0.50%               │
 // │       lookBack │ 1440                │
-// │      startTime │ 2024 02 02 18:11:05 │
+// │      startTime │ 2024 02 02 18:22:06 │
 // │       interval │ 1m                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 47.13%              │
-// │          avPnl │ -0.08%              │
-// │       totalPnl │ -48.79%             │
-// │      tradesQty │ 628                 │
-// │  avTradeLength │ 10                  │
+// │      avWinRate │ 48.29%              │
+// │          avPnl │ -0.07%              │
+// │       totalPnl │ -132.08%            │
+// │      tradesQty │ 2013                │
+// │  avTradeLength │ 19                  │
 // └────────────────┴─────────────────────┘

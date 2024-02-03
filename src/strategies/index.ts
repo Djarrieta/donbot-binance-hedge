@@ -3,4 +3,4 @@ import rsiOverTradeBack from "./rsiOverTradeBack";
 import emaTrend from "./emaTrend";
 import rsiDivergency from "./rsiDivergency";
 
-export const chosenStrategies = [rsiOverTrade];
+export const chosenStrategies = [rsiOverTradeBack];
