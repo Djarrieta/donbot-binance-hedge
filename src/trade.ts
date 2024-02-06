@@ -41,9 +41,6 @@ export const trade = async () => {
 		await delay(1000);
 		console.log("");
 		console.log(getDate({}).dateString, "Checking for trades!");
-		console.log(
-			"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
-		);
 
 		await markUnreadySymbols();
 		await getSymbolListVolatility();

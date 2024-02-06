@@ -2,12 +2,14 @@ import { Context } from "../models/Context";
 import { StrategyResponse } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
 import { chosenStrategies } from "../strategies";
+import { formatPercent } from "../utils/formatPercent";
 
 export const checkForTrades = async ({
 	readySymbols,
 }: {
 	readySymbols: Symbol[];
 }) => {
+	const context = await Context.getInstance();
 	const response: {
 		text: string;
 		tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
@@ -29,6 +31,21 @@ export const checkForTrades = async ({
 	console.log(
 		"Strategies: " + chosenStrategies.map((s) => s.stgName).join(", ")
 	);
+
+	let usersLogs = "Users: ";
+
+	context.userList.forEach((u) => {
+		const openPosUniquePairs = Array.from(
+			new Set(u.openPositions.map((x) => x.pair))
+		);
+		usersLogs += ` ${u.name}\n`;
+		usersLogs += ` Today: ${formatPercent(u.todayPnlPt)}  Open: ${formatPercent(
+			u.openPosPnlPt
+		)}  Total: ${formatPercent(u.totalPnlPt)}\n`;
+
+		usersLogs += " " + openPosUniquePairs.join(", ");
+	});
+	console.log(usersLogs);
 
 	for (const strategy of chosenStrategies.filter(
 		(s) => s.interval === Context.interval
@@ -63,8 +80,7 @@ export const checkForTrades = async ({
 					" in " +
 					t.symbol.pair +
 					" with " +
-					t.stgResponse.stgName +
-					"; "
+					t.stgResponse.stgName
 			);
 	}
 

@@ -18,7 +18,8 @@ const stg: Strategy = {
 
 		if (candlestick.length < Context.lookBackLength) return response;
 
-		const MIN_VOL = 5 / 100;
+		const MIN_VOL = 3 / 100;
+		const MAX_VOL = 10 / 100;
 		const MIN_RSI = 30;
 
 		const volatility = getVolatility({ candlestick });
@@ -27,6 +28,7 @@ const stg: Strategy = {
 
 		if (
 			volatility >= MIN_VOL &&
+			volatility <= MAX_VOL &&
 			rsiArray[rsiArray.length - 1] > MIN_RSI &&
 			rsiArray[rsiArray.length - 2] < MIN_RSI &&
 			rsiArray[rsiArray.length - 3] < MIN_RSI
@@ -36,6 +38,7 @@ const stg: Strategy = {
 
 		if (
 			volatility >= MIN_VOL &&
+			volatility <= MAX_VOL &&
 			rsiArray[rsiArray.length - 1] < 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 2] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 3] > MIN_RSI
@@ -56,13 +59,13 @@ export default stg;
 // │             sl │ 0.50%               │
 // │             tp │ 0.50%               │
 // │       lookBack │ 1440                │
-// │      startTime │ 2024 01 31 17:29:39 │
+// │      startTime │ 2024 02 02 18:45:47 │
 // │       interval │ 1m                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 57.99%              │
-// │          avPnl │ 0.03%               │
-// │       totalPnl │ 6.55%               │
-// │      tradesQty │ 219                 │
-// │  avTradeLength │ 6                   │
+// │      avWinRate │ 53.10%              │
+// │          avPnl │ -0.02%              │
+// │       totalPnl │ -8.60%              │
+// │      tradesQty │ 452                 │
+// │  avTradeLength │ 13                  │
 // └────────────────┴─────────────────────┘
