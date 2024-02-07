@@ -11,8 +11,7 @@ export const checkCandlestick = ({
 
 	const lastOpenTime = candlestick[candlestick.length - 1].openTime;
 	const lastDiff =
-		(getDate({}).dateMs - getDate({ date: lastOpenTime }).dateMs) /
-		Context.interval;
+		(getDate().dateMs - getDate(lastOpenTime).dateMs) / Context.interval;
 
 	if (lastDiff > 2) return false;
 
@@ -21,8 +20,8 @@ export const checkCandlestick = ({
 		const nextCandle = candlestick[index + 1];
 
 		const candlesDifference =
-			(getDate({ date: nextCandle.openTime }).dateMs -
-				getDate({ date: currentCandle.openTime }).dateMs) /
+			(getDate(nextCandle.openTime).dateMs -
+				getDate(currentCandle.openTime).dateMs) /
 			Context.interval;
 
 		if (candlesDifference !== 1) return false;

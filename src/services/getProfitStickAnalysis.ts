@@ -91,7 +91,7 @@ export const getProfitStickAnalysis = ({
 		pnl,
 		tradeLength,
 		debug: `${pair} ${
-			getDate({ date: profitStick[0].openTime }).dateString
+			getDate(profitStick[0].openTime).dateString
 		} ${shouldTrade} ${status} E:${entryPrice.toFixed(3)} SL:${stopLoss.toFixed(
 			3
 		)}-TP:${takeProfit.toFixed(3)}-PNL:${formatPercent(pnl)} ${stgName}`,

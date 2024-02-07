@@ -16,19 +16,19 @@ import { positionManageExisting } from "./services/positionManageExisting";
 
 export const trade = async () => {
 	console.log(
-		getDate({}).dateString,
+		getDate().dateString,
 		"Starting in " + Context.branch + " branch..."
 	);
 	const context = await Context.getInstance();
 
 	await getSymbolList();
 	console.log(
-		getDate({}).dateString,
+		getDate().dateString,
 		context.symbolList.length + " symbols updated!"
 	);
 
 	context.userList = await getUserList();
-	console.log(getDate({}).dateString, "User list updated!");
+	console.log(getDate().dateString, "User list updated!");
 	console.log(
 		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 	);
@@ -40,7 +40,7 @@ export const trade = async () => {
 	cron.schedule(CronInterval["1m"], async () => {
 		await delay(1000);
 		console.log("");
-		console.log(getDate({}).dateString, "Checking for trades!");
+		console.log(getDate().dateString, "Checking for trades!");
 
 		await markUnreadySymbols();
 		await getSymbolListVolatility();

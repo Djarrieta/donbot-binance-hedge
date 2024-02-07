@@ -64,7 +64,7 @@ export const getUserList = async () => {
 				pair: p.symbol,
 				positionSide: p.positionSide as PositionSide,
 				coinQuantity: Math.abs(Math.abs(Number(p.positionAmt))).toString(),
-				startTime: getDate({ dateMs: p.updateTime }).date,
+				startTime: getDate(p.updateTime).date,
 				entryPriceUSDT: Number(p.entryPrice),
 			};
 		});
@@ -93,13 +93,24 @@ export const getUserList = async () => {
 		//PNL
 		const { historicalPnl } = await getHistoricalPnl({ user });
 
+		const year = new Date().getFullYear();
+		const month = new Date().getMonth() + 1;
+		const day = new Date().getDate();
+
+		const today = `${year}-${month < 10 ? "0" : ""}${month}-${
+			day < 10 ? "0" : ""
+		}${day}`;
+
+		const todayPnl =
+			today === historicalPnl[historicalPnl.length - 1].time
+				? historicalPnl[historicalPnl.length - 1].value
+				: 0;
+		const lastPnl = historicalPnl[historicalPnl.length - 2].value || 0;
+		const todayPnlPt = todayPnl ? (todayPnl - lastPnl) / lastPnl || 0 : 0;
+
 		const totalPnlPt = historicalPnl.length
 			? historicalPnl[historicalPnl.length - 1].acc /
 			  (balanceUSDT - historicalPnl[historicalPnl.length - 1].acc)
-			: 0;
-		const todayPnlPt = historicalPnl.length
-			? historicalPnl[historicalPnl.length - 1].value /
-			  (balanceUSDT - historicalPnl[historicalPnl.length - 1].value)
 			: 0;
 
 		const openPosPnl = openPositions?.reduce((acc, val) => {
@@ -120,8 +131,7 @@ export const getUserList = async () => {
 
 		//Days working
 		const daysAgo = (
-			(getDate({}).dateMs -
-				getDate({ date: user.startTime || new Date() }).dateMs) /
+			(getDate().dateMs - getDate(user.startTime).dateMs) /
 			Interval["1d"]
 		).toFixed();
 

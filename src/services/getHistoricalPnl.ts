@@ -12,9 +12,7 @@ interface HistoricalPnl {
 	acc: number;
 }
 
-export const getHistoricalPnl: (props: GetHistoricalPnlProps) => Promise<{
-	historicalPnl: HistoricalPnl[];
-}> = async ({ user }) => {
+export const getHistoricalPnl = async ({ user }: GetHistoricalPnlProps) => {
 	const historicalPnl: HistoricalPnl[] = [];
 
 	const API_LIMIT = 7;
@@ -25,20 +23,17 @@ export const getHistoricalPnl: (props: GetHistoricalPnlProps) => Promise<{
 
 	const trades: FuturesUserTradeResult[] = [];
 	const daysAgo = Math.ceil(
-		(getDate({}).dateMs -
-			getDate({ date: user.startTime || new Date() }).dateMs) /
-			Interval["1d"]
+		(getDate().dateMs - getDate(user.startTime).dateMs) / Interval["1d"]
 	);
 
 	let n = daysAgo;
 	do {
 		const startTime =
-			getDate({ dateMs: new Date().setHours(0, 0, 0) }).dateMs -
-			(n - 1) * Interval["1d"];
+			getDate(new Date().setHours(0, 0, 0)).dateMs - (n - 1) * Interval["1d"];
 
 		const endTime = Math.min(
-			getDate({}).dateMs,
-			getDate({ dateMs: new Date().setHours(0, 0, 0) }).dateMs -
+			getDate().dateMs,
+			getDate(new Date().setHours(0, 0, 0)).dateMs -
 				(n - API_LIMIT - 1) * Interval["1d"]
 		);
 

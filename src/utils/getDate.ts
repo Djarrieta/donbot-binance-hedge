@@ -5,27 +5,18 @@ interface getDateProps {
 	dateString?: typeof DateString;
 	dateMs?: number;
 }
-interface getDateResponse {
-	date: Date;
-	dateString: typeof DateString;
-	dateMs: number;
-}
 
-export const getDate: (props: getDateProps) => getDateResponse = ({
-	date,
-	dateMs,
-	dateString,
-}) => {
-	let finalDate = new Date();
+export const getDate = (
+	date: Date | typeof DateString | number | null = new Date()
+) => {
+	let finalDate;
 
-	if (date) {
+	if (typeof date === "number") {
 		finalDate = new Date(date);
 	}
-	if (dateMs) {
-		finalDate = new Date(dateMs);
-	}
-	if (dateString) {
-		const timeParts = dateString.split(" ");
+
+	if (typeof date === "string") {
+		const timeParts = date.split(" ");
 
 		const year = parseInt(timeParts[0], 10);
 		const month = parseInt(timeParts[1], 10); // Months are zero-based (0-11)
@@ -36,6 +27,8 @@ export const getDate: (props: getDateProps) => getDateResponse = ({
 
 		finalDate = new Date(year, month - 1, day, hour, min, sec);
 	}
+
+	finalDate = date ? new Date(date) : new Date();
 
 	const year = finalDate.getFullYear().toString().slice(0, 4);
 	const month = (finalDate.getMonth() + 1).toString().padStart(2, "0");

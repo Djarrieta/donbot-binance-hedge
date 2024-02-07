@@ -18,7 +18,7 @@ export const backtest = async ({
 	log?: boolean;
 }) => {
 	const startTime =
-		getDate({}).dateMs - Context.lookBackLengthBacktest * strategy.interval;
+		getDate().dateMs - Context.lookBackLengthBacktest * strategy.interval;
 
 	const { sl, tp } = strategy.validate({
 		candlestick: [
@@ -32,7 +32,7 @@ export const backtest = async ({
 			sl: formatPercent(sl),
 			tp: formatPercent(Number(tp)),
 			lookBack: Context.lookBackLengthBacktest,
-			startTime: getDate({ dateMs: startTime }).dateString,
+			startTime: getDate(startTime).dateString,
 			interval: Interval[strategy.interval],
 			maxTradeLength: Context.maxTradeLength,
 			fee: formatPercent(Context.fee),
@@ -102,7 +102,7 @@ export const backtest = async ({
 		sl: formatPercent(sl),
 		tp: formatPercent(Number(tp)),
 		lookBack: Context.lookBackLengthBacktest,
-		startTime: getDate({ dateMs: startTime }).dateString,
+		startTime: getDate(startTime).dateString,
 		interval: Interval[strategy.interval],
 		maxTradeLength: Context.maxTradeLength,
 		fee: formatPercent(Context.fee),

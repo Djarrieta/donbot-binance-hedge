@@ -31,7 +31,7 @@ export const getCandlestick: (
 				open: Number(open),
 				high: Number(high),
 				low: Number(low),
-				openTime: getDate({ dateMs: openTime }).date,
+				openTime: getDate(openTime).date,
 				volume: Number(volume),
 			};
 		});

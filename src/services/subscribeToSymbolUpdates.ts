@@ -27,10 +27,10 @@ const handleSymbolUpdate = async (data: any) => {
 	if (symbolIndex === -1) return;
 	const symbol = context.symbolList[symbolIndex];
 
-	const prevOpenTime = getDate({
-		date: symbol.candlestick[symbol.candlestick.length - 1].openTime,
-	}).dateString;
-	const newOpenTime = getDate({ dateMs: Number(data.k.t) }).dateString;
+	const prevOpenTime = getDate(
+		symbol.candlestick[symbol.candlestick.length - 1].openTime
+	).dateString;
+	const newOpenTime = getDate(Number(data.k.t)).dateString;
 
 	if (!data.k.x || newOpenTime === prevOpenTime) {
 		context.symbolList[symbolIndex].currentPrice = Number(data.k.c);
@@ -44,7 +44,7 @@ const handleSymbolUpdate = async (data: any) => {
 		high: Number(data.k.h),
 		close: Number(data.k.c),
 		low: Number(data.k.l),
-		openTime: getDate({ dateMs: Number(data.k.t) }).date,
+		openTime: getDate(Number(data.k.t)).date,
 		volume: Number(data.k.v),
 	};
 
