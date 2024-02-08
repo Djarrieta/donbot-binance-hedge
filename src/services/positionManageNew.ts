@@ -57,7 +57,7 @@ export const positionManageNew = async ({
 				authExchange,
 				shouldTrade,
 				sl,
-				tp,
+				tp: tp * 2,
 				price: symbol.currentPrice,
 				quantity: openPosPairLong[0].coinQuantity,
 				symbol,

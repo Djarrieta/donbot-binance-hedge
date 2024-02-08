@@ -39,9 +39,11 @@ export const checkForTrades = async ({
 			new Set(u.openPositions.map((x) => x.pair))
 		);
 		usersLogs += ` ${u.name}\n`;
-		usersLogs += ` Today: ${formatPercent(u.todayPnlPt)}  Open: ${formatPercent(
-			u.openPosPnlPt
-		)}  Total: ${formatPercent(u.totalPnlPt)}\n`;
+		usersLogs += `$${u.balanceUSDT.toFixed(2)} USDT Today: ${formatPercent(
+			u.todayPnlPt
+		)}  Open: ${formatPercent(u.openPosPnlPt)}  Total: ${formatPercent(
+			u.totalPnlPt
+		)}\n`;
 
 		usersLogs += " " + openPosUniquePairs.join(", ");
 	});

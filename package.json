@@ -1,5 +1,5 @@
 {
-  "name": "donbot-coverage",
+  "name": "donbot-hedge",
   "module": "main.ts",
   "type": "module",
   "devDependencies": {

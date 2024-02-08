@@ -105,8 +105,7 @@ export const getUserList = async () => {
 			today === historicalPnl[historicalPnl.length - 1].time
 				? historicalPnl[historicalPnl.length - 1].value
 				: 0;
-		const lastPnl = historicalPnl[historicalPnl.length - 2].value || 0;
-		const todayPnlPt = todayPnl ? (todayPnl - lastPnl) / lastPnl || 0 : 0;
+		const todayPnlPt = todayPnl ? todayPnl / (balanceUSDT - todayPnl) || 0 : 0;
 
 		const totalPnlPt = historicalPnl.length
 			? historicalPnl[historicalPnl.length - 1].acc /
