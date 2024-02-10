@@ -120,3 +120,21 @@ export default stg;
 // │      tradesQty │ 272                 │
 // │  avTradeLength │ 19                  │
 // └────────────────┴─────────────────────┘
+
+// ┌────────────────┬─────────────────────┐
+// │                │ Values              │
+// ├────────────────┼─────────────────────┤
+// │        stgName │ mfiDivergency1h     │
+// │             sl │ 1.00%               │
+// │             tp │ 0.50%               │
+// │       lookBack │ 4320                │
+// │      startTime │ 2023 08 14 13:28:17 │
+// │       interval │ 1h                  │
+// │ maxTradeLength │ 1000                │
+// │            fee │ 0.05%               │
+// │      avWinRate │ 63.37%              │
+// │          avPnl │ -0.10%              │
+// │       totalPnl │ -26.90%             │
+// │      tradesQty │ 273                 │
+// │  avTradeLength │ 13                  │
+// └────────────────┴─────────────────────┘

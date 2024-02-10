@@ -29,7 +29,7 @@ export const checkForTrades = async ({
 				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
 		  );
 	console.log(
-		"Strategies: " + chosenStrategies.map((s) => s.stgName).join(", ")
+		"Strategies: " + chosenStrategies.map((s) => s?.stgName).join(", ")
 	);
 
 	let usersLogs = "Users: ";
@@ -50,14 +50,15 @@ export const checkForTrades = async ({
 	console.log(usersLogs);
 
 	for (const strategy of chosenStrategies.filter(
-		(s) => s.interval === Context.interval
+		(s) => s && s.interval === Context.interval
 	)) {
 		for (const symbol of readySymbols) {
-			const stgResponse = strategy.validate({
-				candlestick: symbol.candlestick,
-				pair: symbol.pair,
-			});
-			if (stgResponse.shouldTrade !== null) {
+			const stgResponse =
+				strategy?.validate({
+					candlestick: symbol.candlestick,
+					pair: symbol.pair,
+				}) || undefined;
+			if (stgResponse && stgResponse.shouldTrade !== null) {
 				response.tradeArray.push({ symbol, stgResponse });
 			}
 		}
