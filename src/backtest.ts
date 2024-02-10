@@ -118,6 +118,8 @@ export const backtest = async ({
 
 for (const strategy of chosenStrategies) {
 	console.time("Backtest");
+	if (Context.interval !== strategy.interval) continue;
+
 	const backtestResult = await backtest({ strategy, log: true });
 	console.table({
 		...backtestResult,
