@@ -55,7 +55,7 @@ export const positionProtect = async ({
 		}
 	} catch (e) {
 		console.log(
-			"Problem opening " + shouldTrade + " position for " + symbol.pair
+			"Problem protecting " + shouldTrade + " position for " + symbol.pair
 		);
 		console.log(e);
 	}

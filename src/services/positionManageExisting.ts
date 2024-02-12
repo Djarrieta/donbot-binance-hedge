@@ -2,6 +2,7 @@ import Binance from "binance-api-node";
 import { Context } from "../models/Context";
 import { User } from "../models/User";
 import { positionProtect } from "./positionProtect";
+import { fixPrecision } from "../utils/fixPrecision";
 
 export const positionManageExisting = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
@@ -68,12 +69,19 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		if (openPos.length === 1 && openOrders.length === 0) {
 			const symbol = context.symbolList.find((s) => s.pair === openPos[0].pair);
 			if (!symbol) return;
+			const quantity = Math.max(
+				Context.minAmountToTrade * symbol.currentPrice * 1.1,
+				Number(openPos[0].coinQuantity)
+			);
 
 			await positionProtect({
 				symbol,
 				shouldTrade: openPos[0].positionSide,
 				authExchange,
-				quantity: openPos[0].coinQuantity,
+				quantity: fixPrecision({
+					value: quantity,
+					precision: symbol.quantityPrecision,
+				}),
 				price: symbol.currentPrice,
 				sl: Context.defaultSL,
 				tp: Context.defaultTP,
