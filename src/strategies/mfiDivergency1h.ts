@@ -109,16 +109,17 @@ export default stg;
 // │        stgName │ mfiDivergency1h     │
 // │             sl │ 1.00%               │
 // │             tp │ 1.00%               │
-// │       lookBack │ 4320                │
-// │      startTime │ 2023 08 14 12:30:52 │
+// │      startTime │ 2023 02 15 14:23:56 │
+// │        endTime │ 2024 02 10 14:45:59 │
+// │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 48.53%              │
-// │          avPnl │ -0.08%              │
-// │       totalPnl │ -22.42%             │
-// │      tradesQty │ 272                 │
-// │  avTradeLength │ 19                  │
+// │      avWinRate │ 49.55%              │
+// │          avPnl │ -0.06%              │
+// │       totalPnl │ -27.03%             │
+// │      tradesQty │ 448                 │
+// │  avTradeLength │ 15                  │
 // └────────────────┴─────────────────────┘
 
 // ┌────────────────┬─────────────────────┐
@@ -137,4 +138,23 @@ export default stg;
 // │       totalPnl │ -26.90%             │
 // │      tradesQty │ 273                 │
 // │  avTradeLength │ 13                  │
+// └────────────────┴─────────────────────┘
+
+// ┌────────────────┬─────────────────────┐
+// │                │ Values              │
+// ├────────────────┼─────────────────────┤
+// │        stgName │ mfiDivergency1h     │
+// │             sl │ 0.50%               │
+// │             tp │ 0.50%               │
+// │      startTime │ 2023 02 16 10:56:34 │
+// │        endTime │ 2024 02 11 11:17:45 │
+// │       lookBack │ 8640                │
+// │       interval │ 1h                  │
+// │ maxTradeLength │ 1000                │
+// │            fee │ 0.05%               │
+// │      avWinRate │ 47.70%              │
+// │          avPnl │ -0.07%              │
+// │       totalPnl │ -33.74%             │
+// │      tradesQty │ 457                 │
+// │  avTradeLength │ 5                   │
 // └────────────────┴─────────────────────┘

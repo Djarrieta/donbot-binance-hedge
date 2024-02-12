@@ -104,15 +104,16 @@ export default stg;
 // │        stgName │ rsiDivergency1h     │
 // │             sl │ 1.00%               │
 // │             tp │ 1.00%               │
-// │       lookBack │ 4320                │
-// │      startTime │ 2023 08 14 10:33:47 │
+// │      startTime │ 2023 02 15 14:02:16 │
+// │        endTime │ 2024 02 10 14:23:56 │
+// │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 50.79%              │
-// │          avPnl │ -0.03%              │
-// │       totalPnl │ -6.45%              │
-// │      tradesQty │ 189                 │
+// │      avWinRate │ 47.65%              │
+// │          avPnl │ -0.10%              │
+// │       totalPnl │ -28.90%             │
+// │      tradesQty │ 298                 │
 // │  avTradeLength │ 7                   │
 // └────────────────┴─────────────────────┘
 
@@ -131,5 +132,24 @@ export default stg;
 // │          avPnl │ -0.10%              │
 // │       totalPnl │ -18.45%             │
 // │      tradesQty │ 189                 │
+// │  avTradeLength │ 3                   │
+// └────────────────┴─────────────────────┘
+
+// ┌────────────────┬─────────────────────┐
+// │                │ Values              │
+// ├────────────────┼─────────────────────┤
+// │        stgName │ rsiDivergency1h     │
+// │             sl │ 0.50%               │
+// │             tp │ 0.50%               │
+// │      startTime │ 2023 02 16 10:35:10 │
+// │        endTime │ 2024 02 11 10:56:34 │
+// │       lookBack │ 8640                │
+// │       interval │ 1h                  │
+// │ maxTradeLength │ 1000                │
+// │            fee │ 0.05%               │
+// │      avWinRate │ 48.66%              │
+// │          avPnl │ -0.06%              │
+// │       totalPnl │ -18.90%             │
+// │      tradesQty │ 298                 │
 // │  avTradeLength │ 3                   │
 // └────────────────┴─────────────────────┘

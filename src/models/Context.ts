@@ -21,7 +21,7 @@ export class Context {
 	public static interval = Interval["1h"];
 	public static leverage = 10; //WIP: Implement
 	public static lookBackLength = 200;
-	public static lookBackLengthBacktest = (6 * Interval["1M"]) / Interval["1h"]; // six months
+	public static lookBackLengthBacktest = (12 * Interval["1M"]) / Interval["1h"]; // six months
 	public static maxOpenPos = 1;
 	public static amountToTradePt = 0.25;
 	public static maxTradeLength = 1000; // Implement in trade
