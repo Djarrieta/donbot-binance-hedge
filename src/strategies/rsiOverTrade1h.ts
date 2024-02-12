@@ -21,7 +21,7 @@ const stg: Strategy = {
 		if (candlestick.length < Context.lookBackLength) return response;
 
 		const MIN_VOL = 3 / 100;
-		const MAX_VOL = 10 / 100;
+		const MAX_VOL = 30 / 100;
 
 		const MIN_RSI = 30;
 
@@ -35,7 +35,8 @@ const stg: Strategy = {
 			rsiArray[rsiArray.length - 1] >= MIN_RSI &&
 			rsiArray[rsiArray.length - 2] < MIN_RSI &&
 			rsiArray[rsiArray.length - 3] < MIN_RSI &&
-			rsiArray[rsiArray.length - 4] < MIN_RSI
+			rsiArray[rsiArray.length - 4] < MIN_RSI &&
+			rsiArray[rsiArray.length - 5] < MIN_RSI
 		) {
 			response.shouldTrade = "LONG";
 		}
@@ -45,7 +46,8 @@ const stg: Strategy = {
 			rsiArray[rsiArray.length - 1] <= 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 2] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 3] > 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 4] > 100 - MIN_RSI
+			rsiArray[rsiArray.length - 4] > 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 5] > 100 - MIN_RSI
 		) {
 			response.shouldTrade = "SHORT";
 		}
@@ -62,34 +64,15 @@ export default stg;
 // │        stgName │ rsiOverTrade1h      │
 // │             sl │ 1.00%               │
 // │             tp │ 1.00%               │
-// │      startTime │ 2023 02 17 12:07:59 │
-// │        endTime │ 2024 02 12 12:28:43 │
+// │      startTime │ 2023 02 17 13:49:15 │
+// │        endTime │ 2024 02 12 14:11:34 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 1000                │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 41.41%              │
-// │          avPnl │ -0.22%              │
-// │       totalPnl │ -261.01%            │
-// │      tradesQty │ 1181                │
-// │  avTradeLength │ 9                   │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiOverTrade1h      │
-// │             sl │ 1.00%               │
-// │             tp │ 0.50%               │
-// │      startTime │ 2023 02 17 11:46:45 │
-// │        endTime │ 2024 02 12 12:07:30 │
-// │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 60.20%              │
-// │          avPnl │ -0.15%              │
-// │       totalPnl │ -173.55%            │
-// │      tradesQty │ 1181                │
-// │  avTradeLength │ 5                   │
+// │      avWinRate │ 43.64%              │
+// │          avPnl │ -0.18%              │
+// │       totalPnl │ -1443.10%           │
+// │      tradesQty │ 8142                │
+// │  avTradeLength │ 4                   │
 // └────────────────┴─────────────────────┘
