@@ -33,23 +33,21 @@ const stg: Strategy = {
 			volatility >= MIN_VOL &&
 			volatility <= MAX_VOL &&
 			rsiArray[rsiArray.length - 1] >= MIN_RSI &&
-			rsiArray[rsiArray.length - 2] < MIN_RSI &&
 			rsiArray[rsiArray.length - 3] < MIN_RSI &&
 			rsiArray[rsiArray.length - 4] < MIN_RSI &&
 			rsiArray[rsiArray.length - 5] < MIN_RSI
 		) {
-			response.shouldTrade = "LONG";
+			response.shouldTrade = "SHORT";
 		}
 		if (
 			volatility >= MIN_VOL &&
 			volatility <= MAX_VOL &&
 			rsiArray[rsiArray.length - 1] <= 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 2] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 3] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 4] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 5] > 100 - MIN_RSI
 		) {
-			response.shouldTrade = "SHORT";
+			response.shouldTrade = "LONG";
 		}
 
 		return response;
@@ -64,15 +62,15 @@ export default stg;
 // │        stgName │ rsiOverTrade1h      │
 // │             sl │ 1.00%               │
 // │             tp │ 1.00%               │
-// │      startTime │ 2023 02 17 13:49:15 │
-// │        endTime │ 2024 02 12 14:11:34 │
+// │      startTime │ 2023 02 18 12:01:40 │
+// │        endTime │ 2024 02 13 12:23:01 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
+// │ maxTradeLength │ 100                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 43.64%              │
-// │          avPnl │ -0.18%              │
-// │       totalPnl │ -1443.10%           │
-// │      tradesQty │ 8142                │
+// │      avWinRate │ 51.44%              │
+// │          avPnl │ -0.02%              │
+// │       totalPnl │ -379.79%            │
+// │      tradesQty │ 17923               │
 // │  avTradeLength │ 4                   │
 // └────────────────┴─────────────────────┘

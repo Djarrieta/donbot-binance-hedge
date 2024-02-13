@@ -41,10 +41,18 @@ export const backtest = async ({
 
 	const completePairList = await getCompletePairList(false);
 
+	const maxPairLen = [...completePairList].sort(
+		(a, b) => b.pair.length - a.pair.length
+	)[0].pair.length;
+
 	let stats: Stat[] = [];
 
-	for (const symbol of completePairList) {
-		const { pair } = symbol;
+	for (
+		let symbolIndex = 0;
+		symbolIndex < completePairList.length;
+		symbolIndex++
+	) {
+		const { pair } = completePairList[symbolIndex];
 
 		const completeCandlestick = await getCandlestick({
 			pair,
@@ -58,7 +66,7 @@ export const backtest = async ({
 			const candlestick = completeCandlestick.slice(candleIndex, endIndex);
 			const profitStick = completeCandlestick.slice(
 				endIndex,
-				endIndex + Context.maxTradeLength
+				Math.min(completeCandlestick.length, endIndex + Context.maxTradeLength)
 			);
 
 			const { shouldTrade, sl, tp, stgName } = strategy.validate({
@@ -75,10 +83,16 @@ export const backtest = async ({
 					tp,
 					fee: Context.fee,
 					stgName,
+					maxPairLen,
 				});
 
 				stats.push(stat);
-				log && console.log(stat.debug);
+				log &&
+					console.log(
+						formatPercent((symbolIndex + 1) / completePairList.length) +
+							" " +
+							stat.debug
+					);
 			}
 
 			candleIndex++;

@@ -11,6 +11,7 @@ interface GetProfitStickAnalysisProps {
 	tp: number;
 	fee: number;
 	stgName: string;
+	maxPairLen: number;
 }
 export interface Stat {
 	pair: string;
@@ -28,6 +29,7 @@ export const getProfitStickAnalysis = ({
 	tp,
 	fee,
 	stgName,
+	maxPairLen,
 }: GetProfitStickAnalysisProps) => {
 	let stat: Stat = {
 		pair,
@@ -86,15 +88,23 @@ export const getProfitStickAnalysis = ({
 				: entryPrice - lastPrice) / entryPrice;
 	}
 	const status = pnl > 0 ? "WON" : "LOST";
+
+	const fixedPairName =
+		pair.length < maxPairLen
+			? pair + " ".repeat(maxPairLen - pair.length)
+			: pair;
+
 	stat = {
 		pair,
 		pnl,
 		tradeLength,
-		debug: `${pair} ${
-			getDate(profitStick[0].openTime).dateString
-		} ${shouldTrade} ${status} E:${entryPrice.toFixed(3)} SL:${stopLoss.toFixed(
+		debug: `${fixedPairName} ${getDate(profitStick[0].openTime).dateString} ${
+			status === "WON" ? "WON " : "LOST"
+		} ${shouldTrade === "LONG" ? "LONG " : "SHORT"} E:${entryPrice.toFixed(
 			3
-		)}-TP:${takeProfit.toFixed(3)}-PNL:${formatPercent(pnl)} ${stgName}`,
+		)} SL:${stopLoss.toFixed(3)}-TP:${takeProfit.toFixed(
+			3
+		)}-PNL:${formatPercent(pnl)} ${stgName}`,
 		status,
 	};
 
