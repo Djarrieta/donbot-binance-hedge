@@ -29,6 +29,6 @@ export class Context {
 	public static minAmountToTrade = 5;
 	public static fee = 0.0005;
 	public static defaultSL = 2 / 100;
-	public static defaultTP = 2 / 100;
+	public static defaultTP = 1 / 100;
 	public static shouldStop = false;
 }

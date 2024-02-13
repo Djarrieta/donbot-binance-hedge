@@ -60,17 +60,17 @@ export default stg;
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ rsiOverTrade1h      │
-// │             sl │ 1.00%               │
-// │             tp │ 1.00%               │
-// │      startTime │ 2023 02 18 12:01:40 │
-// │        endTime │ 2024 02 13 12:23:01 │
+// │             sl │ 2.00%               │
+// │             tp │ 2.00%               │
+// │      startTime │ 2023 02 18 17:15:12 │
+// │        endTime │ 2024 02 13 17:33:29 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 100                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 51.44%              │
-// │          avPnl │ -0.02%              │
-// │       totalPnl │ -379.79%            │
-// │      tradesQty │ 17923               │
-// │  avTradeLength │ 4                   │
+// │      avWinRate │ 53.10%              │
+// │          avPnl │ 0.07%               │
+// │       totalPnl │ 1241.15%            │
+// │      tradesQty │ 16619               │
+// │  avTradeLength │ 10                  │
 // └────────────────┴─────────────────────┘

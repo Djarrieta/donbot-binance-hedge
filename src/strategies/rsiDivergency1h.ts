@@ -102,92 +102,17 @@ export default stg;
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ rsiDivergency1h     │
-// │             sl │ 1.00%               │
-// │             tp │ 1.00%               │
-// │      startTime │ 2023 02 15 14:02:16 │
-// │        endTime │ 2024 02 10 14:23:56 │
-// │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 47.65%              │
-// │          avPnl │ -0.10%              │
-// │       totalPnl │ -28.90%             │
-// │      tradesQty │ 298                 │
-// │  avTradeLength │ 7                   │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency1h     │
-// │             sl │ 1.00%               │
-// │             tp │ 0.50%               │
-// │       lookBack │ 4320                │
-// │      startTime │ 2023 08 14 13:17:22 │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 63.49%              │
-// │          avPnl │ -0.10%              │
-// │       totalPnl │ -18.45%             │
-// │      tradesQty │ 189                 │
-// │  avTradeLength │ 3                   │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency1h     │
-// │             sl │ 0.50%               │
-// │             tp │ 0.50%               │
-// │      startTime │ 2023 02 16 10:35:10 │
-// │        endTime │ 2024 02 11 10:56:34 │
-// │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 48.66%              │
-// │          avPnl │ -0.06%              │
-// │       totalPnl │ -18.90%             │
-// │      tradesQty │ 298                 │
-// │  avTradeLength │ 3                   │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency1h     │
-// │             sl │ 1.00%               │
-// │             tp │ 2.00%               │
-// │      startTime │ 2023 02 18 16:29:41 │
-// │        endTime │ 2024 02 13 16:49:28 │
-// │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 100                 │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 23.75%              │
-// │          avPnl │ -0.34%              │
-// │       totalPnl │ -100.23%            │
-// │      tradesQty │ 299                 │
-// │  avTradeLength │ 13                  │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency1h     │
 // │             sl │ 2.00%               │
 // │             tp │ 2.00%               │
-// │      startTime │ 2023 02 18 16:52:12 │
-// │        endTime │ 2024 02 13 17:11:59 │
+// │      startTime │ 2023 02 18 17:19:58 │
+// │        endTime │ 2024 02 13 17:40:13 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 100                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 38.46%              │
-// │          avPnl │ -0.51%              │
-// │       totalPnl │ -151.55%            │
+// │      avWinRate │ 60.87%              │
+// │          avPnl │ 0.38%               │
+// │       totalPnl │ 114.85%             │
 // │      tradesQty │ 299                 │
 // │  avTradeLength │ 22                  │
 // └────────────────┴─────────────────────┘

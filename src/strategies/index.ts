@@ -7,4 +7,4 @@ import mfiDivergency1h from "./mfiDivergency1h";
 import rsiOverTrade1h from "./rsiOverTrade1h";
 import superTrend1h from "./superTrend1h";
 
-export const chosenStrategies = [superTrend1h];
+export const chosenStrategies = [rsiDivergency1h, rsiOverTrade1h];

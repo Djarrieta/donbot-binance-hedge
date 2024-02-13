@@ -93,3 +93,20 @@ const stg: Strategy = {
 };
 
 export default stg;
+
+// {
+// 	stgName: "superTrend1h",
+// 	sl: "2.00%",
+// 	tp: "2.00%",
+// 	startTime: "2023 02 18 17:32:40",
+// 	endTime: "2024 02 13 17:59:03",
+// 	lookBack: 8640,
+// 	interval: "1h",
+// 	maxTradeLength: 100,
+// 	fee: "0.05%",
+// 	avWinRate: "41.49%",
+// 	avPnl: "-0.39%",
+// 	totalPnl: "-470.25%",
+// 	tradesQty: 1205,
+// 	avTradeLength: 7,
+//   }
