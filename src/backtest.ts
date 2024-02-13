@@ -131,7 +131,7 @@ export const backtest = async ({
 };
 
 for (const strategy of chosenStrategies) {
-	console.time("Backtest");
+	const startTime = getDate().dateMs;
 	if (!strategy) continue;
 	if (Context.interval !== strategy.interval) continue;
 
@@ -140,5 +140,6 @@ for (const strategy of chosenStrategies) {
 		...backtestResult,
 		avPnl: formatPercent(backtestResult.avPnl),
 	});
-	console.timeEnd("Backtest");
+	const endTime = getDate().dateMs;
+	console.timeEnd((endTime - startTime) / Interval["1m"] + " minutes");
 }
