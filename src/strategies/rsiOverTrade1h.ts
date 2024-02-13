@@ -28,26 +28,26 @@ const stg: Strategy = {
 		const volatility = getVolatility({ candlestick });
 		const closePrices = candlestick.map((candle) => candle.close);
 		const rsiArray = rsi({ period: 14, values: closePrices });
-
 		if (
 			volatility >= MIN_VOL &&
 			volatility <= MAX_VOL &&
-			rsiArray[rsiArray.length - 1] >= MIN_RSI &&
-			rsiArray[rsiArray.length - 3] < MIN_RSI &&
-			rsiArray[rsiArray.length - 4] < MIN_RSI &&
-			rsiArray[rsiArray.length - 5] < MIN_RSI
-		) {
-			response.shouldTrade = "SHORT";
-		}
-		if (
-			volatility >= MIN_VOL &&
-			volatility <= MAX_VOL &&
-			rsiArray[rsiArray.length - 1] <= 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 1] < 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 3] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 4] > 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 5] > 100 - MIN_RSI
 		) {
 			response.shouldTrade = "LONG";
+		}
+
+		if (
+			volatility >= MIN_VOL &&
+			volatility <= MAX_VOL &&
+			rsiArray[rsiArray.length - 1] > MIN_RSI &&
+			rsiArray[rsiArray.length - 3] < MIN_RSI &&
+			rsiArray[rsiArray.length - 4] < MIN_RSI &&
+			rsiArray[rsiArray.length - 5] < MIN_RSI
+		) {
+			response.shouldTrade = "SHORT";
 		}
 
 		return response;

@@ -97,10 +97,8 @@ export const backtest = async ({
 
 			candleIndex++;
 		} while (
-			completeCandlestick.slice(
-				candleIndex,
-				candleIndex + strategy.lookBackLength
-			).length >= strategy.lookBackLength
+			candleIndex <
+			completeCandlestick.length + strategy.lookBackLength
 		);
 	}
 

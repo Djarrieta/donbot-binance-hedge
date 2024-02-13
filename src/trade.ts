@@ -45,6 +45,8 @@ export const trade = async () => {
 		await markUnreadySymbols();
 		await getSymbolListVolatility();
 
+		//WIP: ensure open position symbols updated
+
 		const readySymbols = [...context.symbolList]
 			.filter((s) => s.isReady && !s.isLoading)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
