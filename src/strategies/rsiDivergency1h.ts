@@ -59,7 +59,7 @@ const stg: Strategy = {
 			);
 
 			if (firstMin !== 0 && secondMin !== 0 && firstMin > secondMin) {
-				response.shouldTrade = "LONG";
+				response.shouldTrade = "SHORT";
 			}
 		}
 
@@ -88,7 +88,7 @@ const stg: Strategy = {
 			);
 
 			if (firstMax !== 0 && secondMax !== 0 && firstMax < secondMax) {
-				response.shouldTrade = "SHORT";
+				response.shouldTrade = "LONG";
 			}
 		}
 
@@ -104,8 +104,8 @@ export default stg;
 // │        stgName │ rsiDivergency1h     │
 // │             sl │ 2.00%               │
 // │             tp │ 2.00%               │
-// │      startTime │ 2023 02 18 17:19:58 │
-// │        endTime │ 2024 02 13 17:40:13 │
+// │      startTime │ 2023 02 19 10:04:51 │
+// │        endTime │ 2024 02 14 10:24:30 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 100                 │
