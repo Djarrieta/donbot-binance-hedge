@@ -21,8 +21,8 @@ const stg: Strategy = {
 
 		const MIN_MFI = 20;
 		const CANDLESTICK_SIZE = 50;
-		const MIN_VOL = 3 / 100;
-		const MAX_VOL = 10 / 100;
+		const MIN_VOL = 10 / 100;
+		const MAX_VOL = 20 / 100;
 
 		const volatility = getVolatility({ candlestick });
 		const mfiArray = mfi({
@@ -107,54 +107,17 @@ export default stg;
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ mfiDivergency1h     │
-// │             sl │ 1.00%               │
-// │             tp │ 1.00%               │
-// │      startTime │ 2023 02 15 14:23:56 │
-// │        endTime │ 2024 02 10 14:45:59 │
+// │             sl │ 2.00%               │
+// │             tp │ 2.00%               │
+// │      startTime │ 2023 02 18 18:37:20 │
+// │        endTime │ 2024 02 13 18:58:49 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
+// │ maxTradeLength │ 100                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 49.55%              │
-// │          avPnl │ -0.06%              │
-// │       totalPnl │ -27.03%             │
-// │      tradesQty │ 448                 │
-// │  avTradeLength │ 15                  │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ mfiDivergency1h     │
-// │             sl │ 1.00%               │
-// │             tp │ 0.50%               │
-// │       lookBack │ 4320                │
-// │      startTime │ 2023 08 14 13:28:17 │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 63.37%              │
-// │          avPnl │ -0.10%              │
-// │       totalPnl │ -26.90%             │
-// │      tradesQty │ 273                 │
-// │  avTradeLength │ 13                  │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ mfiDivergency1h     │
-// │             sl │ 0.50%               │
-// │             tp │ 0.50%               │
-// │      startTime │ 2023 02 16 10:56:34 │
-// │        endTime │ 2024 02 11 11:17:45 │
-// │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 47.70%              │
-// │          avPnl │ -0.07%              │
-// │       totalPnl │ -33.74%             │
-// │      tradesQty │ 457                 │
-// │  avTradeLength │ 5                   │
+// │      avWinRate │ 48.29%              │
+// │          avPnl │ -0.12%              │
+// │       totalPnl │ -494.25%            │
+// │      tradesQty │ 4088                │
+// │  avTradeLength │ 12                  │
 // └────────────────┴─────────────────────┘

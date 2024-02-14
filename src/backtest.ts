@@ -141,5 +141,5 @@ for (const strategy of chosenStrategies) {
 		avPnl: formatPercent(backtestResult.avPnl),
 	});
 	const endTime = getDate().dateMs;
-	console.timeEnd((endTime - startTime) / Interval["1m"] + " minutes");
+	console.log(((endTime - startTime) / Interval["1m"]).toFixed() + " minutes");
 }

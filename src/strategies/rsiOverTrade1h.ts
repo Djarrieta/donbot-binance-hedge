@@ -21,7 +21,7 @@ const stg: Strategy = {
 		if (candlestick.length < Context.lookBackLength) return response;
 
 		const MIN_VOL = 3 / 100;
-		const MAX_VOL = 30 / 100;
+		const MAX_VOL = 15 / 100;
 
 		const MIN_RSI = 30;
 
@@ -62,15 +62,15 @@ export default stg;
 // │        stgName │ rsiOverTrade1h      │
 // │             sl │ 2.00%               │
 // │             tp │ 2.00%               │
-// │      startTime │ 2023 02 18 17:15:12 │
-// │        endTime │ 2024 02 13 17:33:29 │
+// │      startTime │ 2023 02 18 21:37:55 │
+// │        endTime │ 2024 02 13 21:58:16 │
 // │       lookBack │ 8640                │
 // │       interval │ 1h                  │
 // │ maxTradeLength │ 100                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 53.10%              │
-// │          avPnl │ 0.07%               │
-// │       totalPnl │ 1241.15%            │
-// │      tradesQty │ 16619               │
-// │  avTradeLength │ 10                  │
+// │      avWinRate │ 57.71%              │
+// │          avPnl │ 0.26%               │
+// │       totalPnl │ 1563.03%            │
+// │      tradesQty │ 5997                │
+// │  avTradeLength │ 15                  │
 // └────────────────┴─────────────────────┘
