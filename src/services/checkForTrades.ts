@@ -45,7 +45,13 @@ export const checkForTrades = async ({
 			u.totalPnlPt
 		)}\n`;
 
-		usersLogs += " " + openPosUniquePairs.join(", ");
+		openPosUniquePairs.forEach((pair) => {
+			const pos = u.openPositions.filter((s) => s.pair === pair);
+			let posStatus = "UNKNOWN";
+			if (pos.length === 1) posStatus = "OPEN";
+			if (pos.length === 2)
+				(posStatus = "HEDGED"), (usersLogs += " " + pair + " " + posStatus);
+		});
 	});
 	console.log(usersLogs);
 

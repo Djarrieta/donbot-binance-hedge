@@ -53,15 +53,16 @@ export const positionManageNew = async ({
 				"Keeping " + shouldTrade + " position for " + user.name + " in " + pair
 			);
 			context.userList[userIndex].isAddingPosition = true;
-			await positionKeep({
-				authExchange,
-				shouldTrade,
-				sl,
-				tp: tp * 2,
-				price: symbol.currentPrice,
-				quantity: openPosPairLong[0].coinQuantity,
-				symbol,
-			});
+
+			// await positionKeep({
+			// 	authExchange,
+			// 	shouldTrade,
+			// 	sl,
+			// 	tp: tp * 2,
+			// 	price: symbol.currentPrice,
+			// 	quantity: openPosPairLong[0].coinQuantity,
+			// 	symbol,
+			// });
 		}
 	}
 

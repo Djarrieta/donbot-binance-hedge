@@ -37,7 +37,7 @@ export const trade = async () => {
 		await positionManageExisting({ user });
 	}
 
-	cron.schedule(CronInterval["1h"], async () => {
+	cron.schedule(CronInterval["5m"], async () => {
 		await delay(1000);
 		console.log("");
 		console.log(getDate().dateString, "Checking for trades!");
