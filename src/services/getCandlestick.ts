@@ -42,7 +42,9 @@ export const getCandlestick = async ({
 			}
 		);
 
-		const firstCandle = getDate(formattedCandlestick[0].openTime).dateMs;
+		const firstCandle = formattedCandlestick.length
+			? getDate(formattedCandlestick[0].openTime).dateMs
+			: 0;
 		const startTimeDiff = Math.abs(startTime - firstCandle) / interval;
 		if (startTimeDiff <= 1) {
 			candlestick.push(...formattedCandlestick);

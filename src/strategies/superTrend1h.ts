@@ -44,14 +44,16 @@ const stg: Strategy = {
 
 		const volatility = getVolatility({ candlestick });
 
-		const MIN_VOL = 10 / 100;
+		const MIN_VOL = 3 / 100;
+		const MAX_VOL = 20 / 100;
 
 		if (
 			volatility > MIN_VOL &&
-			lastPrice > ema200Array[ema200Array.length - 1] &&
+			volatility < MAX_VOL &&
 			candlestick[candlestick.length - 1].close <
 				candlestick[candlestick.length - 1].open &&
 			lastPrice > stA3[stA3.length - 2] &&
+			lastPrice < ema200Array[ema200Array.length - 1] &&
 			stA3[stA3.length - 2] > stA2[stA2.length - 2] &&
 			stA2[stA2.length - 2] > stA1[stA1.length - 2] &&
 			stA1[stA1.length - 3] > stA2[stA2.length - 3] &&
@@ -69,7 +71,7 @@ const stg: Strategy = {
 		}
 		if (
 			volatility > MIN_VOL &&
-			lastPrice < ema200Array[ema200Array.length - 1] &&
+			volatility < MAX_VOL &&
 			candlestick[candlestick.length - 1].close >
 				candlestick[candlestick.length - 1].open &&
 			lastPrice < stA3[stA3.length - 2] &&
@@ -94,19 +96,21 @@ const stg: Strategy = {
 
 export default stg;
 
-// {
-// 	stgName: "superTrend1h",
-// 	sl: "2.00%",
-// 	tp: "2.00%",
-// 	startTime: "2023 02 18 17:32:40",
-// 	endTime: "2024 02 13 17:59:03",
-// 	lookBack: 8640,
-// 	interval: "1h",
-// 	maxTradeLength: 100,
-// 	fee: "0.05%",
-// 	avWinRate: "41.49%",
-// 	avPnl: "-0.39%",
-// 	totalPnl: "-470.25%",
-// 	tradesQty: 1205,
-// 	avTradeLength: 7,
-//   }
+// ┌────────────────┬─────────────────────┐
+// │                │ Values              │
+// ├────────────────┼─────────────────────┤
+// │        stgName │ superTrend1h        │
+// │             sl │ 2.00%               │
+// │             tp │ 2.00%               │
+// │      startTime │ 2023 02 19 16:41:11 │
+// │        endTime │ 2024 02 14 17:03:21 │
+// │       lookBack │ 8640                │
+// │       interval │ 1h                  │
+// │ maxTradeLength │ 100                 │
+// │            fee │ 0.05%               │
+// │      avWinRate │ 48.22%              │
+// │          avPnl │ -0.13%              │
+// │       totalPnl │ -40.55%             │
+// │      tradesQty │ 309                 │
+// │  avTradeLength │ 21                  │
+// └────────────────┴─────────────────────┘
