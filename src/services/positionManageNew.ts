@@ -52,7 +52,7 @@ export const positionManageNew = async ({
 			console.log(
 				"Keeping " + shouldTrade + " position for " + user.name + " in " + pair
 			);
-			context.userList[userIndex].isAddingPosition = true;
+			//context.userList[userIndex].isAddingPosition = true;
 
 			// await positionKeep({
 			// 	authExchange,

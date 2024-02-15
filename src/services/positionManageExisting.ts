@@ -67,25 +67,27 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		const openOrders = user.openOrders.filter((o) => o.pair === pair);
 
 		if (openPos.length === 1 && openOrders.length === 0) {
-			const symbol = context.symbolList.find((s) => s.pair === openPos[0].pair);
-			if (!symbol) return;
-			const quantity = Math.max(
-				Context.minAmountToTrade * symbol.currentPrice * 1.1,
-				Number(openPos[0].coinQuantity)
-			);
+			console.log("Unprotected position for " + openPos[0].pair);
 
-			await positionProtect({
-				symbol,
-				shouldTrade: openPos[0].positionSide,
-				authExchange,
-				quantity: fixPrecision({
-					value: quantity,
-					precision: symbol.quantityPrecision,
-				}),
-				price: symbol.currentPrice,
-				sl: Context.defaultSL,
-				tp: Context.defaultTP,
-			});
+			// const symbol = context.symbolList.find((s) => s.pair === openPos[0].pair);
+			// if (!symbol) return;
+			// const quantity = Math.max(
+			// 	Context.minAmountToTrade * symbol.currentPrice * 1.1,
+			// 	Number(openPos[0].coinQuantity)
+			// );
+
+			// await positionProtect({
+			// 	symbol,
+			// 	shouldTrade: openPos[0].positionSide,
+			// 	authExchange,
+			// 	quantity: fixPrecision({
+			// 		value: quantity,
+			// 		precision: symbol.quantityPrecision,
+			// 	}),
+			// 	price: symbol.currentPrice,
+			// 	sl: Context.defaultSL,
+			// 	tp: Context.defaultTP,
+			// });
 		}
 	}
 };
