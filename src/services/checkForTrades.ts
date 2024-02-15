@@ -32,29 +32,6 @@ export const checkForTrades = async ({
 		"Strategies: " + chosenStrategies.map((s) => s?.stgName).join(", ")
 	);
 
-	let usersLogs = "Users: ";
-
-	context.userList.forEach((u) => {
-		const openPosUniquePairs = Array.from(
-			new Set(u.openPositions.map((x) => x.pair))
-		);
-		usersLogs += ` ${u.name}\n`;
-		usersLogs += `$${u.balanceUSDT.toFixed(2)} USDT Today: ${formatPercent(
-			u.todayPnlPt
-		)}  Open: ${formatPercent(u.openPosPnlPt)}  Total: ${formatPercent(
-			u.totalPnlPt
-		)}\n`;
-
-		openPosUniquePairs.forEach((pair) => {
-			const pos = u.openPositions.filter((s) => s.pair === pair);
-			let posStatus = "UNKNOWN";
-			if (pos.length === 1) posStatus = "OPEN";
-			if (pos.length === 2)
-				(posStatus = "HEDGED"), (usersLogs += " " + pair + " " + posStatus);
-		});
-	});
-	console.log(usersLogs);
-
 	for (const strategy of chosenStrategies.filter(
 		(s) => s && s.interval === Context.interval
 	)) {

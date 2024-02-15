@@ -66,6 +66,7 @@ export const getUserList = async () => {
 				coinQuantity: Math.abs(Math.abs(Number(p.positionAmt))).toString(),
 				startTime: getDate(p.updateTime).date,
 				entryPriceUSDT: Number(p.entryPrice),
+				status: "UNKNOWN",
 			};
 		});
 
@@ -80,6 +81,19 @@ export const getUserList = async () => {
 				orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
 			};
 		});
+
+		for (let posIndex = 0; posIndex < openPositions.length; posIndex++) {
+			const pos = openPositions[posIndex];
+
+			const samePairPositions = openPositions.filter(
+				(s) => s.pair === pos.pair
+			);
+
+			if (samePairPositions.length === 1)
+				openPositions[posIndex].status = "OPEN";
+			if (samePairPositions.length === 2)
+				openPositions[posIndex].status = "HEDGED";
+		}
 
 		//Balance
 		const pricesList = await authExchange.futuresPrices();
@@ -126,7 +140,8 @@ export const getUserList = async () => {
 					Context.leverage
 			);
 		}, 0);
-		const openPosPnlPt = Number(openPosPnl) / Number(balanceUSDT);
+		const openPosPnlPt =
+			Number(openPosPnl) / Number(balanceUSDT - openPosPnl) || 0;
 
 		//Days working
 		const daysAgo = (
@@ -135,7 +150,7 @@ export const getUserList = async () => {
 		).toFixed();
 
 		//Text
-		const text =
+		let text =
 			(user.name?.split(" ")[0] || "") +
 			" (" +
 			user.branch +
@@ -149,6 +164,16 @@ export const getUserList = async () => {
 			formatPercent(Number(totalPnlPt || 0)) +
 			"; OpenPosPnl " +
 			formatPercent(Number(openPosPnlPt));
+
+		if (openPositions.length) {
+			const loggedPos: string[] = [];
+
+			for (const pos of openPositions) {
+				if (loggedPos.includes(pos.pair)) continue;
+				text += `\n ${pos.pair} ${pos.status}`;
+				loggedPos.push(pos.pair);
+			}
+		}
 
 		userList[index] = {
 			...user,

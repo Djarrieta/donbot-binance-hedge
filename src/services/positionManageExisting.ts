@@ -3,6 +3,7 @@ import { Context } from "../models/Context";
 import { User } from "../models/User";
 import { positionProtect } from "./positionProtect";
 import { fixPrecision } from "../utils/fixPrecision";
+import { formatPercent } from "../utils/formatPercent";
 
 export const positionManageExisting = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
@@ -90,4 +91,5 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			// });
 		}
 	}
+	console.log(user.text);
 };
