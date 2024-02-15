@@ -8,11 +8,12 @@ import {
 } from "./services/getSymbolList";
 import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
+import { positionManageExisting } from "./services/positionManageExisting";
+import { positionManageNew } from "./services/positionManageNew";
+import { updateUnreadyPairsWithOpenPos } from "./services/updateUnreadyPairsWithOpenPos";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
-import { positionManageNew } from "./services/positionManageNew";
-import { positionManageExisting } from "./services/positionManageExisting";
 
 export const trade = async () => {
 	console.log(
@@ -44,8 +45,7 @@ export const trade = async () => {
 
 		await markUnreadySymbols();
 		await getSymbolListVolatility();
-
-		//WIP: ensure open position symbols updated
+		await updateUnreadyPairsWithOpenPos();
 
 		const readySymbols = [...context.symbolList]
 			.filter((s) => s.isReady && !s.isLoading)
