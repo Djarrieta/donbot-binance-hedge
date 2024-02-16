@@ -17,6 +17,7 @@ export interface Position {
 	startTime: Date;
 	entryPriceUSDT: number;
 	status: "UNKNOWN" | "UNPROTECTED" | "PROTECTED" | "HEDGED";
+	pnl: number;
 }
 export interface PlacePosition {
 	symbol: Symbol;

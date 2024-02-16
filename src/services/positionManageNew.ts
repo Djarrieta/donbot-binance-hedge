@@ -76,42 +76,4 @@ export const positionManageNew = async ({
 		quantity,
 		symbol,
 	});
-
-	//Position keep
-	// const openPosUniquePairs = Array.from(
-	// 	new Set(
-	// 		user.openPositions.filter((p) => p.status === "OPEN").map((x) => x.pair)
-	// 	)
-	// );
-	// for (const pair of openPosUniquePairs) {
-	// 	const openPosPairLong = user.openPositions.filter(
-	// 		(p) => p.pair === pair && p.positionSide === "LONG"
-	// 	);
-	// 	const openPosPairShort = user.openPositions.filter(
-	// 		(p) => p.pair === pair && p.positionSide === "SHORT"
-	// 	);
-
-	// 	if (
-	// 		!user.isAddingPosition &&
-	// 		symbol.pair === pair &&
-	// 		openPosPairLong.length === 1 &&
-	// 		openPosPairShort.length === 1 &&
-	// 		openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity
-	// 	) {
-	// 		console.log(
-	// 			"Keeping " + shouldTrade + " position for " + user.name + " in " + pair
-	// 		);
-	// 		//context.userList[userIndex].isAddingPosition = true;
-
-	// 		// await positionKeep({
-	// 		// 	authExchange,
-	// 		// 	shouldTrade,
-	// 		// 	sl,
-	// 		// 	tp: tp * 2,
-	// 		// 	price: symbol.currentPrice,
-	// 		// 	quantity: openPosPairLong[0].coinQuantity,
-	// 		// 	symbol,
-	// 		// });
-	// 	}
-	// }
 };

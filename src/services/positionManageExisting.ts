@@ -115,16 +115,24 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	}
 
 	//Quit if today Pnl > openPosPnl
-	// if (user.todayPnlPt + user.openPosPnlPt > 1 / 100) {
-	// 	for (const pos of user.openPositions) {
-	// 		await authExchange.futuresOrder({
-	// 			type: "MARKET",
-	// 			side: pos.positionSide === "LONG" ? "BUY" : "SELL",
-	// 			positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
-	// 			symbol: pos.pair,
-	// 			quantity: pos.coinQuantity,
-	// 			recvWindow: 59999,
-	// 		});
-	// 	}
-	// }
+	for (const pair of hedgePosUniquePairs) {
+		const openPosSamePair = user.openPositions.filter((p) => p.pair === pair);
+		const samePairOpenPosPnlPt = openPosSamePair.reduce((acc, pos) => {
+			return acc + pos.pnl;
+		}, 0);
+
+		if (user.todayPnlPt - samePairOpenPosPnlPt > 1 / 100) {
+			for (const pos of openPosSamePair) {
+				console.log("Quit Hedged position for " + pos.pair);
+				await authExchange.futuresOrder({
+					type: "MARKET",
+					side: pos.positionSide === "LONG" ? "BUY" : "SELL",
+					positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+					symbol: pos.pair,
+					quantity: pos.coinQuantity,
+					recvWindow: 59999,
+				});
+			}
+		}
+	}
 };

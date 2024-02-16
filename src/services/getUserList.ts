@@ -51,25 +51,6 @@ export const getUserList = async () => {
 			apiSecret: user.secret || "",
 		});
 
-		//Open Positions
-		const positionRisk = await authExchange.futuresPositionRisk({
-			recvWindow: 59999,
-		});
-		const openPositionsUnformatted = positionRisk.filter((x) =>
-			Number(x.positionAmt)
-		);
-
-		const openPositions: Position[] = openPositionsUnformatted.map((p) => {
-			return {
-				pair: p.symbol,
-				positionSide: p.positionSide as PositionSide,
-				coinQuantity: Math.abs(Math.abs(Number(p.positionAmt))).toString(),
-				startTime: getDate(p.updateTime).date,
-				entryPriceUSDT: Number(p.entryPrice),
-				status: "UNKNOWN",
-			};
-		});
-
 		//Open Orders
 		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
 		const openOrders: Order[] = unformattedOpenOrders.map((o) => {
@@ -79,6 +60,39 @@ export const getUserList = async () => {
 				price: Number(o.stopPrice || o.clientOrderId.split("-")[2] || ""),
 				coinQuantity: Number(o.origQty),
 				orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
+			};
+		});
+
+		//Open Positions
+		const pricesList = await authExchange.futuresPrices();
+
+		const positionRisk = await authExchange.futuresPositionRisk({
+			recvWindow: 59999,
+		});
+		const openPositionsUnformatted = positionRisk.filter((x) =>
+			Number(x.positionAmt)
+		);
+
+		const openPositions: Position[] = openPositionsUnformatted.map((p) => {
+			const pair = p.symbol;
+			const positionSide = p.positionSide as PositionSide;
+			const coinQuantity = Math.abs(Math.abs(Number(p.positionAmt))).toString();
+			const entryPriceUSDT = Number(p.entryPrice);
+			const currentPrice = Number(pricesList[pair]) || 0;
+
+			const pnlPt =
+				positionSide === "LONG"
+					? (currentPrice - entryPriceUSDT) / entryPriceUSDT
+					: (entryPriceUSDT - currentPrice) / entryPriceUSDT;
+			const pnl = pnlPt * currentPrice * Number(coinQuantity);
+			return {
+				pair,
+				positionSide,
+				coinQuantity,
+				startTime: getDate(p.updateTime).date,
+				entryPriceUSDT,
+				status: "UNKNOWN",
+				pnl,
 			};
 		});
 
@@ -112,7 +126,6 @@ export const getUserList = async () => {
 		}
 
 		//Balance
-		const pricesList = await authExchange.futuresPrices();
 		const futuresUser = await authExchange.futuresAccountBalance({
 			recvWindow: 59999,
 		});
@@ -142,19 +155,9 @@ export const getUserList = async () => {
 			  (balanceUSDT - historicalPnl[historicalPnl.length - 1].acc)
 			: 0;
 
-		const openPosPnl = openPositions?.reduce((acc, val) => {
-			const currentPrice = Number(pricesList[val.pair]) || 0;
-
-			const pnlPt =
-				val.positionSide === "LONG"
-					? (currentPrice - val.entryPriceUSDT) / val.entryPriceUSDT
-					: (val.entryPriceUSDT - currentPrice) / val.entryPriceUSDT;
-			const pnlUSDT = pnlPt * currentPrice * Number(val.coinQuantity);
-
-			return acc + pnlUSDT;
+		const openPosPnlPt = openPositions?.reduce((acc, pos) => {
+			return acc + pos.pnl;
 		}, 0);
-		const openPosPnlPt =
-			Number(openPosPnl) / Number(balanceUSDT - openPosPnl) || 0;
 
 		//Days working
 		const daysAgo = (
@@ -187,17 +190,10 @@ export const getUserList = async () => {
 				const len =
 					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
 
-				const currentPrice = Number(pricesList[pos.pair]) || 0;
-				const pnlPt =
-					pos.positionSide === "LONG"
-						? (currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
-						: (pos.entryPriceUSDT - currentPrice) / pos.entryPriceUSDT;
-				const pnlUSDT = pnlPt * currentPrice * Number(pos.coinQuantity);
-
-				const pnl = pnlUSDT / balanceUSDT;
 				text += `\n ${pos.pair} ${
 					pos.status
-				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)} `;
+				}; len ${len.toFixed()}; pnl ${formatPercent(pos.pnl)} `;
+
 				loggedPos.push(pos.pair);
 			}
 		}
