@@ -145,16 +145,13 @@ export const getUserList = async () => {
 		const openPosPnl = openPositions?.reduce((acc, val) => {
 			const currentPrice = Number(pricesList[val.pair]) || 0;
 
-			const pnl =
+			const pnlPt =
 				val.positionSide === "LONG"
-					? (currentPrice - val.entryPriceUSDT) / currentPrice
-					: (val.entryPriceUSDT - currentPrice) / currentPrice;
+					? (currentPrice - val.entryPriceUSDT) / val.entryPriceUSDT
+					: (val.entryPriceUSDT - currentPrice) / val.entryPriceUSDT;
+			const pnlUSDT = pnlPt * currentPrice * Number(val.coinQuantity);
 
-			return (
-				acc +
-				((pnl - Context.fee / 2) * (currentPrice * Number(val.coinQuantity))) /
-					Context.leverage
-			);
+			return acc + pnlUSDT;
 		}, 0);
 		const openPosPnlPt =
 			Number(openPosPnl) / Number(balanceUSDT - openPosPnl) || 0;
@@ -186,7 +183,21 @@ export const getUserList = async () => {
 
 			for (const pos of openPositions) {
 				if (loggedPos.includes(pos.pair)) continue;
-				text += `\n ${pos.pair} ${pos.status}`;
+
+				const len =
+					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
+
+				const currentPrice = Number(pricesList[pos.pair]) || 0;
+				const pnlPt =
+					pos.positionSide === "LONG"
+						? (currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
+						: (pos.entryPriceUSDT - currentPrice) / pos.entryPriceUSDT;
+				const pnlUSDT = pnlPt * currentPrice * Number(pos.coinQuantity);
+
+				const pnl = pnlUSDT / balanceUSDT;
+				text += `\n ${pos.pair} ${
+					pos.status
+				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)} `;
 				loggedPos.push(pos.pair);
 			}
 		}
