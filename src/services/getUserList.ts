@@ -158,12 +158,12 @@ export const getUserList = async () => {
 			daysAgo +
 			" days $" +
 			(balanceUSDT || 0).toFixed(2) +
+			"; OpenPosPnl " +
+			formatPercent(Number(openPosPnlPt)) +
 			"; Today " +
 			formatPercent(Number(todayPnlPt || 0)) +
 			"; Total  " +
-			formatPercent(Number(totalPnlPt || 0)) +
-			"; OpenPosPnl " +
-			formatPercent(Number(openPosPnlPt));
+			formatPercent(Number(totalPnlPt || 0));
 
 		if (openPositions.length) {
 			const loggedPos: string[] = [];

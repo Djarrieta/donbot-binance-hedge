@@ -20,6 +20,21 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		new Set(user.openOrders.map((x) => x.pair))
 	);
 
+	//Quit if today Pnl > openPosPnl
+	// if (user.todayPnlPt + user.openPosPnlPt > 1 / 100) {
+	// 	for (const pos of user.openPositions) {
+	// 		await authExchange.futuresOrder({
+	// 			type: "MARKET",
+	// 			side: pos.positionSide === "LONG" ? "BUY" : "SELL",
+	// 			positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+	// 			symbol: pos.pair,
+	// 			quantity: pos.coinQuantity,
+	// 			recvWindow: 59999,
+	// 		});
+	// 	}
+	// }
+
+	//Cancel orders when no open positions
 	if (openOrdersUniquePairs.length && !openPosUniquePairs.length) {
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
