@@ -6,7 +6,7 @@ export const PosType = {
 	PS: "PS",
 	HE: "HE",
 	TP: "TP",
-	KP: "KP",
+	TR: "TR",
 	UN: "UN",
 };
 
@@ -24,6 +24,8 @@ export interface PlacePosition {
 	price: number;
 	sl: number;
 	tp: number;
+	tr?: number;
+	cb?: number;
 	shouldTrade: PositionSide;
 	authExchange: IBinance;
 	quantity: string;

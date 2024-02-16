@@ -70,7 +70,8 @@ export const trade = async () => {
 							shouldTrade: trade.stgResponse.shouldTrade,
 							sl: trade.stgResponse.sl,
 							tp: Number(trade.stgResponse.tp),
-							callback: Number(trade.stgResponse.sl),
+							tr: Number(trade.stgResponse.tp),
+							cb: Number(trade.stgResponse.cb),
 						});
 				}
 			}
