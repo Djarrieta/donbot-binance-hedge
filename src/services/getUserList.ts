@@ -51,6 +51,14 @@ export const getUserList = async () => {
 			apiSecret: user.secret || "",
 		});
 
+		//Balance
+		const futuresUser = await authExchange.futuresAccountBalance({
+			recvWindow: 59999,
+		});
+		const balanceUSDT = Number(
+			futuresUser.filter((pair) => pair.asset === "USDT")[0].balance
+		);
+
 		//Open Orders
 		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
 		const openOrders: Order[] = unformattedOpenOrders.map((o) => {
@@ -84,7 +92,8 @@ export const getUserList = async () => {
 				positionSide === "LONG"
 					? (currentPrice - entryPriceUSDT) / entryPriceUSDT
 					: (entryPriceUSDT - currentPrice) / entryPriceUSDT;
-			const pnl = pnlPt * currentPrice * Number(coinQuantity);
+
+			const pnl = (pnlPt * currentPrice * Number(coinQuantity)) / balanceUSDT;
 			return {
 				pair,
 				positionSide,
@@ -124,14 +133,6 @@ export const getUserList = async () => {
 				openPositions[posIndex].status = "HEDGED";
 			}
 		}
-
-		//Balance
-		const futuresUser = await authExchange.futuresAccountBalance({
-			recvWindow: 59999,
-		});
-		const balanceUSDT = Number(
-			futuresUser.filter((pair) => pair.asset === "USDT")[0].balance
-		);
 
 		//PNL
 		const { historicalPnl } = await getHistoricalPnl({ user });
