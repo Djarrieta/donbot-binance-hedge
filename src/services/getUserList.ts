@@ -88,11 +88,27 @@ export const getUserList = async () => {
 			const samePairPositions = openPositions.filter(
 				(s) => s.pair === pos.pair
 			);
+			const openPosPairLong = openPositions.filter(
+				(p) => p.pair === pos.pair && p.positionSide === "LONG"
+			);
+			const openPosPairShort = openPositions.filter(
+				(p) => p.pair === pos.pair && p.positionSide === "SHORT"
+			);
+			const samePairOpenOrders = openOrders.filter((o) => o.pair === pos.pair);
 
-			if (samePairPositions.length === 1)
-				openPositions[posIndex].status = "OPEN";
-			if (samePairPositions.length === 2)
+			if (samePairPositions.length === 1 && samePairOpenOrders.length < 2) {
+				openPositions[posIndex].status = "UNPROTECTED";
+			}
+			if (samePairPositions.length === 1 && samePairOpenOrders.length === 2) {
+				openPositions[posIndex].status = "PROTECTED"; //WIP validate order type
+			}
+			if (
+				openPosPairLong.length === 1 &&
+				openPosPairShort.length === 1 &&
+				!samePairOpenOrders.length
+			) {
 				openPositions[posIndex].status = "HEDGED";
+			}
 		}
 
 		//Balance

@@ -37,6 +37,9 @@ export const trade = async () => {
 	for (const user of context.userList) {
 		await positionManageExisting({ user });
 	}
+	for (const user of context.userList) {
+		console.log(user.text);
+	}
 
 	cron.schedule(CronInterval["5m"], async () => {
 		await delay(1000);
@@ -81,6 +84,9 @@ export const trade = async () => {
 			positionManageExisting({ user });
 		}
 		context.userList = await getUserList();
+		for (const user of context.userList) {
+			console.log(user.text);
+		}
 	});
 };
 

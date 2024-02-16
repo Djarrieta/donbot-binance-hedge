@@ -22,11 +22,12 @@ export class Context {
 	public static leverage = 10; //WIP: Implement
 	public static lookBackLength = 200;
 	public static lookBackLengthBacktest = Interval["1M"] / Interval["5m"];
+	public static maxHedgePos = 1;
 	public static maxOpenPos = 2;
 	public static amountToTradePt = 0.25;
 	public static maxTradeLength = 200;
 	public static minVolatility = 10 / 100;
-	public static minAmountToTrade = 5;
+	public static minAmountToTrade = 6;
 	public static fee = 0.0005;
 	public static defaultSL = 10 / 100;
 	public static defaultTP = 1 / 100;

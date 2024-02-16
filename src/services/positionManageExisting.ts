@@ -3,7 +3,6 @@ import { Context } from "../models/Context";
 import { User } from "../models/User";
 import { positionProtect } from "./positionProtect";
 import { fixPrecision } from "../utils/fixPrecision";
-import { formatPercent } from "../utils/formatPercent";
 
 export const positionManageExisting = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
@@ -13,28 +12,14 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	const context = await Context.getInstance();
 	const userIndex = context.userList.findIndex((u) => u.id === user.id);
 
-	const openPosUniquePairs = Array.from(
-		new Set(user.openPositions.map((x) => x.pair))
-	);
 	const openOrdersUniquePairs = Array.from(
 		new Set(user.openOrders.map((x) => x.pair))
 	);
 
-	//Quit if today Pnl > openPosPnl
-	// if (user.todayPnlPt + user.openPosPnlPt > 1 / 100) {
-	// 	for (const pos of user.openPositions) {
-	// 		await authExchange.futuresOrder({
-	// 			type: "MARKET",
-	// 			side: pos.positionSide === "LONG" ? "BUY" : "SELL",
-	// 			positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
-	// 			symbol: pos.pair,
-	// 			quantity: pos.coinQuantity,
-	// 			recvWindow: 59999,
-	// 		});
-	// 	}
-	// }
-
 	//Cancel orders when no open positions
+	const openPosUniquePairs = Array.from(
+		new Set(user.openPositions.map((x) => x.pair))
+	);
 	if (openOrdersUniquePairs.length && !openPosUniquePairs.length) {
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
@@ -52,7 +37,12 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	}
 
 	//Cancel orders if Hedge is reached
-	for (const pair of openPosUniquePairs) {
+	const hedgePosUniquePairs = Array.from(
+		new Set(
+			user.openPositions.filter((p) => p.status === "HEDGED").map((x) => x.pair)
+		)
+	);
+	for (const pair of hedgePosUniquePairs) {
 		const openPosPairLong = user.openPositions.filter(
 			(p) => p.pair === pair && p.positionSide === "LONG"
 		);
@@ -77,34 +67,64 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		}
 	}
 
-	//Protect positions with no orders and no Hedge
-	for (const pair of openPosUniquePairs) {
-		const openPos = user.openPositions.filter((p) => p.pair === pair);
-		const openOrders = user.openOrders.filter((o) => o.pair === pair);
+	//Protect unprotected positions
+	const unprotectedPosUniquePairs = Array.from(
+		new Set(
+			user.openPositions
+				.filter((p) => p.status === "UNPROTECTED")
+				.map((x) => x.pair)
+		)
+	);
+	for (const pair of unprotectedPosUniquePairs) {
+		const openPos = user.openPositions.filter((p) => p.pair === pair)[0];
 
-		if (openPos.length === 1 && openOrders.length === 0) {
-			console.log("Unprotected position for " + openPos[0].pair);
+		if (openPos.status === "UNPROTECTED") {
+			console.log("Protecting position for " + openPos.pair);
 
-			// const symbol = context.symbolList.find((s) => s.pair === openPos[0].pair);
-			// if (!symbol) return;
-			// const quantity = Math.max(
-			// 	Context.minAmountToTrade * symbol.currentPrice * 1.1,
-			// 	Number(openPos[0].coinQuantity)
-			// );
+			const symbol = context.symbolList.find((s) => s.pair === openPos.pair);
+			if (!symbol) {
+				console.log(
+					"No information for " + openPos.pair + ". Unable to protect position."
+				);
+				return;
+			}
+			const slPrice =
+				openPos.positionSide === "LONG"
+					? symbol.currentPrice * (1 - Context.defaultSL)
+					: symbol.currentPrice * (1 + Context.defaultSL);
 
-			// await positionProtect({
-			// 	symbol,
-			// 	shouldTrade: openPos[0].positionSide,
-			// 	authExchange,
-			// 	quantity: fixPrecision({
-			// 		value: quantity,
-			// 		precision: symbol.quantityPrecision,
-			// 	}),
-			// 	price: symbol.currentPrice,
-			// 	sl: Context.defaultSL,
-			// 	tp: Context.defaultTP,
-			// });
+			const quantityUSDT = Math.max(
+				slPrice * Number(openPos.coinQuantity),
+				Context.minAmountToTrade
+			);
+			const quantity = fixPrecision({
+				value: quantityUSDT / symbol.currentPrice,
+				precision: symbol.quantityPrecision,
+			});
+
+			await positionProtect({
+				symbol,
+				shouldTrade: openPos.positionSide,
+				authExchange,
+				quantity,
+				price: symbol.currentPrice,
+				sl: Context.defaultSL,
+				tp: Context.defaultTP,
+			});
 		}
 	}
-	console.log(user.text);
+
+	//Quit if today Pnl > openPosPnl
+	// if (user.todayPnlPt + user.openPosPnlPt > 1 / 100) {
+	// 	for (const pos of user.openPositions) {
+	// 		await authExchange.futuresOrder({
+	// 			type: "MARKET",
+	// 			side: pos.positionSide === "LONG" ? "BUY" : "SELL",
+	// 			positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+	// 			symbol: pos.pair,
+	// 			quantity: pos.coinQuantity,
+	// 			recvWindow: 59999,
+	// 		});
+	// 	}
+	// }
 };

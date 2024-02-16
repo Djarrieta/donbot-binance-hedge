@@ -16,7 +16,7 @@ export interface Position {
 	coinQuantity: string;
 	startTime: Date;
 	entryPriceUSDT: number;
-	status: "UNKNOWN" | "OPEN" | "HEDGED";
+	status: "UNKNOWN" | "UNPROTECTED" | "PROTECTED" | "HEDGED";
 }
 export interface PlacePosition {
 	symbol: Symbol;
