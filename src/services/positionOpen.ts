@@ -63,27 +63,27 @@ export const positionOpen = async ({
 			newClientOrderId: PosType.TP + "__" + TPPrice,
 		});
 
-		if (tr && cb) {
-			const TRPriceNumber =
-				shouldTrade === "LONG" ? price * (1 + tr) : price * (1 - tr);
+		// if (tr && cb) {
+		// 	const TRPriceNumber =
+		// 		shouldTrade === "LONG" ? price * (1 + tr) : price * (1 - tr);
 
-			const TRPrice = fixPrecision({
-				value: TRPriceNumber,
-				precision: symbol.pricePrecision,
-			});
+		// 	const TRPrice = fixPrecision({
+		// 		value: TRPriceNumber,
+		// 		precision: symbol.pricePrecision,
+		// 	});
 
-			await authExchange.futuresOrder({
-				type: "TRAILING_STOP_MARKET",
-				side: shouldTrade === "LONG" ? "SELL" : "BUY",
-				positionSide: shouldTrade,
-				symbol: symbol.pair,
-				quantity,
-				callbackRate: (cb * 100).toFixed(),
-				activationPrice: TRPrice,
-				recvWindow: 59999,
-				newClientOrderId: PosType.TR + "__" + TRPrice,
-			});
-		}
+		// 	await authExchange.futuresOrder({
+		// 		type: "TRAILING_STOP_MARKET",
+		// 		side: shouldTrade === "LONG" ? "SELL" : "BUY",
+		// 		positionSide: shouldTrade,
+		// 		symbol: symbol.pair,
+		// 		quantity,
+		// 		callbackRate: (cb * 100).toFixed(),
+		// 		activationPrice: TRPrice,
+		// 		recvWindow: 59999,
+		// 		newClientOrderId: PosType.TR + "__" + TRPrice,
+		// 	});
+		// }
 	} catch (e) {
 		console.log(
 			"Problem opening " + shouldTrade + " position for " + symbol.pair
