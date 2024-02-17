@@ -119,10 +119,10 @@ export const getUserList = async () => {
 			);
 			const samePairOpenOrders = openOrders.filter((o) => o.pair === pos.pair);
 
-			if (samePairPositions.length === 1 && samePairOpenOrders.length < 3) {
+			if (samePairPositions.length === 1 && samePairOpenOrders.length < 2) {
 				openPositions[posIndex].status = "UNPROTECTED";
 			}
-			if (samePairPositions.length === 1 && samePairOpenOrders.length === 3) {
+			if (samePairPositions.length === 1 && samePairOpenOrders.length === 2) {
 				openPositions[posIndex].status = "PROTECTED"; //WIP validate order type
 			}
 			if (
