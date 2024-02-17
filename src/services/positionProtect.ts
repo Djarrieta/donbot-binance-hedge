@@ -9,6 +9,8 @@ export const positionProtect = async ({
 	price,
 	sl,
 	tp,
+	tr,
+	cb,
 }: PlacePosition) => {
 	try {
 		const HEPriceNumber =
@@ -51,6 +53,27 @@ export const positionProtect = async ({
 				stopPrice: TPPrice,
 				recvWindow: 59999,
 				newClientOrderId: PosType.TP + "__" + TPPrice,
+			});
+		}
+		if (tr && cb) {
+			const TRPriceNumber =
+				shouldTrade === "LONG" ? price * (1 + tr) : price * (1 - tr);
+
+			const TRPrice = fixPrecision({
+				value: TRPriceNumber,
+				precision: symbol.pricePrecision,
+			});
+
+			await authExchange.futuresOrder({
+				type: "TRAILING_STOP_MARKET",
+				side: shouldTrade === "LONG" ? "SELL" : "BUY",
+				positionSide: shouldTrade,
+				symbol: symbol.pair,
+				quantity,
+				callbackRate: (cb * 100).toFixed(1),
+				activationPrice: TRPrice,
+				recvWindow: 59999,
+				newClientOrderId: PosType.TR + "__" + TRPrice,
 			});
 		}
 	} catch (e) {

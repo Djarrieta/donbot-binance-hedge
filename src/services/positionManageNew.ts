@@ -44,10 +44,10 @@ export const positionManageNew = async ({
 	);
 
 	if (
+		hedgedPosUniquePairs.length >= 2 ||
+		openPosUniquePairs.length >= 2 ||
+		(hedgedPosUniquePairs.length === 1 && openPosUniquePairs.length >= 1) ||
 		user.isAddingPosition ||
-		hedgedPosUniquePairs.length >= Context.maxHedgePos ||
-		openPosUniquePairs.length >= Context.maxOpenPos ||
-		openPosUniquePairs.length - hedgedPosUniquePairs.length >= 1 ||
 		openPosUniquePairs.includes(symbol.pair) ||
 		Context.shouldStop
 	) {

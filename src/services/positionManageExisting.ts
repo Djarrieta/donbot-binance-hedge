@@ -110,6 +110,8 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 				price: symbol.currentPrice,
 				sl: Context.defaultSL,
 				tp: Context.defaultTP,
+				tr: Context.defaultTR,
+				cb: Context.defaultCB,
 			});
 		}
 	}
