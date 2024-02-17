@@ -122,7 +122,7 @@ export const getUserList = async () => {
 			if (samePairPositions.length === 1 && samePairOpenOrders.length < 2) {
 				openPositions[posIndex].status = "UNPROTECTED";
 			}
-			if (samePairPositions.length === 1 && samePairOpenOrders.length === 2) {
+			if (samePairPositions.length === 1 && samePairOpenOrders.length === 3) {
 				openPositions[posIndex].status = "PROTECTED"; //WIP validate order type
 			}
 			if (
