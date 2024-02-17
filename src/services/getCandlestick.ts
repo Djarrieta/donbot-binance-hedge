@@ -3,7 +3,7 @@ import { Candle } from "../models/Candle";
 import { Interval } from "../models/Interval";
 import { getDate } from "../utils/getDate";
 
-export interface GetCandlestickProps {
+interface GetCandlestickProps {
 	pair: string;
 	interval: Interval;
 	lookBackLength: number;

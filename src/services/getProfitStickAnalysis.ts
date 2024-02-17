@@ -13,7 +13,7 @@ interface GetProfitStickAnalysisProps {
 	stgName: string;
 	maxPairLen: number;
 }
-export interface Stat {
+interface Stat {
 	pair: string;
 	debug: string;
 	pnl: number;

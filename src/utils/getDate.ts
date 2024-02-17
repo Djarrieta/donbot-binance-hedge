@@ -1,4 +1,4 @@
-export const DateString = "YYYY MM DD HH:mm:ss";
+const DateString = "YYYY MM DD HH:mm:ss";
 
 interface getDateProps {
 	date?: Date;

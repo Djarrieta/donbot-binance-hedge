@@ -3,7 +3,7 @@ import { User } from "../models/User";
 import { getDate } from "../utils/getDate";
 import { Interval } from "../models/Interval";
 
-export interface GetHistoricalPnlProps {
+interface GetHistoricalPnlProps {
 	user: User;
 }
 interface HistoricalPnl {
