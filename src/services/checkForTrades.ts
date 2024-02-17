@@ -2,14 +2,12 @@ import { Context } from "../models/Context";
 import { StrategyResponse } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
 import { chosenStrategies } from "../strategies";
-import { formatPercent } from "../utils/formatPercent";
 
 export const checkForTrades = async ({
 	readySymbols,
 }: {
 	readySymbols: Symbol[];
 }) => {
-	const context = await Context.getInstance();
 	const response: {
 		text: string;
 		tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
