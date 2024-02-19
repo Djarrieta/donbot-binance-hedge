@@ -48,7 +48,7 @@ export const trade = async () => {
 
 		await markUnreadySymbols();
 		await getSymbolListVolatility();
-		await updateUnreadyPairsWithOpenPos();
+		//await updateUnreadyPairsWithOpenPos();
 
 		const readySymbols = [...context.symbolList]
 			.filter((s) => s.isReady && !s.isLoading)

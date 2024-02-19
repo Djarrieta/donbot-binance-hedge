@@ -134,8 +134,8 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 					quantity: pos.coinQuantity,
 					recvWindow: 59999,
 				});
-				return;
 			}
+			return;
 		}
 	}
 };
