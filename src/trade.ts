@@ -78,7 +78,7 @@ export const trade = async () => {
 		} else {
 			console.log("No trades found");
 		}
-		await updateUnreadySymbols();
+		//WIP: updateUnreadySymbols should be here without updating users problem
 		await delay(5000);
 		context.userList = await getUserList();
 		for (const user of context.userList) {
@@ -88,6 +88,7 @@ export const trade = async () => {
 		for (const user of context.userList) {
 			console.log(user.text);
 		}
+		await updateUnreadySymbols();
 	});
 };
 
