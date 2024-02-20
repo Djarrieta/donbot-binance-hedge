@@ -33,7 +33,6 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 				userIndex
 			].openOrders.filter((o) => o.pair !== pair);
 		}
-		return;
 	}
 
 	//Cancel orders if Hedge is reached
@@ -123,7 +122,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			return acc + pos.pnl;
 		}, 0);
 
-		if (user.todayPnlPt - samePairOpenPosPnlPt > 1 / 100) {
+		if (user.todayPnlPt + samePairOpenPosPnlPt > 1 / 100) {
 			for (const pos of openPosSamePair) {
 				console.log("Quit Hedged position for " + pos.pair);
 				await authExchange.futuresOrder({
