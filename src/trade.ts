@@ -90,7 +90,7 @@ export const trade = async () => {
 		}
 	});
 
-	cron.schedule(CronInterval["1h"], async () => {
+	cron.schedule(CronInterval["15m"], async () => {
 		console.log("Updating symbols");
 		await updateUnreadySymbols();
 	});
