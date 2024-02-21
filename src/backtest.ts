@@ -159,7 +159,7 @@ export const updateStrategyStat = async () => {
 
 		response.push({
 			stgName: strategy.stgName,
-			status: backtestResult.avPnl > 0,
+			status: backtestResult.avPnl >= 0,
 		});
 		console.log(strategy.stgName + " " + formatPercent(backtestResult.avPnl));
 	}
