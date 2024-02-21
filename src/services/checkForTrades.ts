@@ -13,6 +13,8 @@ export const checkForTrades = async ({
 		tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
 	} = { text: "", tradeArray: [] };
 
+	const context = await Context.getInstance();
+
 	readySymbols.length > 4
 		? console.log(
 				"Checking for trades in  " +
@@ -26,13 +28,22 @@ export const checkForTrades = async ({
 		: console.log(
 				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
 		  );
-	console.log(
-		"Strategies: " + chosenStrategies.map((s) => s?.stgName).join(", ")
+
+	const strategiesToRun = chosenStrategies.filter(
+		(s) =>
+			s &&
+			s.interval === Context.interval &&
+			context.strategyStats
+				.filter((stat) => stat.status)
+				.map((stat) => stat.stgName)
+				.includes(s.stgName)
 	);
 
-	for (const strategy of chosenStrategies.filter(
-		(s) => s && s.interval === Context.interval
-	)) {
+	console.log(
+		"Strategies: " + strategiesToRun.map((s) => s?.stgName).join(", ")
+	);
+
+	for (const strategy of strategiesToRun) {
 		for (const symbol of readySymbols) {
 			const stgResponse =
 				strategy?.validate({

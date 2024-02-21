@@ -1,7 +1,7 @@
 import { Context } from "./models/Context";
 import { Interval } from "./models/Interval";
 import { Stat } from "./models/Stat";
-import { Strategy } from "./models/Strategy";
+import { Strategy, StrategyStat } from "./models/Strategy";
 import { getCandlestick } from "./services/getCandlestick";
 import { getProfitStickAnalysis } from "./services/getProfitStickAnalysis";
 import { getCompletePairList } from "./services/getSymbolList";
@@ -12,7 +12,7 @@ import { getDate } from "./utils/getDate";
 
 export const backtest = async ({
 	strategy,
-	log = true,
+	log,
 }: {
 	strategy: Strategy;
 	log?: boolean;
@@ -130,16 +130,38 @@ export const backtest = async ({
 	return result;
 };
 
-for (const strategy of chosenStrategies) {
-	const startTime = getDate().dateMs;
-	if (!strategy) continue;
-	if (Context.interval !== strategy.interval) continue;
+export const backtestAllAtOne = async () => {
+	for (const strategy of chosenStrategies) {
+		const startTime = getDate().dateMs;
+		if (!strategy) continue;
+		if (Context.interval !== strategy.interval) continue;
 
-	const backtestResult = await backtest({ strategy, log: true });
-	console.table({
-		...backtestResult,
-		avPnl: formatPercent(backtestResult.avPnl),
-	});
-	const endTime = getDate().dateMs;
-	console.log(((endTime - startTime) / Interval["1m"]).toFixed() + " minutes");
-}
+		const backtestResult = await backtest({ strategy, log: true });
+		console.table({
+			...backtestResult,
+			avPnl: formatPercent(backtestResult.avPnl),
+		});
+		const endTime = getDate().dateMs;
+		console.log(
+			((endTime - startTime) / Interval["1m"]).toFixed() + " minutes"
+		);
+	}
+};
+
+export const updateStrategyStat = async () => {
+	console.log("Updating strategy stats");
+	const response: StrategyStat[] = [];
+	for (const strategy of chosenStrategies) {
+		if (!strategy) continue;
+		if (Context.interval !== strategy.interval) continue;
+
+		const backtestResult = await backtest({ strategy, log: false });
+
+		response.push({
+			stgName: strategy.stgName,
+			status: backtestResult.avPnl > 0,
+		});
+		console.log(strategy.stgName + " " + formatPercent(backtestResult.avPnl));
+	}
+	return response;
+};

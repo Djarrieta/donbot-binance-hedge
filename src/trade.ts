@@ -1,4 +1,5 @@
 import cron from "node-cron";
+import { updateStrategyStat } from "./backtest";
 import { Context } from "./models/Context";
 import { CronInterval } from "./models/Interval";
 import { checkForTrades } from "./services/checkForTrades";
@@ -10,7 +11,6 @@ import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { positionManageExisting } from "./services/positionManageExisting";
 import { positionManageNew } from "./services/positionManageNew";
-import { updateUnreadyPairsWithOpenPos } from "./services/updateUnreadyPairsWithOpenPos";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
@@ -33,6 +33,7 @@ export const trade = async () => {
 	console.log(
 		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 	);
+	context.strategyStats = await updateStrategyStat();
 
 	for (const user of context.userList) {
 		await positionManageExisting({ user });
@@ -93,6 +94,10 @@ export const trade = async () => {
 	cron.schedule(CronInterval["15m"], async () => {
 		console.log("Updating symbols");
 		await updateUnreadySymbols();
+	});
+
+	cron.schedule(CronInterval["4h"], async () => {
+		context.strategyStats = await updateStrategyStat();
 	});
 };
 
