@@ -46,13 +46,7 @@ export const positionManageNew = async ({
 	if (
 		hedgedPosUniquePairs.length >= 2 ||
 		openPosUniquePairs.length >= 2 ||
-		(hedgedPosUniquePairs.length === 1 && openPosUniquePairs.length >= 1)
-	) {
-		console.log("Too many positions opened");
-		return;
-	}
-
-	if (
+		(hedgedPosUniquePairs.length === 1 && openPosUniquePairs.length > 1) ||
 		user.isAddingPosition ||
 		openPosUniquePairs.includes(symbol.pair) ||
 		Context.shouldStop
