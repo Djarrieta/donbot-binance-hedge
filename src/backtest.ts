@@ -165,7 +165,10 @@ export const updateStrategyStat = async () => {
 			"New stats for " +
 				strategy.stgName +
 				" " +
-				formatPercent(backtestResult.avPnl)
+				formatPercent(backtestResult.avPnl) +
+				" " +
+				backtestResult.tradesQty +
+				" trades."
 		);
 	}
 	return response;
