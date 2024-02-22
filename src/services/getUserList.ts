@@ -187,13 +187,16 @@ export const getUserList = async () => {
 
 			for (const pos of openPositions) {
 				if (loggedPos.includes(pos.pair)) continue;
+				const pnl = openPositions
+					.filter((s) => s.pair === pos.pair)
+					.reduce((acc, val) => acc + val.pnl, 0);
 
 				const len =
 					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
 
 				text += `\n ${pos.pair} ${
 					pos.status
-				}; len ${len.toFixed()}; pnl ${formatPercent(pos.pnl)} `;
+				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)} `;
 
 				loggedPos.push(pos.pair);
 			}
