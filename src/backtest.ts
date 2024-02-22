@@ -161,7 +161,12 @@ export const updateStrategyStat = async () => {
 			stgName: strategy.stgName,
 			status: backtestResult.avPnl >= 0,
 		});
-		console.log(strategy.stgName + " " + formatPercent(backtestResult.avPnl));
+		console.log(
+			"New stats for " +
+				strategy.stgName +
+				" " +
+				formatPercent(backtestResult.avPnl)
+		);
 	}
 	return response;
 };
