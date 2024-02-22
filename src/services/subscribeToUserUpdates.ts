@@ -1,5 +1,6 @@
 import Binance, { Binance as IBinance } from "binance-api-node";
 import OldBinance from "node-binance-api";
+import { Context } from "../models/Context";
 import { PosType } from "../models/Position";
 import { User } from "../models/User";
 
@@ -49,6 +50,10 @@ const handleOrderUpdate = async ({
 			authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
 			});
+			if (orderType === PosType.HE) {
+				const context = await Context.getInstance();
+				context.strategyStats = [];
+			}
 			return;
 		}
 
