@@ -10,7 +10,10 @@ export const updateUnreadySymbols = async () => {
 		const symbol = context.symbolList[index];
 		if (!symbol.isLoading) continue;
 
-		const isOk = checkCandlestick({ candlestick: symbol.candlestick });
+		const isOk = checkCandlestick({
+			candlestick: symbol.candlestick,
+			interval: Context.interval,
+		});
 		if (!isOk) {
 			const candlestick = await getCandlestick({
 				pair: symbol.pair,
