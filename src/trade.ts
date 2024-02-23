@@ -92,7 +92,8 @@ export const trade = async () => {
 	});
 
 	cron.schedule(CronInterval["15m"], async () => {
-		console.log("Updating symbols");
+		console.log("");
+		console.log(getDate().dateString, "Updating symbols");
 		await updateUnreadySymbols();
 	});
 

@@ -171,6 +171,8 @@ export const updateStrategyStat = async () => {
 				s.status ? "Active" : "Inactive"
 			}; ${s.trades} trades`;
 		});
+
+		console.log("");
 		console.log(log);
 	}
 };
