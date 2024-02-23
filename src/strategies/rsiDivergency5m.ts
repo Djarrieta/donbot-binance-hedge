@@ -118,22 +118,3 @@ export default stg;
 // │      tradesQty │ 745                 │
 // │  avTradeLength │ 26                  │
 // └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency5m     │
-// │             sl │ 10.00%              │
-// │             tp │ 1.00%               │
-// │      startTime │ 2024 01 16 12:25:21 │
-// │        endTime │ 2024 02 15 12:46:22 │
-// │       lookBack │ 8640                │
-// │       interval │ 5m                  │
-// │ maxTradeLength │ 200                 │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 89.10%              │
-// │          avPnl │ 0.16%               │
-// │       totalPnl │ 121.83%             │
-// │      tradesQty │ 780                 │
-// │  avTradeLength │ 35                  │
-// └────────────────┴─────────────────────┘

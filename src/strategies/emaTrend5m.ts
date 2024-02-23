@@ -20,7 +20,7 @@ const stg: Strategy = {
 
 		const MIN_RSI = 30;
 		const MIN_VOL = 10 / 100;
-		const MAX_VOL = 30 / 100;
+		const MAX_VOL = 25 / 100;
 
 		const closePrices = candlestick.map((candle) => candle.close);
 		const ema20Array = EMA.calculate({ period: 20, values: closePrices });
@@ -77,15 +77,15 @@ export default stg;
 // │        stgName │ emaTrend5m          │
 // │             sl │ 5.00%               │
 // │             tp │ 1.00%               │
-// │      startTime │ 2023 12 24 17:44:01 │
-// │        endTime │ 2024 02 22 18:29:44 │
-// │       lookBack │ 17280               │
+// │      startTime │ 2024 01 23 19:04:16 │
+// │        endTime │ 2024 02 22 19:23:48 │
+// │       lookBack │ 8640                │
 // │       interval │ 5m                  │
 // │ maxTradeLength │ 200                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 80.34%              │
-// │          avPnl │ 0.08%               │
-// │       totalPnl │ 37.00%              │
-// │      tradesQty │ 473                 │
-// │  avTradeLength │ 46                  │
+// │      avWinRate │ 87.04%              │
+// │          avPnl │ 0.26%               │
+// │       totalPnl │ 41.74%              │
+// │      tradesQty │ 162                 │
+// │  avTradeLength │ 44                  │
 // └────────────────┴─────────────────────┘
