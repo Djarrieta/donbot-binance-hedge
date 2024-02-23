@@ -43,6 +43,13 @@ export const positionManageNew = async ({
 		new Set(user.openPositions.map((x) => x.pair))
 	);
 
+	console.log({
+		openPosUniquePairs: openPosUniquePairs.length,
+		hedgedPosUniquePairs: hedgedPosUniquePairs.length,
+		isAddingPosition: user.isAddingPosition,
+		includes: openPosUniquePairs.includes(symbol.pair),
+	});
+
 	if (
 		(!hedgedPosUniquePairs.length && openPosUniquePairs.length >= 2) ||
 		(hedgedPosUniquePairs.length >= 1 && openPosUniquePairs.length >= 1) ||
