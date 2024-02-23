@@ -1,19 +1,22 @@
-import { Context } from "../models/Context";
-import { StrategyResponse } from "../models/Strategy";
+import { Interval } from "../models/Interval";
+import { Strategy, StrategyResponse, StrategyStat } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
-import { chosenStrategies } from "../strategies";
 
 export const checkForTrades = async ({
 	readySymbols,
+	interval,
+	strategyStats,
+	chosenStrategies,
 }: {
 	readySymbols: Symbol[];
+	interval: Interval;
+	strategyStats: StrategyStat[];
+	chosenStrategies: Strategy[];
 }) => {
 	const response: {
 		text: string;
 		tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
 	} = { text: "", tradeArray: [] };
-
-	const context = await Context.getInstance();
 
 	readySymbols.length > 4
 		? console.log(
@@ -31,8 +34,8 @@ export const checkForTrades = async ({
 
 	const strategiesToRun = chosenStrategies.filter(
 		(s) =>
-			s.interval === Context.interval &&
-			context.strategyStats
+			s.interval === interval &&
+			strategyStats
 				.filter((stat) => stat.status)
 				.map((stat) => stat.stgName)
 				.includes(s.stgName)

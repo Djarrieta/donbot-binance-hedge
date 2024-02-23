@@ -12,6 +12,7 @@ import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { positionManageExisting } from "./services/positionManageExisting";
 import { positionManageNew } from "./services/positionManageNew";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
+import { chosenStrategies } from "./strategies";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
 
@@ -57,6 +58,9 @@ export const trade = async () => {
 
 		const { text: tradeArrayText, tradeArray } = await checkForTrades({
 			readySymbols,
+			interval: Context.interval,
+			strategyStats: context.strategyStats,
+			chosenStrategies,
 		});
 
 		if (tradeArray.length) {
