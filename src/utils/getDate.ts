@@ -1,13 +1,7 @@
-const DateString = "YYYY MM DD HH:mm:ss";
-
-interface getDateProps {
-	date?: Date;
-	dateString?: typeof DateString;
-	dateMs?: number;
-}
+export type DateString = "YYYY MM DD HH:mm:ss";
 
 export const getDate = (
-	date: Date | typeof DateString | number | null = new Date()
+	date: Date | DateString | number | null = new Date()
 ) => {
 	let finalDate;
 
@@ -41,6 +35,6 @@ export const getDate = (
 		date: finalDate,
 		dateMs: finalDate.getTime(),
 		dateString:
-			`${year} ${month} ${day} ${hour}:${minute}:${second}` as typeof DateString,
+			`${year} ${month} ${day} ${hour}:${minute}:${second}` as DateString,
 	};
 };
