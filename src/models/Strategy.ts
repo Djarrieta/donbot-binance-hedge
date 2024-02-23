@@ -24,4 +24,6 @@ export interface Strategy {
 export interface StrategyStat {
 	stgName: string;
 	status: boolean;
+	trades: number;
+	avPnl: number;
 }

@@ -149,27 +149,28 @@ export const backtestAllAtOne = async () => {
 };
 
 export const updateStrategyStat = async () => {
-	console.log("Updating strategy stats");
-	const response: StrategyStat[] = [];
+	const context = await Context.getInstance();
+
 	for (const strategy of chosenStrategies) {
-		if (!strategy) continue;
 		if (Context.interval !== strategy.interval) continue;
 
 		const backtestResult = await backtest({ strategy, log: false });
 
-		response.push({
-			stgName: strategy.stgName,
-			status: backtestResult.avPnl >= 0,
+		context.strategyStats = [
+			...context.strategyStats.filter((s) => s.stgName !== strategy.stgName),
+			{
+				stgName: strategy.stgName,
+				status: backtestResult.avPnl >= 0,
+				trades: backtestResult.tradesQty,
+				avPnl: backtestResult.avPnl,
+			},
+		];
+		let log = getDate().dateString + " Stats updated: ";
+		context.strategyStats.forEach((s) => {
+			log += `\n ${s.stgName} ${formatPercent(s.avPnl)} ${
+				s.status ? "Active" : "Inactive"
+			}; ${s.trades} trades`;
 		});
-		console.log(
-			"New stats for " +
-				strategy.stgName +
-				" " +
-				formatPercent(backtestResult.avPnl) +
-				" " +
-				backtestResult.tradesQty +
-				" trades."
-		);
+		console.log(log);
 	}
-	return response;
 };

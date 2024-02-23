@@ -33,7 +33,7 @@ export const trade = async () => {
 	console.log(
 		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
 	);
-	context.strategyStats = await updateStrategyStat();
+	updateStrategyStat();
 
 	for (const user of context.userList) {
 		await positionManageExisting({ user });
@@ -97,7 +97,7 @@ export const trade = async () => {
 	});
 
 	cron.schedule(CronInterval["4h"], async () => {
-		context.strategyStats = await updateStrategyStat();
+		updateStrategyStat();
 	});
 };
 

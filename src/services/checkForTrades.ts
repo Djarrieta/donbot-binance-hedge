@@ -31,7 +31,6 @@ export const checkForTrades = async ({
 
 	const strategiesToRun = chosenStrategies.filter(
 		(s) =>
-			s &&
 			s.interval === Context.interval &&
 			context.strategyStats
 				.filter((stat) => stat.status)
