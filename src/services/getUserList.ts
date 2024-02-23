@@ -137,16 +137,8 @@ export const getUserList = async () => {
 		//PNL
 		const { historicalPnl } = await getHistoricalPnl({ user });
 
-		const year = new Date().getFullYear();
-		const month = new Date().getMonth() + 1;
-		const day = new Date().getDate();
-
-		const today = `${year}-${month < 10 ? "0" : ""}${month}-${
-			day < 10 ? "0" : ""
-		}${day}`;
-
 		const todayPnl =
-			today === historicalPnl[historicalPnl.length - 1].time
+			getDate().shortDateString === historicalPnl[historicalPnl.length - 1].time
 				? historicalPnl[historicalPnl.length - 1].value
 				: 0;
 		const todayPnlPt = todayPnl ? todayPnl / (balanceUSDT - todayPnl) || 0 : 0;

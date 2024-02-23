@@ -50,28 +50,20 @@ export const getHistoricalPnl = async ({ user }: GetHistoricalPnlProps) => {
 	let acc = 0;
 
 	for (const trade of trades) {
-		const { realizedPnl, commission, time } = trade;
-
-		const year = new Date(time).getFullYear();
-		const month = new Date(time).getMonth() + 1;
-		const day = new Date(time).getDate();
-
-		const fullDate = `${year}-${month < 10 ? "0" : ""}${month}-${
-			day < 10 ? "0" : ""
-		}${day}`;
-
+		const { realizedPnl, commission, time: tradeTime } = trade;
 		const pnl = Number(realizedPnl) - Number(commission);
-
 		acc += pnl;
 
-		const existingDayPnl = historicalPnl.find(({ time }) => time === fullDate);
+		const existingDayPnl = historicalPnl.find(
+			({ time }) => time === getDate(tradeTime).shortDateString
+		);
 
 		if (existingDayPnl) {
 			existingDayPnl.value += pnl;
 			existingDayPnl.acc += pnl;
 		} else {
 			historicalPnl.push({
-				time: fullDate,
+				time: getDate(tradeTime).shortDateString,
 				value: pnl,
 				acc,
 			});
