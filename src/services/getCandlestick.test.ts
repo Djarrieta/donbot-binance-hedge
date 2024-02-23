@@ -32,6 +32,7 @@ describe("getCandlestick function", () => {
 			pair: mockPair,
 			interval: mockInterval,
 			lookBackLength: mockLookBackLength,
+			apiLimit: 10,
 		});
 
 		expect(result).toBeInstanceOf(Array);

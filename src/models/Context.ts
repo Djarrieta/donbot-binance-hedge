@@ -17,6 +17,7 @@ export class Context {
 	userList: User[] = [];
 	strategyStats: StrategyStat[] = [];
 
+	public static candlestickAPILimit = 500;
 	public static branch: "main" | "test" | "risk" = "test";
 	public static interval = Interval["5m"];
 	public static leverage = 10; //WIP: Implement

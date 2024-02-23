@@ -58,6 +58,7 @@ export const backtest = async ({
 			pair,
 			interval: strategy.interval,
 			lookBackLength: Context.lookBackLengthBacktest,
+			apiLimit: Context.candlestickAPILimit,
 		});
 
 		let candleIndex = 0;

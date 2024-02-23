@@ -19,6 +19,7 @@ export const updateUnreadySymbols = async () => {
 				pair: symbol.pair,
 				lookBackLength: Context.lookBackLength,
 				interval: Context.interval,
+				apiLimit: Context.candlestickAPILimit,
 			});
 
 			context.symbolList[index].currentPrice =

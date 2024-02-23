@@ -7,15 +7,17 @@ interface GetCandlestickProps {
 	pair: string;
 	interval: Interval;
 	lookBackLength: number;
+	apiLimit: number;
 }
 
 export const getCandlestick = async ({
 	pair,
 	interval,
 	lookBackLength,
+	apiLimit,
 }: GetCandlestickProps) => {
 	let candlestick: Candle[] = [];
-	const API_LIMIT = 500;
+
 	const exchange = Binance();
 
 	let n = lookBackLength;
@@ -26,7 +28,7 @@ export const getCandlestick = async ({
 			symbol: pair,
 			interval: Interval[interval] as CandleChartInterval_LT,
 			startTime,
-			limit: Math.min(lookBackLength, API_LIMIT),
+			limit: Math.min(lookBackLength, apiLimit),
 		});
 
 		const formattedCandlestick = unformattedCandlestick.map(
@@ -50,7 +52,7 @@ export const getCandlestick = async ({
 			candlestick.push(...formattedCandlestick);
 		}
 
-		n -= API_LIMIT;
+		n -= apiLimit;
 	} while (n > 0);
 
 	return candlestick;

@@ -68,6 +68,7 @@ export const getCompletePairList = async (priceReq: boolean = true) => {
 					pair,
 					lookBackLength: Context.lookBackLength,
 					interval: Context.interval,
+					apiLimit: Context.candlestickAPILimit,
 			  })
 			: [];
 

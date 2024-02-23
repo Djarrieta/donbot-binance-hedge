@@ -18,6 +18,7 @@ export const updateUnreadyPairsWithOpenPos = async () => {
 			pair,
 			lookBackLength: Context.lookBackLength,
 			interval: Context.interval,
+			apiLimit: Context.candlestickAPILimit,
 		});
 		const updatedSymbol = context.symbolList.filter((s) => s.pair === pair)[0];
 		updatedSymbol.currentPrice = candlestick[candlestick.length - 1].close;
