@@ -21,7 +21,7 @@ export const getCandlestick = async ({
 	let n = lookBackLength;
 
 	do {
-		const startTime = getDate(Date.now() - (n + 1) * interval).dateMs;
+		const startTime = getDate(getDate().dateMs - (n + 1) * interval).dateMs;
 		const unformattedCandlestick = await exchange.futuresCandles({
 			symbol: pair,
 			interval: Interval[interval] as CandleChartInterval_LT,
