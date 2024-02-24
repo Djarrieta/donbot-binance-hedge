@@ -86,14 +86,7 @@ export const getUserList = async () => {
 			const positionSide = p.positionSide as PositionSide;
 			const coinQuantity = Math.abs(Math.abs(Number(p.positionAmt))).toString();
 			const entryPriceUSDT = Number(p.entryPrice);
-			const currentPrice = Number(pricesList[pair]) || 0;
-
-			const pnlPt =
-				positionSide === "LONG"
-					? (currentPrice - entryPriceUSDT) / entryPriceUSDT
-					: (entryPriceUSDT - currentPrice) / entryPriceUSDT;
-
-			const pnl = (pnlPt * currentPrice * Number(coinQuantity)) / balanceUSDT;
+			const pnl = Number(p.unRealizedProfit) / balanceUSDT;
 			return {
 				pair,
 				positionSide,
