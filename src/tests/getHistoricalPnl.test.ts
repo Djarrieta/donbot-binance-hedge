@@ -21,7 +21,20 @@ describe("getHistoricalPnl function", () => {
 	};
 
 	const mockAuthExchange = {
-		futuresUserTrades: jest.fn().mockReturnValue([]),
+		futuresUserTrades: jest.fn().mockReturnValue([
+			{
+				symbol: "BTCUSDT",
+				realizedPnl: "10.0",
+				commission: "1.0",
+				time: new Date("2022-02-01T10:00:00.000Z"),
+			},
+			{
+				symbol: "ETHUSDT",
+				realizedPnl: "-5.0",
+				commission: "0.5",
+				time: new Date("2022-02-01T15:30:00.000Z"),
+			},
+		]),
 	};
 
 	mock.module("binance-api-node", () => ({
@@ -32,6 +45,12 @@ describe("getHistoricalPnl function", () => {
 	test("returns historical PnL data", async () => {
 		const result = await getHistoricalPnl({ user: mockUser });
 
-		expect(result.historicalPnl).toEqual([]);
+		expect(result.historicalPnl).toEqual([
+			{
+				acc: 395.5,
+				time: "2022-02-01",
+				value: 395.5,
+			},
+		]);
 	});
 });
