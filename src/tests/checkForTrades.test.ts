@@ -27,41 +27,45 @@ describe("checkForTrades function", () => {
 			openTime: new Date("2024-02-23T11:00:00Z"),
 		},
 	];
-	const mockSymbol: Symbol = {
-		pair: "BTCUSDT",
-		pricePrecision: 8,
-		quantityPrecision: 6,
-		minQuantityUSD: 10,
-		minNotional: 5,
-		candlestick: mockCandlestick,
-		currentPrice: 45950,
-		isReady: true,
-		isLoading: false,
-		volatility: 2.5,
-	};
-	const mockStrategyStats: StrategyStat[] = [
-		{ stgName: "Strategy1", status: true, avPnl: 0.01, trades: 1 },
-		{ stgName: "Strategy2", status: true, avPnl: 0.01, trades: 1 },
-	];
-	const mockChosenStrategies: Strategy[] = [
-		{
-			stgName: "Strategy1",
+
+	const mockStrategyStats: StrategyStat[] = Array.from(
+		{ length: 5 },
+		(_, index) => ({
+			stgName: `Strategy${index + 1}`,
+			status: true,
+			avPnl: 0.01,
+			trades: 1,
+		})
+	);
+	const mockChosenStrategies: Strategy[] = Array.from(
+		{ length: 5 },
+		(_, index) => ({
+			stgName: `Strategy${index + 1}`,
 			interval: mockInterval,
 			validate: jest.fn(),
 			lookBackLength: 10,
-		},
-		{
-			stgName: "Strategy2",
-			interval: mockInterval,
-			validate: jest.fn(),
-			lookBackLength: 10,
-		},
-	];
-	const mockReadySymbols: Symbol[] = [mockSymbol];
+		})
+	);
+	const getMockReadySymbols: (length: number) => Symbol[] = (length) =>
+		Array.from({ length }, (_, index) => ({
+			pair: "BTCUSDT" + index,
+			pricePrecision: 8,
+			quantityPrecision: 6,
+			minQuantityUSD: 10,
+			minNotional: 5,
+			candlestick: mockCandlestick,
+			currentPrice: 45950,
+			isReady: true,
+			isLoading: false,
+			volatility: 2.5,
+		}));
 
 	const setupMockValidateFunctions = (
 		shouldTradeStrategy1: boolean,
-		shouldTradeStrategy2: boolean
+		shouldTradeStrategy2: boolean,
+		shouldTradeStrategy3: boolean,
+		shouldTradeStrategy4: boolean,
+		shouldTradeStrategy5: boolean
 	) => {
 		mockChosenStrategies[0].validate = jest.fn().mockReturnValue({
 			shouldTrade: shouldTradeStrategy1 ? "LONG" : null,
@@ -71,45 +75,57 @@ describe("checkForTrades function", () => {
 			shouldTrade: shouldTradeStrategy2 ? "SHORT" : null,
 			stgName: "Strategy2",
 		});
+		mockChosenStrategies[2].validate = jest.fn().mockReturnValue({
+			shouldTrade: shouldTradeStrategy3 ? "SHORT" : null,
+			stgName: "Strategy3",
+		});
+		mockChosenStrategies[3].validate = jest.fn().mockReturnValue({
+			shouldTrade: shouldTradeStrategy4 ? "SHORT" : null,
+			stgName: "Strategy4",
+		});
+		mockChosenStrategies[4].validate = jest.fn().mockReturnValue({
+			shouldTrade: shouldTradeStrategy5 ? "SHORT" : null,
+			stgName: "Strategy5",
+		});
 	};
 
 	test("returns correct response when there are 1 trade", async () => {
-		setupMockValidateFunctions(true, false);
+		setupMockValidateFunctions(true, false, false, false, false);
 
 		const result = await checkForTrades({
-			readySymbols: mockReadySymbols,
+			readySymbols: getMockReadySymbols(1),
 			interval: mockInterval,
 			strategyStats: mockStrategyStats,
 			chosenStrategies: mockChosenStrategies,
 		});
 
 		expect(result.text).toContain(
-			"+ Should trade LONG in BTCUSDT with Strategy1"
+			"+ Should trade LONG in BTCUSDT0 with Strategy1"
 		);
 		expect(result.tradeArray.length).toBe(1);
 	});
 
 	test("returns correct response when there are 2 trades", async () => {
-		setupMockValidateFunctions(true, true);
+		setupMockValidateFunctions(true, true, false, false, false);
 
 		const result = await checkForTrades({
-			readySymbols: mockReadySymbols,
+			readySymbols: getMockReadySymbols(6),
 			interval: mockInterval,
 			strategyStats: mockStrategyStats,
 			chosenStrategies: mockChosenStrategies,
 		});
 
 		expect(result.text).toBe(
-			"+ Should trade LONG in BTCUSDT with Strategy1,SHORT in BTCUSDT with Strategy2"
+			"+ Should trade BTCUSDT0, BTCUSDT1, ...(10 more) "
 		);
-		expect(result.tradeArray.length).toBe(2);
+		expect(result.tradeArray.length).toBe(12);
 	});
 
 	test("returns correct response when there are no trades", async () => {
-		setupMockValidateFunctions(false, false);
+		setupMockValidateFunctions(false, false, false, false, false);
 
 		const result = await checkForTrades({
-			readySymbols: mockReadySymbols,
+			readySymbols: getMockReadySymbols(3),
 			interval: mockInterval,
 			strategyStats: mockStrategyStats,
 			chosenStrategies: mockChosenStrategies,
@@ -120,7 +136,7 @@ describe("checkForTrades function", () => {
 	});
 	test("returns correct response when there are no strategies to run", async () => {
 		const result = await checkForTrades({
-			readySymbols: mockReadySymbols,
+			readySymbols: getMockReadySymbols(3),
 			interval: mockInterval,
 			strategyStats: [],
 			chosenStrategies: mockChosenStrategies,
