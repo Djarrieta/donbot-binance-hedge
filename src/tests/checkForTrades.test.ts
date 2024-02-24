@@ -3,7 +3,7 @@ import { Candle } from "../models/Candle";
 import { Interval } from "../models/Interval";
 import { Strategy, StrategyStat } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
-import { checkForTrades } from "./checkForTrades";
+import { checkForTrades } from "../services/checkForTrades";
 
 global.console.log = jest.fn();
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { fixPrecision } from "./fixPrecision";
+import { fixPrecision } from "../utils/fixPrecision";
 
 describe("fixPrecision function", () => {
 	test("correctly fixes precision for a given value and precision", () => {

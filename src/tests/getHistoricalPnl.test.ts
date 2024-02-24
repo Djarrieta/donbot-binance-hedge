@@ -1,5 +1,5 @@
 import { describe, expect, test, mock, jest } from "bun:test";
-import { getHistoricalPnl } from "./getHistoricalPnl";
+import { getHistoricalPnl } from "../services/getHistoricalPnl";
 import { User } from "../models/User";
 
 describe("getHistoricalPnl function", () => {
@@ -15,8 +15,8 @@ describe("getHistoricalPnl function", () => {
 		isActive: true,
 		balanceUSDT: 0,
 		authorized: true,
-		key: "mockKey",
-		secret: "mockSecret",
+		key: "",
+		secret: "",
 		startTime: new Date("2022-01-01T00:00:00.000Z"),
 	};
 

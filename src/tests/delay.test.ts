@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { delay } from "./delay";
+import { delay } from "../utils/delay";
 
 describe("delay function", () => {
 	test("resolves after the specified delay", async () => {

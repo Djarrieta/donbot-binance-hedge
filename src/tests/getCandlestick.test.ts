@@ -1,5 +1,5 @@
 import { describe, expect, test, mock, jest, setSystemTime } from "bun:test";
-import { getCandlestick } from "./getCandlestick";
+import { getCandlestick } from "../services/getCandlestick";
 import { Interval } from "../models/Interval";
 import { getDate } from "../utils/getDate";
 

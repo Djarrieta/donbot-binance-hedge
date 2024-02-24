@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { getDate, DateString, ShortDateString } from "./getDate";
+import { getDate, DateString, ShortDateString } from "../utils/getDate";
 
 describe("getDate function", () => {
 	test("returns the correct date for a given timestamp", () => {

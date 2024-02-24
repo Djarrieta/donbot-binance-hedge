@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { checkCandlestick } from "./checkCandlestick";
+import { checkCandlestick } from "../utils/checkCandlestick";
 import { Interval } from "../models/Interval";
 import { Candle } from "../models/Candle";
 

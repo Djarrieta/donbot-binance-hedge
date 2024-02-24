@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { formatPercent } from "./formatPercent";
+import { formatPercent } from "../utils/formatPercent";
 
 describe("formatPercent function", () => {
 	test("returns the correct percentage string for a given number", () => {
