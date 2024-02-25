@@ -171,7 +171,7 @@ export const updateStrategyStat = async () => {
 		context.strategyStats.forEach((s) => {
 			log += `\n ${s.stgName} ${formatPercent(s.avPnl)} ${
 				s.status ? "Active" : "Inactive"
-			}; ${s.trades} trades; win rate: ${s.winRate}`;
+			}; ${s.trades} trades; ${s.winRate} winRate`;
 		});
 
 		console.log("");
