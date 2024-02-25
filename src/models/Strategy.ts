@@ -26,4 +26,5 @@ export interface StrategyStat {
 	status: boolean;
 	trades: number;
 	avPnl: number;
+	winRate: string;
 }

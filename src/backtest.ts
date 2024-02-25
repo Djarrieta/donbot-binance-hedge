@@ -164,13 +164,14 @@ export const updateStrategyStat = async () => {
 				status: backtestResult.avPnl >= 0,
 				trades: backtestResult.tradesQty,
 				avPnl: backtestResult.avPnl,
+				winRate: backtestResult.avWinRate,
 			},
 		];
 		let log = getDate().dateString + " Stats updated: ";
 		context.strategyStats.forEach((s) => {
 			log += `\n ${s.stgName} ${formatPercent(s.avPnl)} ${
 				s.status ? "Active" : "Inactive"
-			}; ${s.trades} trades`;
+			}; ${s.trades} trades; win rate: ${s.winRate}`;
 		});
 
 		console.log("");

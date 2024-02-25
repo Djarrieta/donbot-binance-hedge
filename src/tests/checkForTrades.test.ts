@@ -35,6 +35,7 @@ describe("checkForTrades function", () => {
 			status: true,
 			avPnl: 0.01,
 			trades: 1,
+			winRate: "1",
 		})
 	);
 	const mockChosenStrategies: Strategy[] = Array.from(

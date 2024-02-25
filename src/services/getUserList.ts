@@ -181,7 +181,7 @@ export const getUserList = async () => {
 
 				text += `\n ${pos.pair} ${
 					pos.status
-				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)} `;
+				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)}`;
 
 				loggedPos.push(pos.pair);
 			}
