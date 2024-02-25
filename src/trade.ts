@@ -11,6 +11,7 @@ import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { positionManageExisting } from "./services/positionManageExisting";
 import { positionManageNew } from "./services/positionManageNew";
+import { subscribeToSymbolUpdates } from "./services/subscribeToSymbolUpdates";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { chosenStrategies } from "./strategies";
 import { delay } from "./utils/delay";
@@ -23,7 +24,11 @@ export const trade = async () => {
 	);
 	const context = await Context.getInstance();
 
-	await getSymbolList();
+	context.symbolList = await getSymbolList();
+	for (const symbol of context.symbolList) {
+		subscribeToSymbolUpdates({ pair: symbol.pair, interval: Context.interval });
+	}
+
 	console.log(
 		getDate().dateString,
 		context.symbolList.length + " symbols updated!"
