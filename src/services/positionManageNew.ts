@@ -47,7 +47,7 @@ export const positionManageNew = async ({
 		(!hedgedPosUniquePairs.length && openPosUniquePairs.length >= 2) ||
 		(hedgedPosUniquePairs.length >= 1 &&
 			openPosUniquePairs.length - hedgedPosUniquePairs.length >= 1) ||
-		hedgedPosUniquePairs.length >= 3 ||
+		hedgedPosUniquePairs.length >= 5 ||
 		user.isAddingPosition ||
 		openPosUniquePairs.includes(symbol.pair) ||
 		Context.shouldStop
