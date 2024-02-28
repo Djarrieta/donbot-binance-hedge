@@ -22,7 +22,8 @@ export interface Position {
 export interface PlacePosition {
 	symbol: Symbol;
 	price: number;
-	sl: number;
+	sl?: number;
+	he?: number;
 	tp: number;
 	tr?: number;
 	cb?: number;

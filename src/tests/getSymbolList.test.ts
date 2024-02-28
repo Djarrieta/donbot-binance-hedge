@@ -1,6 +1,6 @@
 import { describe, expect, jest, mock, test } from "bun:test";
 import { Interval } from "../models/Interval";
-import { getSymbolList } from "./getSymbolList";
+import { getSymbolList } from "../services/getSymbolList";
 
 describe("getSymbolList function", async () => {
 	mock.module("binance-api-node", () => ({

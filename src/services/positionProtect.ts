@@ -8,33 +8,37 @@ export const positionProtect = async ({
 	quantity,
 	price,
 	sl,
+	he,
 	tp,
 	tr,
 	cb,
 }: PlacePosition) => {
 	try {
-		const HEPriceNumber =
-			shouldTrade === "LONG" ? price * (1 - sl) : price * (1 + sl);
+		if (he) {
+			const HEPriceNumber =
+				shouldTrade === "LONG" ? price * (1 - he) : price * (1 + he);
 
-		const HEPrice = fixPrecision({
-			value: HEPriceNumber,
-			precision: symbol.pricePrecision,
-		});
-		await authExchange.futuresCancelAllOpenOrders({
-			symbol: symbol.pair,
-		});
+			const HEPrice = fixPrecision({
+				value: HEPriceNumber,
+				precision: symbol.pricePrecision,
+			});
+			await authExchange.futuresCancelAllOpenOrders({
+				symbol: symbol.pair,
+			});
 
-		await authExchange.futuresOrder({
-			type: "STOP_MARKET",
-			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
-			symbol: symbol.pair,
-			quantity,
-			stopPrice: HEPrice,
-			recvWindow: 59999,
-			newClientOrderId: PosType.HE + "__" + HEPrice,
-			timeInForce: "GTC",
-		});
+			await authExchange.futuresOrder({
+				type: "STOP_MARKET",
+				side: shouldTrade === "LONG" ? "SELL" : "BUY",
+				positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
+				symbol: symbol.pair,
+				quantity,
+				stopPrice: HEPrice,
+				recvWindow: 59999,
+				newClientOrderId: PosType.HE + "__" + HEPrice,
+				timeInForce: "GTC",
+			});
+		}
+
 		if (tp) {
 			const TPPriceNumber =
 				shouldTrade === "LONG" ? price * (1 + tp) : price * (1 - tp);
@@ -45,14 +49,15 @@ export const positionProtect = async ({
 			});
 
 			await authExchange.futuresOrder({
-				type: "TAKE_PROFIT_MARKET",
-				side: shouldTrade === "LONG" ? "SELL" : "BUY",
-				positionSide: shouldTrade,
+				type: "STOP_MARKET",
+				side: shouldTrade === "LONG" ? "BUY" : "SELL",
+				positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
 				symbol: symbol.pair,
 				quantity,
 				stopPrice: TPPrice,
 				recvWindow: 59999,
-				newClientOrderId: PosType.TP + "__" + TPPrice,
+				newClientOrderId: PosType.HE + "__" + TPPrice,
+				timeInForce: "GTC",
 			});
 		}
 		if (tr && cb) {
