@@ -118,11 +118,7 @@ export const getUserList = async () => {
 			if (samePairPositions.length === 1 && samePairOpenOrders.length === 3) {
 				openPositions[posIndex].status = "PROTECTED"; //WIP validate order type
 			}
-			if (
-				openPosPairLong.length === 1 &&
-				openPosPairShort.length === 1 &&
-				!samePairOpenOrders.length
-			) {
+			if (openPosPairLong.length === 1 && openPosPairShort.length === 1) {
 				openPositions[posIndex].status = "HEDGED";
 			}
 		}
