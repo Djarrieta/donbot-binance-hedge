@@ -43,11 +43,21 @@ export const positionManageNew = async ({
 		new Set(user.openPositions.map((x) => x.pair))
 	);
 
+	const tooManyOpenWithoutHedge =
+		!hedgedPosUniquePairs.length &&
+		openPosUniquePairs.length >= Context.maxProtectedPositions + 1;
+
+	const tooManyOpenWithHedge =
+		hedgedPosUniquePairs.length &&
+		openPosUniquePairs.length - hedgedPosUniquePairs.length >=
+			Context.maxProtectedPositions;
+
+	const tooManyHedge = hedgedPosUniquePairs.length >= Context.maxHedgePositions;
+
 	if (
-		(!hedgedPosUniquePairs.length && openPosUniquePairs.length >= 2) ||
-		(hedgedPosUniquePairs.length >= 1 &&
-			openPosUniquePairs.length - hedgedPosUniquePairs.length >= 1) ||
-		hedgedPosUniquePairs.length >= 5 ||
+		tooManyOpenWithoutHedge ||
+		tooManyOpenWithHedge ||
+		tooManyHedge ||
 		user.isAddingPosition ||
 		openPosUniquePairs.includes(symbol.pair) ||
 		Context.shouldStop
