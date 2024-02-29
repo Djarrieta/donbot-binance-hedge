@@ -178,9 +178,10 @@ export const updateStrategyStat = async () => {
 			0
 		);
 		const globalStat = activeStgPnl / activeStgTrades;
-		const increaseMultiplier = globalStat > 0.1 / 100;
 
-		if (increaseMultiplier) {
+		if (globalStat > 0.15 / 100) {
+			context.stgMultiplier = 3;
+		} else if (globalStat > 0.1 / 100) {
 			context.stgMultiplier = 2;
 		} else {
 			context.stgMultiplier = 1;
@@ -192,7 +193,7 @@ export const updateStrategyStat = async () => {
 				s.status ? "Active" : "Inactive"
 			}; ${s.trades} trades; ${s.winRate} winRate`;
 		});
-		log += `\n Max open positions ${
+		log += `\n Exposition level ${
 			context.stgMultiplier * Context.maxProtectedPositions
 		}`;
 
