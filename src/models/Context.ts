@@ -16,7 +16,7 @@ export class Context {
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
 	strategyStats: StrategyStat[] = [];
-	stgMultiplier = 1;
+	expositionLevel = 1;
 
 	public static candlestickAPILimit = 500;
 	public static branch: "main" | "test" | "risk" = "test";

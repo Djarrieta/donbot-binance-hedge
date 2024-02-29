@@ -179,12 +179,12 @@ export const updateStrategyStat = async () => {
 		);
 		const globalStat = activeStgPnl / activeStgTrades;
 
-		if (globalStat > 0.15 / 100) {
-			context.stgMultiplier = 3;
+		if (globalStat > 0.2 / 100) {
+			context.expositionLevel = 3;
 		} else if (globalStat > 0.1 / 100) {
-			context.stgMultiplier = 2;
+			context.expositionLevel = 2;
 		} else {
-			context.stgMultiplier = 1;
+			context.expositionLevel = 1;
 		}
 
 		let log = getDate().dateString + " Stats updated: ";
@@ -194,7 +194,7 @@ export const updateStrategyStat = async () => {
 			}; ${s.trades} trades; ${s.winRate} winRate`;
 		});
 		log += `\n Exposition level ${
-			context.stgMultiplier * Context.maxProtectedPositions
+			context.expositionLevel * Context.maxProtectedPositions
 		}`;
 
 		console.log("");
