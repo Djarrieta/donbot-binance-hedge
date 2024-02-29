@@ -27,25 +27,27 @@ export const getHistoricalPnl = async ({ user }: GetHistoricalPnlProps) => {
 	);
 
 	let n = daysAgo;
-	do {
-		const startTime =
-			getDate(new Date().setHours(0, 0, 0)).dateMs - (n - 1) * Interval["1d"];
+	if (n > 0) {
+		do {
+			const startTime =
+				getDate(new Date().setHours(0, 0, 0)).dateMs - (n - 1) * Interval["1d"];
 
-		const endTime = Math.min(
-			getDate().dateMs,
-			getDate(new Date().setHours(0, 0, 0)).dateMs -
-				(n - API_LIMIT - 1) * Interval["1d"]
-		);
+			const endTime = Math.min(
+				getDate().dateMs,
+				getDate(new Date().setHours(0, 0, 0)).dateMs -
+					(n - API_LIMIT - 1) * Interval["1d"]
+			);
 
-		const newTrades = await authExchange.futuresUserTrades({
-			startTime,
-			endTime,
-		});
+			const newTrades = await authExchange.futuresUserTrades({
+				startTime,
+				endTime,
+			});
 
-		trades.push(...newTrades);
+			trades.push(...newTrades);
 
-		n -= API_LIMIT;
-	} while (n > 0);
+			n -= API_LIMIT;
+		} while (n > 0);
+	}
 
 	let acc = 0;
 

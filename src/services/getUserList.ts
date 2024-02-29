@@ -72,8 +72,6 @@ export const getUserList = async () => {
 		});
 
 		//Open Positions
-		const pricesList = await authExchange.futuresPrices();
-
 		const positionRisk = await authExchange.futuresPositionRisk({
 			recvWindow: 59999,
 		});
@@ -127,6 +125,7 @@ export const getUserList = async () => {
 		const { historicalPnl } = await getHistoricalPnl({ user });
 
 		const todayPnl =
+			historicalPnl.length &&
 			getDate().shortDateString === historicalPnl[historicalPnl.length - 1].time
 				? historicalPnl[historicalPnl.length - 1].value
 				: 0;
