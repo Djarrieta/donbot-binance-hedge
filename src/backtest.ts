@@ -167,12 +167,34 @@ export const updateStrategyStat = async () => {
 				winRate: backtestResult.avWinRate,
 			},
 		];
+
+		const activeStrategies = context.strategyStats.filter((s) => s.status);
+		const activeStgPnl = activeStrategies.reduce(
+			(acc, val) => (acc += val.avPnl * val.trades),
+			0
+		);
+		const activeStgTrades = activeStrategies.reduce(
+			(acc, val) => (acc += val.trades),
+			0
+		);
+		const globalStat = activeStgPnl / activeStgTrades;
+		const increaseMultiplier = globalStat > 0.1 / 100;
+
+		if (increaseMultiplier) {
+			context.stgMultiplier = 2;
+		} else {
+			context.stgMultiplier = 1;
+		}
+
 		let log = getDate().dateString + " Stats updated: ";
 		context.strategyStats.forEach((s) => {
 			log += `\n ${s.stgName} ${formatPercent(s.avPnl)} ${
 				s.status ? "Active" : "Inactive"
 			}; ${s.trades} trades; ${s.winRate} winRate`;
 		});
+		log += `\n Max open positions ${
+			context.stgMultiplier * Context.maxProtectedPositions
+		}`;
 
 		console.log("");
 		console.log(log);
