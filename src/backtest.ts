@@ -181,7 +181,7 @@ export const updateStrategyStat = async () => {
 
 		if (globalStat > 0.2 / 100) {
 			context.expositionLevel = 3;
-		} else if (globalStat > 0.1 / 100) {
+		} else if (globalStat > 0.15 / 100) {
 			context.expositionLevel = 2;
 		} else {
 			context.expositionLevel = 1;
