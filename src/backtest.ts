@@ -179,9 +179,9 @@ export const updateStrategyStat = async () => {
 		);
 		const globalStat = activeStgPnl / activeStgTrades;
 
-		if (globalStat > 0.2 / 100 && activeStgTrades > 100) {
+		if (globalStat > 0.5 / 100 && activeStgTrades > 200) {
 			context.expositionLevel = 3;
-		} else if (globalStat > 0.15 / 100) {
+		} else if (globalStat > 0.2 / 100 && activeStgTrades > 100) {
 			context.expositionLevel = 2;
 		} else {
 			context.expositionLevel = 1;
