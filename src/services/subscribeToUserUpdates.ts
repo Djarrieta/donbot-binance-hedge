@@ -1,5 +1,6 @@
 import Binance, { Binance as IBinance } from "binance-api-node";
 import OldBinance from "node-binance-api";
+import { Context } from "../models/Context";
 import { PosType } from "../models/Position";
 import { User } from "../models/User";
 
@@ -40,13 +41,32 @@ const handleOrderUpdate = async ({
 	const typeVal = clientOrderId.split("__")[0];
 	const orderType = Object.keys(PosType).includes(typeVal) ? typeVal : "UN";
 
-	if (
-		orderStatus === "FILLED" &&
-		Number(quantity) > 0 &&
-		(orderType === PosType.HE || orderType === PosType.TP)
-	) {
-		authExchange.futuresCancelAllOpenOrders({
-			symbol: pair,
-		});
+	if (orderStatus === "FILLED" && Number(quantity) > 0) {
+		if (
+			orderType === PosType.HE ||
+			orderType === PosType.TP ||
+			orderType === PosType.TR
+		) {
+			authExchange.futuresCancelAllOpenOrders({
+				symbol: pair,
+			});
+			if (orderType === PosType.HE) {
+				const context = await Context.getInstance();
+				context.strategyStats = [];
+			}
+			return;
+		}
+
+		const positionRisk = (
+			await authExchange.futuresPositionRisk({
+				recvWindow: 59999,
+			})
+		).filter((x) => Number(x.positionAmt) && x.symbol === pair);
+
+		if (!positionRisk.length) {
+			authExchange.futuresCancelAllOpenOrders({
+				symbol: pair,
+			});
+		}
 	}
 };

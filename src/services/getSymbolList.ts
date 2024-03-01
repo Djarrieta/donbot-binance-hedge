@@ -1,14 +1,12 @@
 import Binance from "binance-api-node";
 import { Candle } from "../models/Candle";
 import { Context } from "../models/Context";
+import { Symbol } from "../models/Symbol";
 import { getCandlestick } from "./getCandlestick";
-import { subscribeToSymbolUpdates } from "./subscribeToSymbolUpdates";
 
 export const getSymbolList = async () => {
-	const context = await Context.getInstance();
-
+	const response: Symbol[] = [];
 	const exchange = Binance();
-
 	const symbolList = await getCompletePairList();
 	const symbolListInfo = await exchange.futuresExchangeInfo();
 
@@ -17,7 +15,7 @@ export const getSymbolList = async () => {
 			(p) => p.symbol === symbol.pair
 		)[0];
 
-		context.symbolList.push({
+		response.push({
 			pair: symbol.pair,
 			minQuantityUSD: symbol.minQuantityUSD,
 			minNotional: symbol.minNotional,
@@ -28,9 +26,8 @@ export const getSymbolList = async () => {
 			isReady: true,
 			isLoading: true,
 		});
-
-		subscribeToSymbolUpdates({ pair: symbol.pair, interval: Context.interval });
 	}
+	return response;
 };
 
 export const getCompletePairList = async (priceReq: boolean = true) => {
@@ -68,6 +65,7 @@ export const getCompletePairList = async (priceReq: boolean = true) => {
 					pair,
 					lookBackLength: Context.lookBackLength,
 					interval: Context.interval,
+					apiLimit: Context.candlestickAPILimit,
 			  })
 			: [];
 

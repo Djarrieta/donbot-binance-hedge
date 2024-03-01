@@ -51,23 +51,13 @@ export const getUserList = async () => {
 			apiSecret: user.secret || "",
 		});
 
-		//Open Positions
-		const positionRisk = await authExchange.futuresPositionRisk({
+		//Balance
+		const futuresUser = await authExchange.futuresAccountBalance({
 			recvWindow: 59999,
 		});
-		const openPositionsUnformatted = positionRisk.filter((x) =>
-			Number(x.positionAmt)
+		const balanceUSDT = Number(
+			futuresUser.filter((pair) => pair.asset === "USDT")[0].balance
 		);
-
-		const openPositions: Position[] = openPositionsUnformatted.map((p) => {
-			return {
-				pair: p.symbol,
-				positionSide: p.positionSide as PositionSide,
-				coinQuantity: Math.abs(Math.abs(Number(p.positionAmt))).toString(),
-				startTime: getDate(p.updateTime).date,
-				entryPriceUSDT: Number(p.entryPrice),
-			};
-		});
 
 		//Open Orders
 		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
@@ -81,28 +71,62 @@ export const getUserList = async () => {
 			};
 		});
 
-		//Balance
-		const pricesList = await authExchange.futuresPrices();
-		const futuresUser = await authExchange.futuresAccountBalance({
+		//Open Positions
+		const positionRisk = await authExchange.futuresPositionRisk({
 			recvWindow: 59999,
 		});
-		const balanceUSDT = Number(
-			futuresUser.filter((pair) => pair.asset === "USDT")[0].balance
+		const openPositionsUnformatted = positionRisk.filter((x) =>
+			Number(x.positionAmt)
 		);
+
+		const openPositions: Position[] = openPositionsUnformatted.map((p) => {
+			const pair = p.symbol;
+			const positionSide = p.positionSide as PositionSide;
+			const coinQuantity = Math.abs(Math.abs(Number(p.positionAmt))).toString();
+			const entryPriceUSDT = Number(p.entryPrice);
+			const pnl = Number(p.unRealizedProfit) / balanceUSDT;
+			return {
+				pair,
+				positionSide,
+				coinQuantity,
+				startTime: getDate(p.updateTime).date,
+				entryPriceUSDT,
+				status: "UNKNOWN",
+				pnl,
+			};
+		});
+
+		for (let posIndex = 0; posIndex < openPositions.length; posIndex++) {
+			const pos = openPositions[posIndex];
+
+			const samePairPositions = openPositions.filter(
+				(s) => s.pair === pos.pair
+			);
+			const openPosPairLong = openPositions.filter(
+				(p) => p.pair === pos.pair && p.positionSide === "LONG"
+			);
+			const openPosPairShort = openPositions.filter(
+				(p) => p.pair === pos.pair && p.positionSide === "SHORT"
+			);
+			const samePairOpenOrders = openOrders.filter((o) => o.pair === pos.pair);
+
+			if (samePairPositions.length === 1 && samePairOpenOrders.length < 2) {
+				openPositions[posIndex].status = "UNPROTECTED";
+			}
+			if (samePairPositions.length === 1 && samePairOpenOrders.length === 3) {
+				openPositions[posIndex].status = "PROTECTED"; //WIP validate order type
+			}
+			if (openPosPairLong.length === 1 && openPosPairShort.length === 1) {
+				openPositions[posIndex].status = "HEDGED";
+			}
+		}
 
 		//PNL
 		const { historicalPnl } = await getHistoricalPnl({ user });
 
-		const year = new Date().getFullYear();
-		const month = new Date().getMonth() + 1;
-		const day = new Date().getDate();
-
-		const today = `${year}-${month < 10 ? "0" : ""}${month}-${
-			day < 10 ? "0" : ""
-		}${day}`;
-
 		const todayPnl =
-			today === historicalPnl[historicalPnl.length - 1].time
+			historicalPnl.length &&
+			getDate().shortDateString === historicalPnl[historicalPnl.length - 1].time
 				? historicalPnl[historicalPnl.length - 1].value
 				: 0;
 		const todayPnlPt = todayPnl ? todayPnl / (balanceUSDT - todayPnl) || 0 : 0;
@@ -112,21 +136,9 @@ export const getUserList = async () => {
 			  (balanceUSDT - historicalPnl[historicalPnl.length - 1].acc)
 			: 0;
 
-		const openPosPnl = openPositions?.reduce((acc, val) => {
-			const currentPrice = Number(pricesList[val.pair]) || 0;
-
-			const pnl =
-				val.positionSide === "LONG"
-					? (currentPrice - val.entryPriceUSDT) / currentPrice
-					: (val.entryPriceUSDT - currentPrice) / currentPrice;
-
-			return (
-				acc +
-				((pnl - Context.fee / 2) * (currentPrice * Number(val.coinQuantity))) /
-					Context.leverage
-			);
+		const openPosPnlPt = openPositions?.reduce((acc, pos) => {
+			return acc + pos.pnl;
 		}, 0);
-		const openPosPnlPt = Number(openPosPnl) / Number(balanceUSDT);
 
 		//Days working
 		const daysAgo = (
@@ -135,7 +147,7 @@ export const getUserList = async () => {
 		).toFixed();
 
 		//Text
-		const text =
+		let text =
 			(user.name?.split(" ")[0] || "") +
 			" (" +
 			user.branch +
@@ -143,12 +155,32 @@ export const getUserList = async () => {
 			daysAgo +
 			" days $" +
 			(balanceUSDT || 0).toFixed(2) +
+			"; OpenPosPnl " +
+			formatPercent(Number(openPosPnlPt)) +
 			"; Today " +
 			formatPercent(Number(todayPnlPt || 0)) +
 			"; Total  " +
-			formatPercent(Number(totalPnlPt || 0)) +
-			"; OpenPosPnl " +
-			formatPercent(Number(openPosPnlPt));
+			formatPercent(Number(totalPnlPt || 0));
+
+		if (openPositions.length) {
+			const loggedPos: string[] = [];
+
+			for (const pos of openPositions) {
+				if (loggedPos.includes(pos.pair)) continue;
+				const pnl = openPositions
+					.filter((s) => s.pair === pos.pair)
+					.reduce((acc, val) => acc + val.pnl, 0);
+
+				const len =
+					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
+
+				text += `\n ${pos.pair} ${
+					pos.status
+				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)}`;
+
+				loggedPos.push(pos.pair);
+			}
+		}
 
 		userList[index] = {
 			...user,

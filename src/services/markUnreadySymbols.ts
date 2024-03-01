@@ -7,7 +7,10 @@ export const markUnreadySymbols = async () => {
 	for (let index = 0; index < context.symbolList.length; index++) {
 		const symbol = context.symbolList[index];
 
-		const isOk = checkCandlestick({ candlestick: symbol.candlestick });
+		const isOk = checkCandlestick({
+			candlestick: symbol.candlestick,
+			interval: Context.interval,
+		});
 
 		if (!isOk && !symbol.isLoading) {
 			context.symbolList[index].isReady = false;

@@ -3,30 +3,32 @@ import { Candle } from "../models/Candle";
 import { Interval } from "../models/Interval";
 import { getDate } from "../utils/getDate";
 
-export interface GetCandlestickProps {
+interface GetCandlestickProps {
 	pair: string;
 	interval: Interval;
 	lookBackLength: number;
+	apiLimit: number;
 }
 
 export const getCandlestick = async ({
 	pair,
 	interval,
 	lookBackLength,
+	apiLimit,
 }: GetCandlestickProps) => {
 	let candlestick: Candle[] = [];
-	const API_LIMIT = 500;
+
 	const exchange = Binance();
 
 	let n = lookBackLength;
 
 	do {
-		const startTime = getDate(Date.now() - (n + 1) * interval).dateMs;
+		const startTime = getDate(getDate().dateMs - (n + 1) * interval).dateMs;
 		const unformattedCandlestick = await exchange.futuresCandles({
 			symbol: pair,
 			interval: Interval[interval] as CandleChartInterval_LT,
 			startTime,
-			limit: Math.min(lookBackLength, API_LIMIT),
+			limit: Math.min(lookBackLength, apiLimit),
 		});
 
 		const formattedCandlestick = unformattedCandlestick.map(
@@ -42,13 +44,15 @@ export const getCandlestick = async ({
 			}
 		);
 
-		const firstCandle = getDate(formattedCandlestick[0].openTime).dateMs;
+		const firstCandle = formattedCandlestick.length
+			? getDate(formattedCandlestick[0].openTime).dateMs
+			: 0;
 		const startTimeDiff = Math.abs(startTime - firstCandle) / interval;
 		if (startTimeDiff <= 1) {
 			candlestick.push(...formattedCandlestick);
 		}
 
-		n -= API_LIMIT;
+		n -= apiLimit;
 	} while (n > 0);
 
 	return candlestick;

@@ -9,6 +9,8 @@ export const positionOpen = async ({
 	price,
 	sl,
 	tp,
+	tr,
+	cb,
 }: PlacePosition) => {
 	try {
 		await authExchange.futuresCancelAllOpenOrders({
@@ -23,25 +25,28 @@ export const positionOpen = async ({
 			recvWindow: 59999,
 			newClientOrderId: PosType.PS + "__" + symbol.currentPrice,
 		});
-		const HEPriceNumber =
-			shouldTrade === "LONG" ? price * (1 - sl) : price * (1 + sl);
+		if (sl) {
+			const SLPriceNumber =
+				shouldTrade === "LONG" ? price * (1 - sl) : price * (1 + sl);
 
-		const HEPrice = fixPrecision({
-			value: HEPriceNumber,
-			precision: symbol.pricePrecision,
-		});
+			const SLPrice = fixPrecision({
+				value: SLPriceNumber,
+				precision: symbol.pricePrecision,
+			});
 
-		await authExchange.futuresOrder({
-			type: "STOP_MARKET",
-			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
-			symbol: symbol.pair,
-			quantity,
-			stopPrice: HEPrice,
-			recvWindow: 59999,
-			newClientOrderId: PosType.HE + "__" + HEPrice,
-			timeInForce: "GTC",
-		});
+			await authExchange.futuresOrder({
+				type: "STOP_MARKET",
+				side: shouldTrade === "LONG" ? "SELL" : "BUY",
+				positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
+				symbol: symbol.pair,
+				quantity,
+				stopPrice: SLPrice,
+				recvWindow: 59999,
+				newClientOrderId: PosType.HE + "__" + SLPrice,
+				timeInForce: "GTC",
+			});
+		}
+
 		const TPPriceNumber =
 			shouldTrade === "LONG" ? price * (1 + tp) : price * (1 - tp);
 
@@ -60,6 +65,28 @@ export const positionOpen = async ({
 			recvWindow: 59999,
 			newClientOrderId: PosType.TP + "__" + TPPrice,
 		});
+
+		if (tr && cb) {
+			const TRPriceNumber =
+				shouldTrade === "LONG" ? price * (1 + tr) : price * (1 - tr);
+
+			const TRPrice = fixPrecision({
+				value: TRPriceNumber,
+				precision: symbol.pricePrecision,
+			});
+
+			await authExchange.futuresOrder({
+				type: "TRAILING_STOP_MARKET",
+				side: shouldTrade === "LONG" ? "SELL" : "BUY",
+				positionSide: shouldTrade,
+				symbol: symbol.pair,
+				quantity,
+				callbackRate: (cb * 100).toFixed(1),
+				activationPrice: TRPrice,
+				recvWindow: 59999,
+				newClientOrderId: PosType.TR + "__" + TRPrice,
+			});
+		}
 	} catch (e) {
 		console.log(
 			"Problem opening " + shouldTrade + " position for " + symbol.pair

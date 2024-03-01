@@ -2,18 +2,19 @@ import { mfi } from "technicalindicators";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
-import { Interval } from "../models/Interval";
 
-const STG_NAME = "mfiDivergency1h";
+const STG_NAME = "mfiDivergency5m";
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
-	interval: Interval["1h"],
+	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
 			tp: Context.defaultTP,
+			tr: Context.defaultTR,
+			cb: Context.defaultCB,
 			stgName: STG_NAME,
 		};
 
@@ -21,10 +22,9 @@ const stg: Strategy = {
 
 		const MIN_MFI = 20;
 		const CANDLESTICK_SIZE = 50;
-		const MIN_VOL = 3 / 100;
-		const MAX_VOL = 10 / 100;
+		const MIN_VOL = 10 / 100;
+		const MAX_VOL = 25 / 100;
 
-		const volatility = getVolatility({ candlestick });
 		const mfiArray = mfi({
 			high: candlestick.map((item) => item.high),
 			low: candlestick.map((item) => item.low),
@@ -38,6 +38,8 @@ const stg: Strategy = {
 		candlestick.forEach(({ close, high, low, open }) => {
 			candlestickValues.push(close, high, low, open);
 		});
+
+		const volatility = getVolatility({ candlestick });
 
 		if (
 			volatility > MIN_VOL &&
@@ -106,55 +108,37 @@ export default stg;
 // ┌────────────────┬─────────────────────┐
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
-// │        stgName │ mfiDivergency1h     │
-// │             sl │ 1.00%               │
+// │        stgName │ mfiDivergency5m     │
+// │             sl │ 5.00%               │
 // │             tp │ 1.00%               │
-// │      startTime │ 2023 02 15 14:23:56 │
-// │        endTime │ 2024 02 10 14:45:59 │
+// │      startTime │ 2024 01 19 10:56:22 │
+// │        endTime │ 2024 02 18 11:19:56 │
 // │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
+// │       interval │ 5m                  │
+// │ maxTradeLength │ 200                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 49.55%              │
-// │          avPnl │ -0.06%              │
-// │       totalPnl │ -27.03%             │
-// │      tradesQty │ 448                 │
-// │  avTradeLength │ 15                  │
+// │      avWinRate │ 84.51%              │
+// │          avPnl │ 0.11%               │
+// │       totalPnl │ 73.41%              │
+// │      tradesQty │ 665                 │
+// │  avTradeLength │ 34                  │
 // └────────────────┴─────────────────────┘
 
 // ┌────────────────┬─────────────────────┐
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
-// │        stgName │ mfiDivergency1h     │
-// │             sl │ 1.00%               │
-// │             tp │ 0.50%               │
-// │       lookBack │ 4320                │
-// │      startTime │ 2023 08 14 13:28:17 │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 63.37%              │
-// │          avPnl │ -0.10%              │
-// │       totalPnl │ -26.90%             │
-// │      tradesQty │ 273                 │
-// │  avTradeLength │ 13                  │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ mfiDivergency1h     │
-// │             sl │ 0.50%               │
-// │             tp │ 0.50%               │
-// │      startTime │ 2023 02 16 10:56:34 │
-// │        endTime │ 2024 02 11 11:17:45 │
+// │        stgName │ stg_name            │
+// │             sl │ 10.00%              │
+// │             tp │ 1.00%               │
+// │      startTime │ 2024 01 16 15:31:51 │
+// │        endTime │ 2024 02 15 15:51:30 │
 // │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 1000                │
+// │       interval │ 5m                  │
+// │ maxTradeLength │ 200                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 47.70%              │
-// │          avPnl │ -0.07%              │
-// │       totalPnl │ -33.74%             │
-// │      tradesQty │ 457                 │
-// │  avTradeLength │ 5                   │
+// │      avWinRate │ 87.48%              │
+// │          avPnl │ 0.15%               │
+// │       totalPnl │ 106.48%             │
+// │      tradesQty │ 711                 │
+// │  avTradeLength │ 46                  │
 // └────────────────┴─────────────────────┘

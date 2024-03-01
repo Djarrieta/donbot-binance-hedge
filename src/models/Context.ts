@@ -16,19 +16,24 @@ export class Context {
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
 	strategyStats: StrategyStat[] = [];
+	expositionLevel = 1;
 
+	public static candlestickAPILimit = 500;
 	public static branch: "main" | "test" | "risk" = "test";
-	public static interval = Interval["1h"];
+	public static interval = Interval["5m"];
 	public static leverage = 10; //WIP: Implement
 	public static lookBackLength = 200;
-	public static lookBackLengthBacktest = (12 * Interval["1M"]) / Interval["1h"]; // six months
-	public static maxOpenPos = 1;
-	public static amountToTradePt = 0.25;
-	public static maxTradeLength = 100;
+	public static lookBackLengthBacktest = (2 * Interval["1d"]) / Interval["5m"];
+	public static amountToTradePt = 0.75;
+	public static maxTradeLength = 200;
 	public static minVolatility = 10 / 100;
-	public static minAmountToTrade = 5;
+	public static minAmountToTrade = 6;
 	public static fee = 0.0005;
-	public static defaultSL = 2 / 100;
+	public static defaultSL = 5 / 100;
 	public static defaultTP = 1 / 100;
+	public static defaultTR = 0.6 / 100;
+	public static defaultCB = 0.5 / 100;
 	public static shouldStop = false;
+	public static maxHedgePositions = 3;
+	public static maxProtectedPositions = 1;
 }

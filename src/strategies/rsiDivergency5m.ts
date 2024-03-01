@@ -2,18 +2,19 @@ import { rsi } from "technicalindicators";
 import { Strategy, StrategyResponse } from "../models/Strategy";
 import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
-import { Interval } from "../models/Interval";
 
-const STG_NAME = "rsiDivergency1h";
+const STG_NAME = "rsiDivergency5m";
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
-	interval: Interval["1h"],
+	interval: Context.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
 			tp: Context.defaultTP,
+			tr: Context.defaultTR,
+			cb: Context.defaultCB,
 			stgName: STG_NAME,
 		};
 
@@ -21,10 +22,9 @@ const stg: Strategy = {
 
 		const MIN_RSI = 30;
 		const CANDLESTICK_SIZE = 50;
-		const MIN_VOL = 3 / 100;
-		const MAX_VOL = 10 / 100;
+		const MIN_VOL = 10 / 100;
+		const MAX_VOL = 25 / 100;
 
-		const volatility = getVolatility({ candlestick });
 		const closePrices = candlestick.map((candle) => candle.close);
 		const rsiArray = rsi({ period: 14, values: closePrices });
 
@@ -33,6 +33,8 @@ const stg: Strategy = {
 		candlestick.forEach(({ close, high, low, open }) => {
 			candlestickValues.push(close, high, low, open);
 		});
+
+		const volatility = getVolatility({ candlestick });
 
 		if (
 			volatility > MIN_VOL &&
@@ -101,18 +103,18 @@ export default stg;
 // ┌────────────────┬─────────────────────┐
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency1h     │
-// │             sl │ 2.00%               │
-// │             tp │ 2.00%               │
-// │      startTime │ 2023 02 18 17:19:58 │
-// │        endTime │ 2024 02 13 17:40:13 │
+// │        stgName │ rsiDivergency5m     │
+// │             sl │ 5.00%               │
+// │             tp │ 1.00%               │
+// │      startTime │ 2024 01 19 10:32:54 │
+// │        endTime │ 2024 02 18 10:56:22 │
 // │       lookBack │ 8640                │
-// │       interval │ 1h                  │
-// │ maxTradeLength │ 100                 │
+// │       interval │ 5m                  │
+// │ maxTradeLength │ 200                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 60.87%              │
-// │          avPnl │ 0.38%               │
-// │       totalPnl │ 114.85%             │
-// │      tradesQty │ 299                 │
-// │  avTradeLength │ 22                  │
+// │      avWinRate │ 84.16%              │
+// │          avPnl │ 0.09%               │
+// │       totalPnl │ 67.89%              │
+// │      tradesQty │ 745                 │
+// │  avTradeLength │ 26                  │
 // └────────────────┴─────────────────────┘

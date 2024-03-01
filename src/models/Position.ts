@@ -6,7 +6,7 @@ export const PosType = {
 	PS: "PS",
 	HE: "HE",
 	TP: "TP",
-	KP: "KP",
+	TR: "TR",
 	UN: "UN",
 };
 
@@ -16,12 +16,17 @@ export interface Position {
 	coinQuantity: string;
 	startTime: Date;
 	entryPriceUSDT: number;
+	status: "UNKNOWN" | "UNPROTECTED" | "PROTECTED" | "HEDGED";
+	pnl: number;
 }
 export interface PlacePosition {
 	symbol: Symbol;
 	price: number;
-	sl: number;
+	sl?: number;
+	he?: number;
 	tp: number;
+	tr?: number;
+	cb?: number;
 	shouldTrade: PositionSide;
 	authExchange: IBinance;
 	quantity: string;

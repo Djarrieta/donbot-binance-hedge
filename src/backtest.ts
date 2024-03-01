@@ -1,7 +1,7 @@
 import { Context } from "./models/Context";
 import { Interval } from "./models/Interval";
 import { Stat } from "./models/Stat";
-import { Strategy } from "./models/Strategy";
+import { Strategy, StrategyStat } from "./models/Strategy";
 import { getCandlestick } from "./services/getCandlestick";
 import { getProfitStickAnalysis } from "./services/getProfitStickAnalysis";
 import { getCompletePairList } from "./services/getSymbolList";
@@ -12,7 +12,7 @@ import { getDate } from "./utils/getDate";
 
 export const backtest = async ({
 	strategy,
-	log = true,
+	log,
 }: {
 	strategy: Strategy;
 	log?: boolean;
@@ -58,6 +58,7 @@ export const backtest = async ({
 			pair,
 			interval: strategy.interval,
 			lookBackLength: Context.lookBackLengthBacktest,
+			apiLimit: Context.candlestickAPILimit,
 		});
 
 		let candleIndex = 0;
@@ -130,16 +131,73 @@ export const backtest = async ({
 	return result;
 };
 
-for (const strategy of chosenStrategies) {
-	const startTime = getDate().dateMs;
-	if (!strategy) continue;
-	if (Context.interval !== strategy.interval) continue;
+export const backtestAllAtOne = async () => {
+	for (const strategy of chosenStrategies) {
+		const startTime = getDate().dateMs;
+		if (!strategy) continue;
+		if (Context.interval !== strategy.interval) continue;
 
-	const backtestResult = await backtest({ strategy, log: true });
-	console.table({
-		...backtestResult,
-		avPnl: formatPercent(backtestResult.avPnl),
-	});
-	const endTime = getDate().dateMs;
-	console.timeEnd((endTime - startTime) / Interval["1m"] + " minutes");
-}
+		const backtestResult = await backtest({ strategy, log: true });
+		console.table({
+			...backtestResult,
+			avPnl: formatPercent(backtestResult.avPnl),
+		});
+		const endTime = getDate().dateMs;
+		console.log(
+			((endTime - startTime) / Interval["1m"]).toFixed() + " minutes"
+		);
+	}
+};
+
+export const updateStrategyStat = async () => {
+	const context = await Context.getInstance();
+
+	for (const strategy of chosenStrategies) {
+		if (Context.interval !== strategy.interval) continue;
+
+		const backtestResult = await backtest({ strategy, log: false });
+
+		context.strategyStats = [
+			...context.strategyStats.filter((s) => s.stgName !== strategy.stgName),
+			{
+				stgName: strategy.stgName,
+				status: backtestResult.avPnl >= 0,
+				trades: backtestResult.tradesQty,
+				avPnl: backtestResult.avPnl,
+				winRate: backtestResult.avWinRate,
+			},
+		];
+
+		const activeStrategies = context.strategyStats.filter((s) => s.status);
+		const activeStgPnl = activeStrategies.reduce(
+			(acc, val) => (acc += val.avPnl * val.trades),
+			0
+		);
+		const activeStgTrades = activeStrategies.reduce(
+			(acc, val) => (acc += val.trades),
+			0
+		);
+		const globalStat = activeStgPnl / activeStgTrades;
+
+		if (globalStat > 0.2 / 100 && activeStgTrades > 100) {
+			context.expositionLevel = 3;
+		} else if (globalStat > 0.15 / 100) {
+			context.expositionLevel = 2;
+		} else {
+			context.expositionLevel = 1;
+		}
+
+		let log = getDate().dateString + " Stats updated: ";
+		context.strategyStats.forEach((s) => {
+			log += `\n ${s.stgName} ${formatPercent(s.avPnl)} ${
+				s.status ? "Active" : "Inactive"
+			}; ${s.trades} trades; ${s.winRate} winRate`;
+		});
+		log += `\n Exposition level ${
+			context.expositionLevel * Context.maxProtectedPositions
+		}`;
+
+		console.log("");
+		console.log(log);
+	}
+};

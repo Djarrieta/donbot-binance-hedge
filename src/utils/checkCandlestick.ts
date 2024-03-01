@@ -1,17 +1,18 @@
 import { Candle } from "../models/Candle";
-import { Context } from "../models/Context";
+import { Interval } from "../models/Interval";
 import { getDate } from "./getDate";
 
 export const checkCandlestick = ({
 	candlestick,
+	interval,
 }: {
 	candlestick: Candle[];
+	interval: Interval;
 }) => {
 	if (!candlestick.length) return false;
 
 	const lastOpenTime = candlestick[candlestick.length - 1].openTime;
-	const lastDiff =
-		(getDate().dateMs - getDate(lastOpenTime).dateMs) / Context.interval;
+	const lastDiff = (getDate().dateMs - getDate(lastOpenTime).dateMs) / interval;
 
 	if (lastDiff > 2) return false;
 
@@ -22,7 +23,7 @@ export const checkCandlestick = ({
 		const candlesDifference =
 			(getDate(nextCandle.openTime).dateMs -
 				getDate(currentCandle.openTime).dateMs) /
-			Context.interval;
+			interval;
 
 		if (candlesDifference !== 1) return false;
 	}

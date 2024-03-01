@@ -12,7 +12,7 @@ const stg: Strategy = {
 		const response: StrategyResponse = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
-			tp: Context.defaultTP, // undefined to have dynamic tp with quitCriteria
+			tp: Context.defaultTP,
 			stgName: STG_NAME,
 		};
 

@@ -7,6 +7,8 @@ export interface StrategyResponse {
 	shouldTrade: PositionSide | null;
 	sl: number;
 	tp: number;
+	tr?: number;
+	cb?: number;
 }
 
 export interface Strategy {
@@ -22,4 +24,7 @@ export interface Strategy {
 export interface StrategyStat {
 	stgName: string;
 	status: boolean;
+	trades: number;
+	avPnl: number;
+	winRate: string;
 }

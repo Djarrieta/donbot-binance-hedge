@@ -3,7 +3,7 @@ import { User } from "../models/User";
 import { getDate } from "../utils/getDate";
 import { Interval } from "../models/Interval";
 
-export interface GetHistoricalPnlProps {
+interface GetHistoricalPnlProps {
 	user: User;
 }
 interface HistoricalPnl {
@@ -27,51 +27,45 @@ export const getHistoricalPnl = async ({ user }: GetHistoricalPnlProps) => {
 	);
 
 	let n = daysAgo;
-	do {
-		const startTime =
-			getDate(new Date().setHours(0, 0, 0)).dateMs - (n - 1) * Interval["1d"];
+	if (n > 0) {
+		do {
+			const startTime =
+				getDate(new Date().setHours(0, 0, 0)).dateMs - (n - 1) * Interval["1d"];
 
-		const endTime = Math.min(
-			getDate().dateMs,
-			getDate(new Date().setHours(0, 0, 0)).dateMs -
-				(n - API_LIMIT - 1) * Interval["1d"]
-		);
+			const endTime = Math.min(
+				getDate().dateMs,
+				getDate(new Date().setHours(0, 0, 0)).dateMs -
+					(n - API_LIMIT - 1) * Interval["1d"]
+			);
 
-		const newTrades = await authExchange.futuresUserTrades({
-			startTime,
-			endTime,
-		});
+			const newTrades = await authExchange.futuresUserTrades({
+				startTime,
+				endTime,
+			});
 
-		trades.push(...newTrades);
+			trades.push(...newTrades);
 
-		n -= API_LIMIT;
-	} while (n > 0);
+			n -= API_LIMIT;
+		} while (n > 0);
+	}
 
 	let acc = 0;
 
 	for (const trade of trades) {
-		const { realizedPnl, commission, time } = trade;
-
-		const year = new Date(time).getFullYear();
-		const month = new Date(time).getMonth() + 1;
-		const day = new Date(time).getDate();
-
-		const fullDate = `${year}-${month < 10 ? "0" : ""}${month}-${
-			day < 10 ? "0" : ""
-		}${day}`;
-
+		const { realizedPnl, commission, time: tradeTime } = trade;
 		const pnl = Number(realizedPnl) - Number(commission);
-
 		acc += pnl;
 
-		const existingDayPnl = historicalPnl.find(({ time }) => time === fullDate);
+		const existingDayPnl = historicalPnl.find(
+			({ time }) => time === getDate(tradeTime).shortDateString
+		);
 
 		if (existingDayPnl) {
 			existingDayPnl.value += pnl;
 			existingDayPnl.acc += pnl;
 		} else {
 			historicalPnl.push({
-				time: fullDate,
+				time: getDate(tradeTime).shortDateString,
 				value: pnl,
 				acc,
 			});

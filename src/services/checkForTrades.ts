@@ -1,15 +1,18 @@
-import { Context } from "../models/Context";
-import { StrategyResponse } from "../models/Strategy";
+import { Interval } from "../models/Interval";
+import { Strategy, StrategyResponse, StrategyStat } from "../models/Strategy";
 import { Symbol } from "../models/Symbol";
-import { chosenStrategies } from "../strategies";
-import { formatPercent } from "../utils/formatPercent";
 
 export const checkForTrades = async ({
 	readySymbols,
+	interval,
+	strategyStats,
+	chosenStrategies,
 }: {
 	readySymbols: Symbol[];
+	interval: Interval;
+	strategyStats: StrategyStat[];
+	chosenStrategies: Strategy[];
 }) => {
-	const context = await Context.getInstance();
 	const response: {
 		text: string;
 		tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
@@ -28,30 +31,21 @@ export const checkForTrades = async ({
 		: console.log(
 				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
 		  );
-	console.log(
-		"Strategies: " + chosenStrategies.map((s) => s?.stgName).join(", ")
+
+	const strategiesToRun = chosenStrategies.filter(
+		(s) =>
+			s.interval === interval &&
+			strategyStats
+				.filter((stat) => stat.status)
+				.map((stat) => stat.stgName)
+				.includes(s.stgName)
 	);
 
-	let usersLogs = "Users: ";
+	console.log(
+		"Strategies: " + strategiesToRun.map((s) => s?.stgName).join(", ")
+	);
 
-	context.userList.forEach((u) => {
-		const openPosUniquePairs = Array.from(
-			new Set(u.openPositions.map((x) => x.pair))
-		);
-		usersLogs += ` ${u.name}\n`;
-		usersLogs += `$${u.balanceUSDT.toFixed(2)} USDT Today: ${formatPercent(
-			u.todayPnlPt
-		)}  Open: ${formatPercent(u.openPosPnlPt)}  Total: ${formatPercent(
-			u.totalPnlPt
-		)}\n`;
-
-		usersLogs += " " + openPosUniquePairs.join(", ");
-	});
-	console.log(usersLogs);
-
-	for (const strategy of chosenStrategies.filter(
-		(s) => s && s.interval === Context.interval
-	)) {
+	for (const strategy of strategiesToRun) {
 		for (const symbol of readySymbols) {
 			const stgResponse =
 				strategy?.validate({

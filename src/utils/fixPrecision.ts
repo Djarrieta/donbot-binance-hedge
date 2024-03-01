@@ -1,14 +1,15 @@
 import Big from "big.js";
 
-interface FixPrecisionProps {
+export interface FixPrecisionProps {
 	value: number;
 	precision: number;
 }
 
 export const fixPrecision = ({ value, precision }: FixPrecisionProps) => {
-	let result = "";
+	let result = "0";
+	if (Math.abs(value) === Infinity) return result;
 
-	const valueDec = new Big(value);
+	const valueDec = new Big(value || 0);
 
 	result = valueDec.round(precision, 3).toFixed();
 	return result;

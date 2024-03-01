@@ -27,6 +27,10 @@ const handleSymbolUpdate = async (data: any) => {
 	if (symbolIndex === -1) return;
 	const symbol = context.symbolList[symbolIndex];
 
+	if (!symbol.candlestick.length) {
+		return;
+	}
+
 	const prevOpenTime = getDate(
 		symbol.candlestick[symbol.candlestick.length - 1].openTime
 	).dateString;
