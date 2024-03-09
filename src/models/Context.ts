@@ -13,6 +13,9 @@ export class Context {
 
 		return Context.instance;
 	}
+	public static async resetInstance() {
+		Context.instance = null;
+	}
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
 	strategyStats: StrategyStat[] = [];

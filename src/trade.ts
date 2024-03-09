@@ -22,33 +22,42 @@ export const trade = async () => {
 		getDate().dateString,
 		"Starting in " + Context.branch + " branch..."
 	);
-	const context = await Context.getInstance();
 
-	context.symbolList = await getSymbolList();
-	for (const symbol of context.symbolList) {
-		subscribeToSymbolUpdates({ pair: symbol.pair, interval: Context.interval });
-	}
+	cron.schedule(CronInterval["4h"], async () => {
+		Context.resetInstance();
+		const context = await Context.getInstance();
 
-	console.log(
-		getDate().dateString,
-		context.symbolList.length + " symbols updated!"
-	);
+		context.symbolList = await getSymbolList();
+		for (const symbol of context.symbolList) {
+			subscribeToSymbolUpdates({
+				pair: symbol.pair,
+				interval: Context.interval,
+			});
+		}
 
-	context.userList = await getUserList();
-	console.log(getDate().dateString, "User list updated!");
-	console.log(
-		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
-	);
-	updateStrategyStat();
+		console.log(
+			getDate().dateString,
+			context.symbolList.length + " symbols updated!"
+		);
 
-	for (const user of context.userList) {
-		await positionManageExisting({ user });
-	}
-	for (const user of context.userList) {
-		console.log(user.text);
-	}
+		context.userList = await getUserList();
+		console.log(getDate().dateString, "User list updated!");
+		console.log(
+			"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
+		);
+		updateStrategyStat();
+
+		for (const user of context.userList) {
+			await positionManageExisting({ user });
+		}
+		for (const user of context.userList) {
+			console.log(user.text);
+		}
+	});
 
 	cron.schedule(CronInterval["5m"], async () => {
+		const context = await Context.getInstance();
+
 		await delay(1000);
 		console.log("");
 		console.log(getDate().dateString, "Checking for trades!");
@@ -103,10 +112,6 @@ export const trade = async () => {
 		console.log("");
 		console.log(getDate().dateString, "Updating symbols");
 		await updateUnreadySymbols();
-	});
-
-	cron.schedule(CronInterval["4h"], async () => {
-		updateStrategyStat();
 	});
 };
 
