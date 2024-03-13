@@ -92,8 +92,6 @@ export const trade = async () => {
 	for (const user of context.userList) {
 		subscribeToUserUpdates({ user });
 	}
-
-	updateStrategyStat();
 };
 
 const startModel = async () => {
