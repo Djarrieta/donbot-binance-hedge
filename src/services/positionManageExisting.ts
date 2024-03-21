@@ -53,8 +53,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		if (
 			openPosPairLong.length === 1 &&
 			openPosPairShort.length === 1 &&
-			openPosPairLong[0].coinQuantity === openPosPairShort[0].coinQuantity &&
-			openOrders.length
+			openOrders.length === 1
 		) {
 			console.log("Canceling orders for " + user.name + " in " + pair);
 			await authExchange.futuresCancelAllOpenOrders({
