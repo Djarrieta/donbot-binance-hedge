@@ -168,23 +168,6 @@ export const updateStrategyStat = async () => {
 			},
 		];
 
-		const activeStrategies = context.strategyStats.filter((s) => s.status);
-		const activeStgPnl = activeStrategies.reduce(
-			(acc, val) => (acc += val.avPnl * val.trades),
-			0
-		);
-		const activeStgTrades = activeStrategies.reduce(
-			(acc, val) => (acc += val.trades),
-			0
-		);
-		const globalStat = activeStgPnl / activeStgTrades;
-
-		if (globalStat > 0.5 / 100 && activeStgTrades > 200) {
-			context.expositionLevel = 2;
-		} else {
-			context.expositionLevel = 1;
-		}
-
 		let log = getDate().dateString + " Stats updated: ";
 		context.strategyStats.forEach((s) => {
 			log += `\n ${s.stgName} ${formatPercent(s.avPnl)} ${
