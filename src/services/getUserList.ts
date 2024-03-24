@@ -112,8 +112,42 @@ export const getUserList = async () => {
 			if (samePairPositions.length === 1 && samePairOpenOrders.length < 2) {
 				openPositions[posIndex].status = "UNPROTECTED";
 			}
-			if (samePairPositions.length === 1 && samePairOpenOrders.length === 3) {
-				openPositions[posIndex].status = "PROTECTED"; //WIP validate order type
+			if (
+				samePairPositions.length === 1 &&
+				samePairOpenOrders.length === 2 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split("__")[0] === "HE"
+				).length === 2
+			) {
+				openPositions[posIndex].status = "PROTECTED";
+			}
+			if (
+				samePairPositions.length === 1 &&
+				samePairOpenOrders.length === 3 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split("__")[0] === "HE"
+				).length === 1 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split("__")[0] === "TP"
+				).length === 1 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split("__")[0] === "TR"
+				).length === 1
+			) {
+				openPositions[posIndex].status = "PROTECTED";
+			}
+			if (
+				samePairPositions.length === 1 &&
+				samePairOpenOrders.length === 2 &&
+				pos.pnl > 0 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split("__")[0] === "HE"
+				).length === 1 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split("__")[0] === "TP"
+				).length === 1
+			) {
+				openPositions[posIndex].status = "SECURED";
 			}
 			if (openPosPairLong.length === 1 && openPosPairShort.length === 1) {
 				openPositions[posIndex].status = "HEDGED";
