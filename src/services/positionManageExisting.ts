@@ -42,19 +42,9 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		)
 	);
 	for (const pair of hedgePosUniquePairs) {
-		const openPosPairLong = user.openPositions.filter(
-			(p) => p.pair === pair && p.positionSide === "LONG"
-		);
-		const openPosPairShort = user.openPositions.filter(
-			(p) => p.pair === pair && p.positionSide === "SHORT"
-		);
 		const openOrders = user.openOrders.filter((o) => o.pair === pair);
 
-		if (
-			openPosPairLong.length === 1 &&
-			openPosPairShort.length === 1 &&
-			openOrders.length === 1
-		) {
+		if (openOrders.length === 1) {
 			console.log("Canceling orders for " + user.name + " in " + pair);
 			await authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
@@ -84,31 +74,31 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 				console.log(
 					"No information for " + openPos.pair + ". Unable to protect position."
 				);
-				return;
+			} else {
+				const slPrice =
+					openPos.positionSide === "LONG"
+						? symbol.currentPrice * (1 - Context.defaultSL)
+						: symbol.currentPrice * (1 + Context.defaultSL);
+
+				const quantityUSDT = Math.max(
+					slPrice * Number(openPos.coinQuantity),
+					Context.minAmountToTrade
+				);
+				const quantity = fixPrecision({
+					value: quantityUSDT / symbol.currentPrice,
+					precision: symbol.quantityPrecision,
+				});
+
+				await positionProtect({
+					symbol,
+					shouldTrade: openPos.positionSide,
+					authExchange,
+					quantity,
+					price: symbol.currentPrice,
+					he: Context.defaultTP,
+					tp: Context.defaultTP,
+				});
 			}
-			const slPrice =
-				openPos.positionSide === "LONG"
-					? symbol.currentPrice * (1 - Context.defaultSL)
-					: symbol.currentPrice * (1 + Context.defaultSL);
-
-			const quantityUSDT = Math.max(
-				slPrice * Number(openPos.coinQuantity),
-				Context.minAmountToTrade
-			);
-			const quantity = fixPrecision({
-				value: quantityUSDT / symbol.currentPrice,
-				precision: symbol.quantityPrecision,
-			});
-
-			await positionProtect({
-				symbol,
-				shouldTrade: openPos.positionSide,
-				authExchange,
-				quantity,
-				price: symbol.currentPrice,
-				he: Context.defaultTP,
-				tp: Context.defaultTP,
-			});
 		}
 	}
 

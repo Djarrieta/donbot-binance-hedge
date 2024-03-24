@@ -105,7 +105,7 @@ const startModel = async () => {
 		const context = await Context.getInstance();
 		console.log(
 			getDate().dateString,
-			"Getting values  in " + Context.branch + " branch..."
+			"Getting values for " + Context.branch + " branch..."
 		);
 
 		context.symbolList = await getSymbolList();
