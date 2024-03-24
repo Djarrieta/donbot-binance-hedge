@@ -43,14 +43,22 @@ export const positionManageNew = async ({
 		new Set(user.openPositions.map((x) => x.pair))
 	);
 
+	const openPosUnsecuredUniquePairs = Array.from(
+		new Set(
+			user.openPositions
+				.filter((p) => p.status !== "SECURED")
+				.map((x) => x.pair)
+		)
+	);
+
 	const tooManyOpenWithoutHedge =
 		!hedgedPosUniquePairs.length &&
-		openPosUniquePairs.length >=
+		openPosUnsecuredUniquePairs.length >=
 			context.expositionLevel * Context.maxProtectedPositions + 1;
 
 	const tooManyOpenWithHedge =
 		hedgedPosUniquePairs.length &&
-		openPosUniquePairs.length - hedgedPosUniquePairs.length >=
+		openPosUnsecuredUniquePairs.length - hedgedPosUniquePairs.length >=
 			context.expositionLevel * Context.maxProtectedPositions;
 
 	const tooManyHedge = hedgedPosUniquePairs.length >= Context.maxHedgePositions;
