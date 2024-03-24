@@ -154,11 +154,17 @@ export const getUserList = async () => {
 			daysAgo +
 			" days $" +
 			(balanceUSDT || 0).toFixed(2) +
-			"; OpenPosPnl " +
+			"; OpenPosPnl $" +
+			(openPosPnlPt * balanceUSDT).toFixed(2) +
+			" " +
 			formatPercent(Number(openPosPnlPt)) +
-			"; Today " +
+			"; Today $" +
+			(Number(todayPnlPt || 0) * balanceUSDT).toFixed(2) +
+			" " +
 			formatPercent(Number(todayPnlPt || 0)) +
-			"; Total  " +
+			"; Total $" +
+			(Number(totalPnlPt || 0) * balanceUSDT).toFixed(2) +
+			" " +
 			formatPercent(Number(totalPnlPt || 0));
 
 		if (openPositions.length) {
@@ -173,9 +179,9 @@ export const getUserList = async () => {
 				const len =
 					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
 
-				text += `\n ${pos.pair} ${
-					pos.status
-				}; len ${len.toFixed()}; pnl ${formatPercent(pnl)}`;
+				text += `\n ${pos.pair} ${pos.status}; len ${len.toFixed()}; pnl $${(
+					pnl * balanceUSDT
+				).toFixed(2)} ${formatPercent(pnl)}`;
 
 				loggedPos.push(pos.pair);
 			}

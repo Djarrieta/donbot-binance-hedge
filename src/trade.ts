@@ -105,7 +105,7 @@ const startModel = async () => {
 		const context = await Context.getInstance();
 		console.log(
 			getDate().dateString,
-			"Resetting values  " + Context.branch + " branch..."
+			"Getting values  in " + Context.branch + " branch..."
 		);
 
 		context.symbolList = await getSymbolList();
