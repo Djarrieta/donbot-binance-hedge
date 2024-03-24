@@ -1,7 +1,7 @@
 import Binance from "binance-api-node";
 import { Context } from "../models/Context";
 import { Interval } from "../models/Interval";
-import { Order } from "../models/Order";
+import { ORDER_ID_DIV, Order, OrderType } from "../models/Order";
 import { Position, PositionSide } from "../models/Position";
 import { User } from "../models/User";
 import { formatPercent } from "../utils/formatPercent";
@@ -64,9 +64,13 @@ export const getUserList = async () => {
 			return {
 				pair: o.symbol,
 				clientOrderId: o.clientOrderId,
-				price: Number(o.stopPrice || o.clientOrderId.split("-")[2] || ""),
+				price: Number(
+					o.stopPrice || o.clientOrderId.split(ORDER_ID_DIV)[2] || ""
+				),
 				coinQuantity: Number(o.origQty),
-				orderType: (o.clientOrderId.split("-")[0] || "  ").slice(-2),
+				orderType:
+					OrderType[o.clientOrderId.split(ORDER_ID_DIV)[0] as OrderType] ||
+					OrderType.UNKNOWN,
 			};
 		});
 
@@ -116,7 +120,7 @@ export const getUserList = async () => {
 				samePairPositions.length === 1 &&
 				samePairOpenOrders.length === 2 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split("__")[0] === "HE"
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 2
 			) {
 				openPositions[posIndex].status = "PROTECTED";
@@ -125,13 +129,13 @@ export const getUserList = async () => {
 				samePairPositions.length === 1 &&
 				samePairOpenOrders.length === 3 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split("__")[0] === "HE"
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 1 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split("__")[0] === "TP"
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
 				).length === 1 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split("__")[0] === "TR"
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.TRAILING
 				).length === 1
 			) {
 				openPositions[posIndex].status = "PROTECTED";
@@ -141,10 +145,10 @@ export const getUserList = async () => {
 				samePairOpenOrders.length === 2 &&
 				pos.pnl > 0 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split("__")[0] === "HE"
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 1 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split("__")[0] === "TP"
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
 				).length === 1
 			) {
 				openPositions[posIndex].status = "SECURED";

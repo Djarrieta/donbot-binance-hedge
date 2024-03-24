@@ -2,13 +2,12 @@ export type PositionSide = "LONG" | "SHORT";
 import { Binance as IBinance } from "binance-api-node";
 import { Symbol } from "../models/Symbol";
 
-export const PosType = {
-	PS: "PS",
-	HE: "HE",
-	TP: "TP",
-	TR: "TR",
-	UN: "UN",
-};
+type PositionStatus =
+	| "UNKNOWN"
+	| "UNPROTECTED"
+	| "PROTECTED"
+	| "HEDGED"
+	| "SECURED";
 
 export interface Position {
 	pair: string;
@@ -16,7 +15,7 @@ export interface Position {
 	coinQuantity: string;
 	startTime: Date;
 	entryPriceUSDT: number;
-	status: "UNKNOWN" | "UNPROTECTED" | "PROTECTED" | "HEDGED" | "SECURED";
+	status: PositionStatus;
 	pnl: number;
 }
 export interface PlacePosition {

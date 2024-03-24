@@ -1,4 +1,5 @@
-import { PlacePosition, PosType } from "../models/Position";
+import { ORDER_ID_DIV, OrderType } from "../models/Order";
+import { PlacePosition } from "../models/Position";
 import { fixPrecision } from "../utils/fixPrecision";
 
 export const positionProtect = async ({
@@ -7,7 +8,6 @@ export const positionProtect = async ({
 	authExchange,
 	quantity,
 	price,
-	sl,
 	he,
 	tp,
 	tr,
@@ -34,7 +34,7 @@ export const positionProtect = async ({
 				quantity,
 				stopPrice: HEPrice,
 				recvWindow: 59999,
-				newClientOrderId: PosType.HE + "__" + HEPrice,
+				newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + HEPrice,
 				timeInForce: "GTC",
 			});
 		}
@@ -56,7 +56,7 @@ export const positionProtect = async ({
 				quantity,
 				stopPrice: TPPrice,
 				recvWindow: 59999,
-				newClientOrderId: PosType.HE + "__" + TPPrice,
+				newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + TPPrice,
 				timeInForce: "GTC",
 			});
 		}
@@ -78,7 +78,7 @@ export const positionProtect = async ({
 				callbackRate: (cb * 100).toFixed(1),
 				activationPrice: TRPrice,
 				recvWindow: 59999,
-				newClientOrderId: PosType.TR + "__" + TRPrice,
+				newClientOrderId: OrderType.TRAILING + ORDER_ID_DIV + TRPrice,
 			});
 		}
 	} catch (e) {

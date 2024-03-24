@@ -1,4 +1,5 @@
-import { PlacePosition, PosType } from "../models/Position";
+import { ORDER_ID_DIV, OrderType } from "../models/Order";
+import { PlacePosition } from "../models/Position";
 import { fixPrecision } from "../utils/fixPrecision";
 
 export const positionOpen = async ({
@@ -23,7 +24,7 @@ export const positionOpen = async ({
 			symbol: symbol.pair,
 			quantity,
 			recvWindow: 59999,
-			newClientOrderId: PosType.PS + "__" + symbol.currentPrice,
+			newClientOrderId: OrderType.NEW + ORDER_ID_DIV + symbol.currentPrice,
 		});
 		if (sl) {
 			const SLPriceNumber =
@@ -42,7 +43,7 @@ export const positionOpen = async ({
 				quantity,
 				stopPrice: SLPrice,
 				recvWindow: 59999,
-				newClientOrderId: PosType.HE + "__" + SLPrice,
+				newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + SLPrice,
 				timeInForce: "GTC",
 			});
 		}
@@ -63,7 +64,7 @@ export const positionOpen = async ({
 			quantity,
 			stopPrice: TPPrice,
 			recvWindow: 59999,
-			newClientOrderId: PosType.TP + "__" + TPPrice,
+			newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
 		});
 
 		if (tr && cb) {
@@ -84,7 +85,7 @@ export const positionOpen = async ({
 				callbackRate: (cb * 100).toFixed(1),
 				activationPrice: TRPrice,
 				recvWindow: 59999,
-				newClientOrderId: PosType.TR + "__" + TRPrice,
+				newClientOrderId: OrderType.TRAILING + ORDER_ID_DIV + TRPrice,
 			});
 		}
 	} catch (e) {

@@ -1,8 +1,8 @@
 import Binance, { Binance as IBinance } from "binance-api-node";
 import OldBinance from "node-binance-api";
 import { Context } from "../models/Context";
-import { PosType } from "../models/Position";
 import { User } from "../models/User";
+import { ORDER_ID_DIV, OrderType } from "../models/Order";
 
 export const subscribeToUserUpdates = async ({ user }: { user: User }) => {
 	const oldExchange = new OldBinance().options({
@@ -38,19 +38,20 @@ const handleOrderUpdate = async ({
 		originalPrice: price,
 	} = event.order;
 
-	const typeVal = clientOrderId.split("__")[0];
-	const orderType = Object.keys(PosType).includes(typeVal) ? typeVal : "UN";
+	const orderType =
+		OrderType[clientOrderId.split(ORDER_ID_DIV)[0] as OrderType] ||
+		OrderType.UNKNOWN;
 
 	if (orderStatus === "FILLED" && Number(quantity) > 0) {
 		if (
-			orderType === PosType.HE ||
-			orderType === PosType.TP ||
-			orderType === PosType.TR
+			orderType === OrderType.HEDGE ||
+			orderType === OrderType.PROFIT ||
+			orderType === OrderType.TRAILING
 		) {
 			authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
 			});
-			if (orderType === PosType.HE) {
+			if (orderType === OrderType.HEDGE) {
 				const context = await Context.getInstance();
 				context.strategyStats = [];
 			}
