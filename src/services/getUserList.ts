@@ -127,28 +127,28 @@ export const getUserList = async () => {
 			}
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.length === 3 &&
+				samePairOpenOrders.length === 2 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 1 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
-				).length === 1 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.TRAILING
 				).length === 1
 			) {
 				openPositions[posIndex].status = "PROTECTED";
 			}
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.length === 2 &&
+				samePairOpenOrders.length === 3 &&
 				pos.pnl > 0 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 1 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
+				).length === 1 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.SECURE
 				).length === 1
 			) {
 				openPositions[posIndex].status = "SECURED";

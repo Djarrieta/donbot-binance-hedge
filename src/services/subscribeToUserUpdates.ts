@@ -16,7 +16,7 @@ export const subscribeToUserUpdates = async ({ user }: { user: User }) => {
 
 	oldExchange.websockets.userFutureData(
 		() => {},
-		() => {},
+		() => {}, // account update
 		(event: any) => handleOrderUpdate({ authExchange, event }),
 		() => {}, // Connection
 		() => {}
@@ -46,7 +46,7 @@ const handleOrderUpdate = async ({
 		if (
 			orderType === OrderType.HEDGE ||
 			orderType === OrderType.PROFIT ||
-			orderType === OrderType.TRAILING
+			orderType === OrderType.SECURE
 		) {
 			authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,

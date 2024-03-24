@@ -58,8 +58,6 @@ export const trade = async () => {
 								shouldTrade: trade.stgResponse.shouldTrade,
 								sl: trade.stgResponse.sl,
 								tp: Number(trade.stgResponse.tp),
-								tr: Number(trade.stgResponse.tr),
-								cb: Number(trade.stgResponse.cb),
 							});
 					}
 				}

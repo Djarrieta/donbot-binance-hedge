@@ -1,6 +1,4 @@
 export type PositionSide = "LONG" | "SHORT";
-import { Binance as IBinance } from "binance-api-node";
-import { Symbol } from "../models/Symbol";
 
 type PositionStatus =
 	| "UNKNOWN"
@@ -17,16 +15,4 @@ export interface Position {
 	entryPriceUSDT: number;
 	status: PositionStatus;
 	pnl: number;
-}
-export interface PlacePosition {
-	symbol: Symbol;
-	price: number;
-	sl?: number;
-	he?: number;
-	tp: number;
-	tr?: number;
-	cb?: number;
-	shouldTrade: PositionSide;
-	authExchange: IBinance;
-	quantity: string;
 }

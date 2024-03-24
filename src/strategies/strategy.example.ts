@@ -21,7 +21,7 @@ const stg: Strategy = {
 		const MIN_VOL = 10 / 100;
 		const volatility = getVolatility({ candlestick });
 
-		//Add your trading strategy here modifying shouldTrade, sl, tp, tr, callback
+		//Add your trading strategy here modifying shouldTrade, sl, tp,
 		let condition = false;
 
 		if (volatility >= MIN_VOL && condition) {
@@ -31,7 +31,6 @@ const stg: Strategy = {
 			response.shouldTrade = "SHORT";
 		}
 
-		// add tr for adding trailing order to your position. Remove it if trailing order is not required
 		return response;
 	},
 };

@@ -95,7 +95,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 					authExchange,
 					quantity,
 					price: symbol.currentPrice,
-					he: Context.defaultTP,
+					sl: Context.defaultTP,
 					tp: Context.defaultTP,
 				});
 			}
