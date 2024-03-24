@@ -95,16 +95,15 @@ const handleSymbolUpdate = async (data: any) => {
 					apiSecret: user.secret || "",
 				});
 
-				authExchange.futuresOrder({
-					type: "STOP_MARKET",
-					side: pos.positionSide === "LONG" ? "BUY" : "SELL",
-					positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+				await authExchange.futuresOrder({
+					type: "TAKE_PROFIT_MARKET",
+					side: pos.positionSide === "LONG" ? "SELL" : "BUY",
+					positionSide: pos.positionSide,
 					symbol: symbol.pair,
 					quantity: pos.coinQuantity,
 					stopPrice: SCPrice,
 					recvWindow: 59999,
 					newClientOrderId: OrderType.SECURE + ORDER_ID_DIV + SCPrice,
-					timeInForce: "GTC",
 				});
 			}
 
