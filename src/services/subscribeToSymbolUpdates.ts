@@ -76,7 +76,7 @@ const handleSymbolUpdate = async (data: any) => {
 					? (currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
 					: (pos.entryPriceUSDT - currentPrice) / pos.entryPriceUSDT;
 
-			if (pnlGraph >= Context.defaultSC) {
+			if (pnlGraph >= Context.defaultTP / 2) {
 				context.userList[userIndex].openPositions[posIndex].status ===
 					"SECURED";
 
