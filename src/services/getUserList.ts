@@ -217,7 +217,19 @@ export const getUserList = async () => {
 				const len =
 					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
 
-				text += `\n ${pos.pair} ${pos.status}; len ${len.toFixed()}; pnl $${(
+				let unbalance = "";
+				const samePairPos = openPositions.filter((s) => s.pair === pos.pair);
+				if (
+					pos.status === "HEDGED" &&
+					samePairPos.length === 2 &&
+					samePairPos[0].coinQuantity !== samePairPos[1].coinQuantity
+				) {
+					unbalance = " UNBALANCED";
+				}
+
+				text += `\n ${pos.pair} ${
+					pos.status
+				} ${unbalance}; len ${len.toFixed()}; pnl $${(
 					pnl * balanceUSDT
 				).toFixed(2)} ${formatPercent(pnl)}`;
 
