@@ -23,63 +23,56 @@ export const positionOpen = async ({
 	sl,
 	tp,
 }: PositionOpenProps) => {
-	try {
-		await authExchange.futuresCancelAllOpenOrders({
-			symbol: symbol.pair,
-		});
+	await authExchange.futuresCancelAllOpenOrders({
+		symbol: symbol.pair,
+	});
 
-		const SLPriceNumber =
-			shouldTrade === "LONG" ? price * (1 - sl) : price * (1 + sl);
+	const SLPriceNumber =
+		shouldTrade === "LONG" ? price * (1 - sl) : price * (1 + sl);
 
-		const SLPrice = fixPrecision({
-			value: SLPriceNumber,
-			precision: symbol.pricePrecision,
-		});
+	const SLPrice = fixPrecision({
+		value: SLPriceNumber,
+		precision: symbol.pricePrecision,
+	});
 
-		await authExchange.futuresOrder({
-			type: "STOP_MARKET",
-			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
-			symbol: symbol.pair,
-			quantity,
-			stopPrice: SLPrice,
-			recvWindow: 59999,
-			newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + SLPrice,
-			timeInForce: "GTC",
-		});
+	await authExchange.futuresOrder({
+		type: "STOP_MARKET",
+		side: shouldTrade === "LONG" ? "SELL" : "BUY",
+		positionSide: shouldTrade === "LONG" ? "SHORT" : "LONG",
+		symbol: symbol.pair,
+		quantity,
+		stopPrice: SLPrice,
+		recvWindow: 59999,
+		newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + SLPrice,
+		timeInForce: "GTC",
+	});
 
-		const TPPriceNumber =
-			shouldTrade === "LONG" ? price * (1 + tp) : price * (1 - tp);
+	const TPPriceNumber =
+		shouldTrade === "LONG" ? price * (1 + tp) : price * (1 - tp);
 
-		const TPPrice = fixPrecision({
-			value: TPPriceNumber,
-			precision: symbol.pricePrecision,
-		});
+	const TPPrice = fixPrecision({
+		value: TPPriceNumber,
+		precision: symbol.pricePrecision,
+	});
 
-		await authExchange.futuresOrder({
-			type: "TAKE_PROFIT_MARKET",
-			side: shouldTrade === "LONG" ? "SELL" : "BUY",
-			positionSide: shouldTrade,
-			symbol: symbol.pair,
-			quantity,
-			stopPrice: TPPrice,
-			recvWindow: 59999,
-			newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
-		});
+	await authExchange.futuresOrder({
+		type: "TAKE_PROFIT_MARKET",
+		side: shouldTrade === "LONG" ? "SELL" : "BUY",
+		positionSide: shouldTrade,
+		symbol: symbol.pair,
+		quantity,
+		stopPrice: TPPrice,
+		recvWindow: 59999,
+		newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
+	});
 
-		await authExchange.futuresOrder({
-			type: "MARKET",
-			side: shouldTrade === "LONG" ? "BUY" : "SELL",
-			positionSide: shouldTrade,
-			symbol: symbol.pair,
-			quantity,
-			recvWindow: 59999,
-			newClientOrderId: OrderType.NEW + ORDER_ID_DIV + symbol.currentPrice,
-		});
-	} catch (e) {
-		console.log(
-			"Problem opening " + shouldTrade + " position for " + symbol.pair
-		);
-		console.log(e);
-	}
+	await authExchange.futuresOrder({
+		type: "MARKET",
+		side: shouldTrade === "LONG" ? "BUY" : "SELL",
+		positionSide: shouldTrade,
+		symbol: symbol.pair,
+		quantity,
+		recvWindow: 59999,
+		newClientOrderId: OrderType.NEW + ORDER_ID_DIV + symbol.currentPrice,
+	});
 };

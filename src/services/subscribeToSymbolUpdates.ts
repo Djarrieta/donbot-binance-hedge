@@ -1,11 +1,9 @@
-import Binance from "binance-api-node";
-import OldBinance from "node-binance-api";
 import { CandleChartInterval_LT } from "binance-api-node";
-import { Interval } from "../models/Interval";
+import OldBinance from "node-binance-api";
 import { Context } from "../models/Context";
+import { Interval } from "../models/Interval";
 import { getDate } from "../utils/getDate";
-import { fixPrecision } from "../utils/fixPrecision";
-import { ORDER_ID_DIV, OrderType } from "../models/Order";
+import { positionSecure } from "./positionSecure";
 
 export const subscribeToSymbolUpdates = async ({
 	pair,
@@ -43,55 +41,13 @@ const handleSymbolUpdate = async (data: any) => {
 		context.symbolList[symbolIndex].currentPrice = Number(data.k.c);
 		context.symbolList[symbolIndex].isLoading = false;
 
-		for (let userIndex = 0; userIndex < context.userList.length; userIndex++) {
-			const user = context.userList[userIndex];
-
-			for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
-				const pos = user.openPositions[posIndex];
-
-				if (pos.status !== "PROTECTED" || pos.pair !== data.s) continue;
-
-				const currentPrice = Number(data.k.c);
-
-				const pnlGraph =
-					pos.positionSide === "LONG"
-						? (currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
-						: (pos.entryPriceUSDT - currentPrice) / pos.entryPriceUSDT;
-
-				if (pnlGraph >= Context.defaultTP / 2) {
-					context.userList[userIndex].openPositions[posIndex].status ===
-						"SECURED";
-
-					const SCPriceNumber =
-						pos.positionSide === "LONG"
-							? pos.entryPriceUSDT * (1 + Context.defaultSC)
-							: pos.entryPriceUSDT * (1 - Context.defaultSC);
-
-					const SCPrice = fixPrecision({
-						value: SCPriceNumber,
-						precision: symbol.pricePrecision,
-					});
-
-					const authExchange = Binance({
-						apiKey: user.key,
-						apiSecret: user.secret || "",
-					});
-
-					authExchange.futuresOrder({
-						type: "TAKE_PROFIT_MARKET",
-						side: pos.positionSide === "LONG" ? "SELL" : "BUY",
-						positionSide: pos.positionSide,
-						symbol: symbol.pair,
-						quantity: pos.coinQuantity,
-						stopPrice: SCPrice,
-						recvWindow: 59999,
-						newClientOrderId: OrderType.SECURE + ORDER_ID_DIV + SCPrice,
-					});
-				}
-
-				pos.entryPriceUSDT;
-			}
-		}
+		positionSecure({
+			symbol,
+			currentPrice: Number(data.k.c),
+			pair: data.s,
+			alertPt: Context.defaultTP / 2,
+			sc: Context.defaultSC,
+		});
 
 		return;
 	}
