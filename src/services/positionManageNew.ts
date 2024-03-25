@@ -49,7 +49,7 @@ export const positionManageNew = async ({
 	const tooManyOpenWithoutHedge =
 		!hedgedPosUniquePairs.length &&
 		openPosUnsecuredUniquePairs.length >=
-			context.expositionLevel * Context.maxProtectedPositions + 1;
+			context.expositionLevel * Context.maxProtectedPositions;
 
 	const tooManyOpenWithHedge =
 		hedgedPosUniquePairs.length &&

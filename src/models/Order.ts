@@ -1,10 +1,10 @@
-export const ORDER_ID_DIV = "__|__";
+export const ORDER_ID_DIV = "____";
 
 export enum OrderType {
 	NEW = "NEW",
 	HEDGE = "HEDGE",
 	PROFIT = "PROFIT",
-	SECURE = "SECURE",
+	SEC = "SEC",
 	UNKNOWN = "UNKNOWN",
 }
 

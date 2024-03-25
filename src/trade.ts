@@ -11,18 +11,27 @@ import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { positionManageExisting } from "./services/positionManageExisting";
 import { positionManageNew } from "./services/positionManageNew";
+import { positionSecure } from "./services/positionSecure";
 import { subscribeToSymbolUpdates } from "./services/subscribeToSymbolUpdates";
+import { subscribeToUserUpdates } from "./services/subscribeToUserUpdates";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
 import { chosenStrategies } from "./strategies";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
-import { subscribeToUserUpdates } from "./services/subscribeToUserUpdates";
 
 export const trade = async () => {
-	await startModel();
+	try {
+		await startModel();
+	} catch (e) {
+		console.error(e);
+	}
 
 	cron.schedule(CronInterval["4h"], async () => {
-		await startModel();
+		try {
+			await startModel();
+		} catch (e) {
+			console.error(e);
+		}
 	});
 
 	cron.schedule(CronInterval["5m"], async () => {
@@ -74,7 +83,25 @@ export const trade = async () => {
 			for (const user of context.userList) {
 				console.log(user.text);
 			}
-		} catch (_) {}
+		} catch (e) {
+			console.error(e);
+		}
+	});
+
+	cron.schedule(CronInterval["1m"], async () => {
+		try {
+			await positionSecure({
+				sc: Context.defaultSC,
+				alertPt: Context.defaultTP / 2,
+			});
+			await delay(30000);
+			await positionSecure({
+				sc: Context.defaultSC,
+				alertPt: Context.defaultTP / 2,
+			});
+		} catch (e) {
+			console.error(e);
+		}
 	});
 
 	cron.schedule(CronInterval["15m"], async () => {
@@ -82,7 +109,9 @@ export const trade = async () => {
 			console.log("");
 			console.log(getDate().dateString, "Updating symbols");
 			await updateUnreadySymbols();
-		} catch (_) {}
+		} catch (e) {
+			console.error(e);
+		}
 	});
 
 	const context = await Context.getInstance();
@@ -97,36 +126,35 @@ export const trade = async () => {
 };
 
 const startModel = async () => {
-	try {
-		Context.resetInstance();
+	Context.resetInstance();
 
-		const context = await Context.getInstance();
-		console.log(
-			getDate().dateString,
-			"Getting values for " + Context.branch + " branch..."
-		);
+	const context = await Context.getInstance();
+	console.log(
+		getDate().dateString,
+		"Getting values for " + Context.branch + " branch..."
+	);
 
-		context.symbolList = await getSymbolList();
-		console.log(
-			getDate().dateString,
-			context.symbolList.length + " symbols updated!"
-		);
+	context.symbolList = await getSymbolList();
+	console.log(
+		getDate().dateString,
+		context.symbolList.length + " symbols updated!"
+	);
 
-		context.userList = await getUserList();
-		console.log(getDate().dateString, "User list updated!");
-		console.log(
-			"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
-		);
+	context.userList = await getUserList();
+	console.log(getDate().dateString, "User list updated!");
+	console.log(
+		"Users: " + context.userList.map((u) => u.name?.split(" ")[0]).join(", ")
+	);
 
-		for (const user of context.userList) {
-			await positionManageExisting({ user });
-		}
-		for (const user of context.userList) {
-			console.log(user.text);
-		}
+	for (const user of context.userList) {
+		await positionManageExisting({ user });
+	}
+	for (const user of context.userList) {
+		console.log("");
+		console.log(user.text);
+	}
 
-		updateStrategyStat();
-	} catch (_) {}
+	updateStrategyStat();
 };
 
 trade();

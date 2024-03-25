@@ -41,14 +41,6 @@ const handleSymbolUpdate = async (data: any) => {
 		context.symbolList[symbolIndex].currentPrice = Number(data.k.c);
 		context.symbolList[symbolIndex].isLoading = false;
 
-		positionSecure({
-			symbol,
-			currentPrice: Number(data.k.c),
-			pair: data.s,
-			alertPt: Context.defaultTP / 2,
-			sc: Context.defaultSC,
-		});
-
 		return;
 	}
 

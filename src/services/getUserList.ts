@@ -148,7 +148,7 @@ export const getUserList = async () => {
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
 				).length === 1 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.SECURE
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.SEC
 				).length === 1
 			) {
 				openPositions[posIndex].status = "SECURED";

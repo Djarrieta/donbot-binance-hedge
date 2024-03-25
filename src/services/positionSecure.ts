@@ -1,23 +1,13 @@
-import Binance, { Binance as IBinance } from "binance-api-node";
+import Binance from "binance-api-node";
 import { Context } from "../models/Context";
 import { ORDER_ID_DIV, OrderType } from "../models/Order";
-import { Symbol } from "../models/Symbol";
 import { fixPrecision } from "../utils/fixPrecision";
 
 interface PositionSecureProps {
-	symbol: Symbol;
-	currentPrice: number;
-	pair: string;
 	alertPt: number;
 	sc: number;
 }
-export const positionSecure = async ({
-	symbol,
-	currentPrice,
-	pair,
-	sc,
-	alertPt,
-}: PositionSecureProps) => {
+export const positionSecure = async ({ sc, alertPt }: PositionSecureProps) => {
 	const context = await Context.getInstance();
 
 	for (let userIndex = 0; userIndex < context.userList.length; userIndex++) {
@@ -26,20 +16,27 @@ export const positionSecure = async ({
 		for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
 			const pos = user.openPositions[posIndex];
 
-			if (pos.status !== "PROTECTED" || pos.pair !== pair) continue;
+			if (pos.status !== "PROTECTED") continue;
+
+			const symbol = context.symbolList.find((s) => s.pair === pos.pair);
+
+			if (!symbol || !symbol.currentPrice) continue;
 
 			const pnlGraph =
 				pos.positionSide === "LONG"
-					? (currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
-					: (pos.entryPriceUSDT - currentPrice) / pos.entryPriceUSDT;
+					? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
+					: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
+
 			if (pnlGraph < alertPt) continue;
+
+			console.log("Securing position for " + user.name + " in " + pos.pair);
 
 			context.userList[userIndex].openPositions[posIndex].status === "SECURED";
 
 			const SCPriceNumber =
 				pos.positionSide === "LONG"
-					? pos.entryPriceUSDT * (1 + sc)
-					: pos.entryPriceUSDT * (1 - sc);
+					? pos.entryPriceUSDT * (1 - sc)
+					: pos.entryPriceUSDT * (1 + sc);
 
 			const SCPrice = fixPrecision({
 				value: SCPriceNumber,
@@ -54,12 +51,12 @@ export const positionSecure = async ({
 			await authExchange.futuresOrder({
 				type: "STOP_MARKET",
 				side: pos.positionSide === "LONG" ? "SELL" : "BUY",
-				positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+				positionSide: pos.positionSide,
 				symbol: symbol.pair,
 				quantity: pos.coinQuantity,
 				stopPrice: SCPrice,
 				recvWindow: 59999,
-				newClientOrderId: OrderType.SECURE + ORDER_ID_DIV + SCPrice,
+				newClientOrderId: OrderType.SEC + ORDER_ID_DIV + SCPrice,
 				timeInForce: "GTC",
 			});
 		}

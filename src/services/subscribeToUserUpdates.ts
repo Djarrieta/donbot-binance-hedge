@@ -9,33 +9,33 @@ export const subscribeToUserUpdates = async ({ user }: { user: User }) => {
 		APIKEY: user.key,
 		APISECRET: user.secret,
 	});
-	const authExchange = Binance({
-		apiKey: user.key,
-		apiSecret: user.secret || "",
-	});
 
 	oldExchange.websockets.userFutureData(
 		() => {},
 		() => {}, // account update
-		(event: any) => handleOrderUpdate({ authExchange, event }),
+		(event: any) => handleOrderUpdate({ user, event }),
 		() => {}, // Connection
 		() => {}
 	);
 };
 
 const handleOrderUpdate = async ({
-	authExchange,
+	user,
 	event,
 }: {
-	authExchange: IBinance;
+	user: User;
 	event: any;
 }) => {
+	const authExchange = Binance({
+		apiKey: user.key,
+		apiSecret: user.secret || "",
+	});
+
 	const {
 		symbol: pair,
 		clientOrderId,
 		orderStatus,
 		originalQuantity: quantity,
-		originalPrice: price,
 	} = event.order;
 
 	const orderType =
@@ -46,14 +46,26 @@ const handleOrderUpdate = async ({
 		if (
 			orderType === OrderType.HEDGE ||
 			orderType === OrderType.PROFIT ||
-			orderType === OrderType.SECURE
+			orderType === OrderType.SEC
 		) {
-			authExchange.futuresCancelAllOpenOrders({
+			const context = await Context.getInstance();
+			const userIndex = context.userList.findIndex((u) => u.id === user.id);
+
+			await authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
 			});
+
+			context.userList[userIndex].openOrders = context.userList[
+				userIndex
+			].openOrders.filter((p) => p.pair !== pair);
+
 			if (orderType === OrderType.HEDGE) {
-				const context = await Context.getInstance();
 				context.strategyStats = [];
+			}
+			if (orderType === OrderType.PROFIT || orderType === OrderType.SEC) {
+				context.userList[userIndex].openPositions = context.userList[
+					userIndex
+				].openPositions.filter((p) => p.pair !== pair);
 			}
 			return;
 		}

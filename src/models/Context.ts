@@ -34,7 +34,7 @@ export class Context {
 	public static fee = 0.0005;
 	public static defaultSL = 10 / 100;
 	public static defaultTP = 1 / 100;
-	public static defaultSC = 0.1 / 100;
+	public static defaultSC = 0.2 / 100;
 	public static shouldStop = false;
 	public static maxHedgePositions = 3;
 	public static maxProtectedPositions = 1;
