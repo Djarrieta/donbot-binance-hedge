@@ -224,7 +224,7 @@ export const getUserList = async () => {
 					samePairPos.length === 2 &&
 					samePairPos[0].coinQuantity !== samePairPos[1].coinQuantity
 				) {
-					unbalance = " UNBALANCED";
+					unbalance = "UNBALANCED";
 				}
 
 				text += `\n ${pos.pair} ${
