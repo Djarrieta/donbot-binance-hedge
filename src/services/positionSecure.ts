@@ -1,7 +1,6 @@
 import Binance, { Binance as IBinance } from "binance-api-node";
 import { Context } from "../models/Context";
 import { ORDER_ID_DIV, OrderType } from "../models/Order";
-import { PositionSide } from "../models/Position";
 import { Symbol } from "../models/Symbol";
 import { fixPrecision } from "../utils/fixPrecision";
 
@@ -53,14 +52,15 @@ export const positionSecure = async ({
 			});
 
 			await authExchange.futuresOrder({
-				type: "TAKE_PROFIT_MARKET",
+				type: "STOP_MARKET",
 				side: pos.positionSide === "LONG" ? "SELL" : "BUY",
-				positionSide: pos.positionSide,
+				positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
 				symbol: symbol.pair,
 				quantity: pos.coinQuantity,
 				stopPrice: SCPrice,
 				recvWindow: 59999,
 				newClientOrderId: OrderType.SECURE + ORDER_ID_DIV + SCPrice,
+				timeInForce: "GTC",
 			});
 		}
 	}
