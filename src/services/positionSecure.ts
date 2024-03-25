@@ -33,39 +33,35 @@ export const positionSecure = async ({
 				pos.positionSide === "LONG"
 					? (currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
 					: (pos.entryPriceUSDT - currentPrice) / pos.entryPriceUSDT;
+			if (pnlGraph < alertPt) continue;
 
-			if (pnlGraph >= alertPt) {
-				context.userList[userIndex].openPositions[posIndex].status ===
-					"SECURED";
+			context.userList[userIndex].openPositions[posIndex].status === "SECURED";
 
-				const SCPriceNumber =
-					pos.positionSide === "LONG"
-						? pos.entryPriceUSDT * (1 + sc)
-						: pos.entryPriceUSDT * (1 - sc);
+			const SCPriceNumber =
+				pos.positionSide === "LONG"
+					? pos.entryPriceUSDT * (1 + sc)
+					: pos.entryPriceUSDT * (1 - sc);
 
-				const SCPrice = fixPrecision({
-					value: SCPriceNumber,
-					precision: symbol.pricePrecision,
-				});
+			const SCPrice = fixPrecision({
+				value: SCPriceNumber,
+				precision: symbol.pricePrecision,
+			});
 
-				const authExchange = Binance({
-					apiKey: user.key,
-					apiSecret: user.secret || "",
-				});
+			const authExchange = Binance({
+				apiKey: user.key,
+				apiSecret: user.secret || "",
+			});
 
-				await authExchange.futuresOrder({
-					type: "TAKE_PROFIT_MARKET",
-					side: pos.positionSide === "LONG" ? "SELL" : "BUY",
-					positionSide: pos.positionSide,
-					symbol: symbol.pair,
-					quantity: pos.coinQuantity,
-					stopPrice: SCPrice,
-					recvWindow: 59999,
-					newClientOrderId: OrderType.SECURE + ORDER_ID_DIV + SCPrice,
-				});
-			}
-
-			pos.entryPriceUSDT;
+			await authExchange.futuresOrder({
+				type: "TAKE_PROFIT_MARKET",
+				side: pos.positionSide === "LONG" ? "SELL" : "BUY",
+				positionSide: pos.positionSide,
+				symbol: symbol.pair,
+				quantity: pos.coinQuantity,
+				stopPrice: SCPrice,
+				recvWindow: 59999,
+				newClientOrderId: OrderType.SECURE + ORDER_ID_DIV + SCPrice,
+			});
 		}
 	}
 };
