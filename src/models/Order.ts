@@ -1,4 +1,4 @@
-export const ORDER_ID_DIV = "__//__";
+export const ORDER_ID_DIV = "__|__";
 
 export enum OrderType {
 	NEW = "NEW",
