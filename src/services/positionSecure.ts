@@ -60,8 +60,7 @@ export const positionSecure = async ({ sc, alertPt }: PositionSecureProps) => {
 				newClientOrderId:
 					OrderType.SEC +
 					ORDER_ID_DIV +
-					SCPrice.replace(".", "").replace(",", "") +
-					getDate().dateString,
+					SCPrice.replace(".", "").replace(",", ""),
 				timeInForce: "GTC",
 			});
 		}
