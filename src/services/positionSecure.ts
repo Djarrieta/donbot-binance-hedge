@@ -35,8 +35,8 @@ export const positionSecure = async ({ sc, alertPt }: PositionSecureProps) => {
 
 			const SCPriceNumber =
 				pos.positionSide === "LONG"
-					? pos.entryPriceUSDT * (1 - sc)
-					: pos.entryPriceUSDT * (1 + sc);
+					? pos.entryPriceUSDT * (1 + sc)
+					: pos.entryPriceUSDT * (1 - sc);
 
 			const SCPrice = fixPrecision({
 				value: SCPriceNumber,
