@@ -2,6 +2,7 @@ import Binance from "binance-api-node";
 import { Context } from "../models/Context";
 import { ORDER_ID_DIV, OrderType } from "../models/Order";
 import { fixPrecision } from "../utils/fixPrecision";
+import { getDate } from "../utils/getDate";
 
 interface PositionSecureProps {
 	alertPt: number;
@@ -56,7 +57,11 @@ export const positionSecure = async ({ sc, alertPt }: PositionSecureProps) => {
 				quantity: pos.coinQuantity,
 				stopPrice: SCPrice,
 				recvWindow: 59999,
-				newClientOrderId: OrderType.SEC + ORDER_ID_DIV + SCPrice,
+				newClientOrderId:
+					OrderType.SEC +
+					ORDER_ID_DIV +
+					SCPrice.replace(".", "").replace(",", "") +
+					getDate().dateString,
 				timeInForce: "GTC",
 			});
 		}

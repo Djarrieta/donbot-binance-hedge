@@ -94,11 +94,6 @@ export const trade = async () => {
 				sc: Context.defaultSC,
 				alertPt: Context.defaultTP / 2,
 			});
-			await delay(30000);
-			await positionSecure({
-				sc: Context.defaultSC,
-				alertPt: Context.defaultTP / 2,
-			});
 		} catch (e) {
 			console.error(e);
 		}
