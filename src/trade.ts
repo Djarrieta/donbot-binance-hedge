@@ -88,17 +88,6 @@ export const trade = async () => {
 		}
 	});
 
-	cron.schedule(CronInterval["1m"], async () => {
-		try {
-			await positionSecure({
-				sc: Context.defaultSC,
-				alertPt: Context.defaultTP / 2,
-			});
-		} catch (e) {
-			console.error(e);
-		}
-	});
-
 	cron.schedule(CronInterval["15m"], async () => {
 		try {
 			console.log("");
@@ -118,6 +107,17 @@ export const trade = async () => {
 	for (const user of context.userList) {
 		subscribeToUserUpdates({ user });
 	}
+	do {
+		try {
+			await positionSecure({
+				sc: Context.defaultSC,
+				alertPt: Context.defaultTP / 2,
+			});
+			await delay(30000);
+		} catch (e) {
+			console.error(e);
+		}
+	} while (true);
 };
 
 const startModel = async () => {

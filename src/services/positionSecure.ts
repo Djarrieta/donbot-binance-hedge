@@ -29,10 +29,14 @@ export const positionSecure = async ({ sc, alertPt }: PositionSecureProps) => {
 					: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
 
 			if (pnlGraph < alertPt) continue;
+			if (
+				context.userList[userIndex].openPositions[posIndex].status === "SECURED"
+			)
+				continue;
 
 			console.log("Securing position for " + user.name + " in " + pos.pair);
 
-			context.userList[userIndex].openPositions[posIndex].status === "SECURED";
+			context.userList[userIndex].openPositions[posIndex].status = "SECURED";
 
 			const SCPriceNumber =
 				pos.positionSide === "LONG"

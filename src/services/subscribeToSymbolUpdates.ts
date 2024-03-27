@@ -3,7 +3,6 @@ import OldBinance from "node-binance-api";
 import { Context } from "../models/Context";
 import { Interval } from "../models/Interval";
 import { getDate } from "../utils/getDate";
-import { positionSecure } from "./positionSecure";
 
 export const subscribeToSymbolUpdates = async ({
 	pair,
