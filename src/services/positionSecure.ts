@@ -38,14 +38,41 @@ export const positionSecure = async ({
 				apiKey: user.key,
 				apiSecret: user.secret || "",
 			});
+			const ordersSamePair = context.userList[userIndex].openOrders.filter(
+				(o) => o.pair === pos.pair
+			);
+
+			if (
+				context.userList[userIndex].openPositions[posIndex].status ===
+					"PROTECTED" &&
+				!ordersSamePair.filter((o) => o.orderType === "BREAK").length
+			) {
+				console.log("Securing position for " + user.name + " in " + pos.pair);
+
+				context.userList[userIndex].openPositions[posIndex].status = "SECURED";
+
+				await placeSecureOrder({
+					positionSide: pos.positionSide,
+					entryPriceUSDT: pos.entryPriceUSDT,
+					price: breakEven,
+					symbol,
+					authExchange,
+					quantity: pos.coinQuantity,
+				});
+				context.userList[userIndex].openOrders.push({
+					price: breakEven,
+					pair: symbol.pair,
+					orderType: OrderType.BREAK,
+					orderId: 0,
+					coinQuantity: Number(pos.coinQuantity),
+					clientOrderId: OrderType.BREAK + ORDER_ID_DIV + breakEven,
+				});
+				continue;
+			}
 
 			if (
 				context.userList[userIndex].openPositions[posIndex].status === "SECURED"
 			) {
-				const ordersSamePair = context.userList[userIndex].openOrders.filter(
-					(o) => o.pair === pos.pair
-				);
-
 				if (
 					pnlGraph > breakEven * 4 &&
 					ordersSamePair.filter((o) => o.orderType === "BREAK").length === 1
@@ -152,19 +179,6 @@ export const positionSecure = async ({
 				}
 				continue;
 			}
-
-			console.log("Securing position for " + user.name + " in " + pos.pair);
-
-			context.userList[userIndex].openPositions[posIndex].status = "SECURED";
-
-			await placeSecureOrder({
-				positionSide: pos.positionSide,
-				entryPriceUSDT: pos.entryPriceUSDT,
-				price: breakEven,
-				symbol,
-				authExchange,
-				quantity: pos.coinQuantity,
-			});
 		}
 	}
 };
