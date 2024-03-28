@@ -9,6 +9,7 @@ export enum OrderType {
 }
 
 export interface Order {
+	orderId: number;
 	pair: string;
 	clientOrderId: string;
 	price: number;

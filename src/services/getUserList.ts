@@ -62,6 +62,7 @@ export const getUserList = async () => {
 		const unformattedOpenOrders = await authExchange.futuresOpenOrders({});
 		const openOrders: Order[] = unformattedOpenOrders.map((o) => {
 			return {
+				orderId: Number(o.orderId),
 				pair: o.symbol,
 				clientOrderId: o.clientOrderId,
 				price: Number(
