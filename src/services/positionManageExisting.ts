@@ -179,12 +179,14 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 				: (pos.entryPriceUSDT - riskyValue) / pos.entryPriceUSDT;
 
 		if (riskyValuePt < -Context.defaultSL / 2) {
+			console.log({ riskyValuePt, entryPriceUSDT: pos.entryPriceUSDT });
 			console.log(
 				"Moving TP for risky protected position for " +
 					user.name +
 					" in " +
 					pos.pair
 			);
+
 			const TPPriceNumber =
 				pos.positionSide === "LONG"
 					? pos.entryPriceUSDT * (1 + Context.defaultBE)
@@ -193,6 +195,15 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			const TPPrice = fixPrecision({
 				value: TPPriceNumber,
 				precision: symbol.pricePrecision,
+			});
+
+			context.userList[userIndex].openOrders.push({
+				price: Number(TPPrice),
+				pair: symbol.pair,
+				orderType: OrderType.PROFIT,
+				orderId: 0,
+				coinQuantity: Number(pos.coinQuantity),
+				clientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
 			});
 
 			await authExchange.futuresOrder({

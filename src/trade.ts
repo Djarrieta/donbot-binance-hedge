@@ -113,7 +113,8 @@ export const trade = async () => {
 				breakEven: Context.defaultBE,
 				alertPt: Context.defaultTP / 2,
 			});
-			await delay(30000);
+
+			await delay(10000);
 		} catch (e) {
 			console.error(e);
 		}
@@ -142,12 +143,14 @@ const startModel = async () => {
 	);
 
 	for (const user of context.userList) {
-		await positionManageExisting({ user });
-		context.userList = await getUserList();
-	}
-	for (const user of context.userList) {
-		console.log("");
-		console.log(user.text);
+		try {
+			await positionManageExisting({ user });
+			context.userList = await getUserList();
+			console.log("");
+			console.log(user.text);
+		} catch (e) {
+			console.error(e);
+		}
 	}
 
 	updateStrategyStat();
