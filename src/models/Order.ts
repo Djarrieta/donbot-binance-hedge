@@ -4,7 +4,7 @@ export enum OrderType {
 	NEW = "NEW",
 	HEDGE = "HEDGE",
 	PROFIT = "PROFIT",
-	SEC = "SEC",
+	BREAK = "BREAK",
 	UNKNOWN = "UNKNOWN",
 }
 

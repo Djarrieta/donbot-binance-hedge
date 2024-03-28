@@ -62,7 +62,7 @@ export const positionSecure = async ({ sc, alertPt }: PositionSecureProps) => {
 				stopPrice: SCPrice,
 				recvWindow: 59999,
 				newClientOrderId:
-					OrderType.SEC +
+					OrderType.BREAK +
 					ORDER_ID_DIV +
 					SCPrice.replace(".", "").replace(",", ""),
 				timeInForce: "GTC",

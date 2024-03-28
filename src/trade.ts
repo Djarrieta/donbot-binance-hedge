@@ -110,7 +110,7 @@ export const trade = async () => {
 	do {
 		try {
 			await positionSecure({
-				sc: Context.defaultSC,
+				sc: Context.defaultBE,
 				alertPt: Context.defaultTP / 2,
 			});
 			await delay(30000);

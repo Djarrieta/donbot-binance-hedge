@@ -96,6 +96,7 @@ export const getUserList = async () => {
 				entryPriceUSDT,
 				status: "UNKNOWN",
 				pnl,
+				isHedgeUnbalance: false,
 			};
 		});
 
@@ -113,12 +114,8 @@ export const getUserList = async () => {
 			);
 			const samePairOpenOrders = openOrders.filter((o) => o.pair === pos.pair);
 
-			if (samePairPositions.length === 1 && samePairOpenOrders.length < 2) {
-				openPositions[posIndex].status = "UNPROTECTED";
-			}
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.length === 2 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 2
@@ -127,7 +124,6 @@ export const getUserList = async () => {
 			}
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.length === 2 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
 				).length === 1 &&
@@ -139,22 +135,24 @@ export const getUserList = async () => {
 			}
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.length === 3 &&
 				pos.pnl > 0 &&
 				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
-				).length === 1 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
-				).length === 1 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.SEC
-				).length === 1
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.BREAK
+				).length >= 1
 			) {
 				openPositions[posIndex].status = "SECURED";
 			}
 			if (openPosPairLong.length === 1 && openPosPairShort.length === 1) {
 				openPositions[posIndex].status = "HEDGED";
+			}
+			if (
+				pos.status === "HEDGED" &&
+				samePairPositions[0].coinQuantity !== samePairPositions[1].coinQuantity
+			) {
+				openPositions[posIndex].isHedgeUnbalance = true;
+			}
+			if (pos.status === "UNKNOWN" && samePairPositions.length === 1) {
+				openPositions[posIndex].status = "UNPROTECTED";
 			}
 		}
 
@@ -217,21 +215,11 @@ export const getUserList = async () => {
 				const len =
 					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
 
-				let unbalance = "";
-				const samePairPos = openPositions.filter((s) => s.pair === pos.pair);
-				if (
-					pos.status === "HEDGED" &&
-					samePairPos.length === 2 &&
-					samePairPos[0].coinQuantity !== samePairPos[1].coinQuantity
-				) {
-					unbalance = "UNBALANCED";
-				}
-
-				text += `\n ${pos.pair} ${
-					pos.status
-				} ${unbalance}; len ${len.toFixed()}; pnl $${(
-					pnl * balanceUSDT
-				).toFixed(2)} ${formatPercent(pnl)}`;
+				text += `\n ${pos.pair} ${pos.status} ${
+					pos.isHedgeUnbalance ? "UNBALANCE" : ""
+				}; len ${len.toFixed()}; pnl $${(pnl * balanceUSDT).toFixed(
+					2
+				)} ${formatPercent(pnl)}`;
 
 				loggedPos.push(pos.pair);
 			}
