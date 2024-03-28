@@ -166,7 +166,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		const protectedOrders = user.openOrders.filter(
 			(o) => o.pair === pos.pair && o.orderType === "PROFIT"
 		);
-		if (protectedOrders.length !== 1) continue;
+		if (protectedOrders.length > 1) continue;
 
 		const riskyValue =
 			pos.positionSide === "LONG"

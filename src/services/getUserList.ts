@@ -159,7 +159,11 @@ export const getUserList = async () => {
 			) {
 				openPositions[posIndex].isHedgeUnbalance = true;
 			}
-			if (pos.status === "UNKNOWN" && samePairPositions.length === 1) {
+			if (
+				pos.status === "UNKNOWN" &&
+				samePairPositions.length === 1 &&
+				samePairOpenOrders.length < 2
+			) {
 				openPositions[posIndex].status = "UNPROTECTED";
 			}
 		}
