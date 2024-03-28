@@ -3,6 +3,7 @@ import { Context } from "../models/Context";
 import { User } from "../models/User";
 import { positionProtect } from "./positionProtect";
 import { fixPrecision } from "../utils/fixPrecision";
+import { ORDER_ID_DIV, OrderType } from "../models/Order";
 
 export const positionManageExisting = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
@@ -152,5 +153,58 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		context.userList[userIndex].openOrders = context.userList[
 			userIndex
 		].openOrders.filter((o) => o.pair !== pos.pair);
+	}
+
+	// Moving tp for risky positions
+	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
+		const pos = user.openPositions[posIndex];
+		if (pos.status !== "PROTECTED") continue;
+		const symbol = context.symbolList.find((s) => s.pair === pos.pair);
+		if (!symbol) {
+			continue;
+		}
+		const protectedOrders = user.openOrders.filter(
+			(o) => o.pair === pos.pair && o.orderType === "PROFIT"
+		);
+		if (protectedOrders.length !== 1) continue;
+
+		const riskyValue =
+			pos.positionSide === "LONG"
+				? Math.min(...symbol.candlestick.slice(-pos.len).map((c) => c.low))
+				: Math.max(...symbol.candlestick.slice(-pos.len).map((c) => c.high));
+
+		const riskyValuePt =
+			pos.positionSide === "LONG"
+				? (riskyValue - pos.entryPriceUSDT) / pos.entryPriceUSDT
+				: (pos.entryPriceUSDT - riskyValue) / pos.entryPriceUSDT;
+
+		if (riskyValuePt < -Context.defaultSL / 2) {
+			console.log(
+				"Moving TP for risky protected position for " +
+					user.name +
+					" in " +
+					pos.pair
+			);
+			const TPPriceNumber =
+				pos.positionSide === "LONG"
+					? pos.entryPriceUSDT * (1 + Context.defaultBE)
+					: pos.entryPriceUSDT * (1 - Context.defaultBE);
+
+			const TPPrice = fixPrecision({
+				value: TPPriceNumber,
+				precision: symbol.pricePrecision,
+			});
+
+			await authExchange.futuresOrder({
+				type: "TAKE_PROFIT_MARKET",
+				side: pos.positionSide === "LONG" ? "SELL" : "BUY",
+				positionSide: pos.positionSide,
+				symbol: symbol.pair,
+				quantity: pos.coinQuantity,
+				stopPrice: TPPrice,
+				recvWindow: 59999,
+				newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
+			});
+		}
 	}
 };
