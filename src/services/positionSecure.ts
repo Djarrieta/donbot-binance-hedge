@@ -86,14 +86,12 @@ export const positionSecure = async ({
 						quantity: pos.coinQuantity,
 					});
 
-					const orderIdTP = ordersSamePair.find(
-						(o) => o.orderType === "PROFIT"
-					);
+					const orderTP = ordersSamePair.find((o) => o.orderType === "PROFIT");
 
-					if (!orderIdTP) continue;
+					if (!orderTP) continue;
 
 					await authExchange.futuresCancelOrder({
-						orderId: orderIdTP.orderId,
+						orderId: orderTP.orderId,
 						symbol: pos.pair,
 					});
 
@@ -109,7 +107,7 @@ export const positionSecure = async ({
 					continue;
 				}
 				if (
-					pnlGraph > breakEven * 6 &&
+					pnlGraph > breakEven * 7 &&
 					ordersSamePair.filter((o) => o.orderType === "BREAK").length === 2
 				) {
 					await placeSecureOrder({
@@ -129,54 +127,30 @@ export const positionSecure = async ({
 						coinQuantity: Number(pos.coinQuantity),
 						clientOrderId: OrderType.BREAK + ORDER_ID_DIV + breakEven * 5,
 					});
-
-					continue;
-				}
-				if (
-					pnlGraph > breakEven * 10 &&
-					ordersSamePair.filter((o) => o.orderType === "BREAK").length === 3
-				) {
-					await placeSecureOrder({
-						positionSide: pos.positionSide,
-						entryPriceUSDT: pos.entryPriceUSDT,
-						price: breakEven * 8,
-						symbol,
-						authExchange,
-						quantity: pos.coinQuantity,
-					});
-
-					context.userList[userIndex].openOrders.push({
-						price: breakEven * 8,
-						pair: symbol.pair,
-						orderType: OrderType.BREAK,
-						orderId: 0,
-						coinQuantity: Number(pos.coinQuantity),
-						clientOrderId: OrderType.BREAK + ORDER_ID_DIV + breakEven * 8,
-					});
-
-					const TPPriceNumber =
+					const TRPriceNumber =
 						pos.positionSide === "LONG"
-							? pos.entryPriceUSDT * (1 + breakEven * 20)
-							: pos.entryPriceUSDT * (1 - breakEven * 20);
+							? pos.entryPriceUSDT * (1 + breakEven * 10)
+							: pos.entryPriceUSDT * (1 - breakEven * 10);
 
-					const TPPrice = fixPrecision({
-						value: TPPriceNumber,
+					const TRPrice = fixPrecision({
+						value: TRPriceNumber,
 						precision: symbol.pricePrecision,
 					});
 
 					await authExchange.futuresOrder({
-						type: "TAKE_PROFIT_MARKET",
+						type: "TRAILING_STOP_MARKET",
 						side: pos.positionSide === "LONG" ? "SELL" : "BUY",
 						positionSide: pos.positionSide,
 						symbol: symbol.pair,
 						quantity: pos.coinQuantity,
-						stopPrice: TPPrice,
+						callbackRate: (breakEven * 5 * 100).toFixed(1),
+						activationPrice: TRPrice,
 						recvWindow: 59999,
-						newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
+						newClientOrderId: OrderType.BREAK + ORDER_ID_DIV + TRPrice,
 					});
-
 					continue;
 				}
+
 				continue;
 			}
 		}

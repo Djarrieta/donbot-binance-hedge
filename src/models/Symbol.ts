@@ -6,7 +6,6 @@ export interface Symbol {
 	quantityPrecision: number;
 	minQuantityUSD: number;
 	minNotional: number;
-
 	candlestick: Candle[];
 	currentPrice: number;
 	isReady: boolean;
