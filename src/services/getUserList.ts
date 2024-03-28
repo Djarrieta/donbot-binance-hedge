@@ -97,6 +97,7 @@ export const getUserList = async () => {
 				status: "UNKNOWN",
 				pnl,
 				isHedgeUnbalance: false,
+				len: 0,
 			};
 		});
 
@@ -113,6 +114,13 @@ export const getUserList = async () => {
 				(p) => p.pair === pos.pair && p.positionSide === "SHORT"
 			);
 			const samePairOpenOrders = openOrders.filter((o) => o.pair === pos.pair);
+
+			const startTimeMM = Math.min(
+				...samePairPositions.map((p) => getDate(p.startTime).dateMs)
+			);
+
+			openPositions[posIndex].len =
+				(getDate().dateMs - startTimeMM) / Context.interval;
 
 			if (
 				samePairPositions.length === 1 &&
@@ -212,12 +220,9 @@ export const getUserList = async () => {
 					.filter((s) => s.pair === pos.pair)
 					.reduce((acc, val) => acc + val.pnl, 0);
 
-				const len =
-					(getDate().dateMs - getDate(pos.startTime).dateMs) / Context.interval;
-
 				text += `\n ${pos.pair} ${pos.status} ${
 					pos.isHedgeUnbalance ? "UNBALANCE" : ""
-				}; len ${len.toFixed()}; pnl $${(pnl * balanceUSDT).toFixed(
+				}; len ${pos.len.toFixed()}; pnl $${(pnl * balanceUSDT).toFixed(
 					2
 				)} ${formatPercent(pnl)}`;
 

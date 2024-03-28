@@ -15,5 +15,6 @@ export interface Position {
 	entryPriceUSDT: number;
 	status: PositionStatus;
 	pnl: number;
+	len: number;
 	isHedgeUnbalance: boolean;
 }

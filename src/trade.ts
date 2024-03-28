@@ -99,7 +99,6 @@ export const trade = async () => {
 	});
 
 	const context = await Context.getInstance();
-
 	for (const symbol of context.symbolList) {
 		subscribeToSymbolUpdates({ pair: symbol.pair, interval: Context.interval });
 	}
@@ -107,6 +106,7 @@ export const trade = async () => {
 	for (const user of context.userList) {
 		subscribeToUserUpdates({ user });
 	}
+
 	do {
 		try {
 			await positionSecure({
@@ -143,6 +143,7 @@ const startModel = async () => {
 
 	for (const user of context.userList) {
 		await positionManageExisting({ user });
+		context.userList = await getUserList();
 	}
 	for (const user of context.userList) {
 		console.log("");

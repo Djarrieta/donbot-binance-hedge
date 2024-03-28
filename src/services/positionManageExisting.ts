@@ -35,7 +35,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		}
 	}
 
-	//Cancel orders if Hedge is reached
+	//Cancel orders if Hedge order is reached
 	const hedgePosUniquePairs = Array.from(
 		new Set(
 			user.openPositions.filter((p) => p.status === "HEDGED").map((x) => x.pair)
@@ -102,7 +102,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		}
 	}
 
-	//Quit if today Pnl > openPosPnl
+	//Quit if today Pnl > hedge open PosPnl
 	for (const pair of hedgePosUniquePairs) {
 		const openPosSamePair = user.openPositions.filter((p) => p.pair === pair);
 		const samePairOpenPosPnlPt = openPosSamePair.reduce((acc, pos) => {
@@ -123,5 +123,34 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			}
 			return;
 		}
+	}
+
+	// Hedge position if protected position is taking too long
+	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
+		const pos = user.openPositions[posIndex];
+		if (pos.status !== "PROTECTED" || pos.len < Context.maxTradeLength)
+			continue;
+		console.log(
+			"Hedged protected position taking too long for " +
+				user.name +
+				" in " +
+				pos.pair
+		);
+		await authExchange.futuresOrder({
+			type: "MARKET",
+			side: pos.positionSide === "LONG" ? "SELL" : "BUY",
+			positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+			symbol: pos.pair,
+			quantity: pos.coinQuantity,
+			recvWindow: 59999,
+		});
+		context.userList[userIndex].openPositions[posIndex].status = "HEDGED";
+
+		await authExchange.futuresCancelAllOpenOrders({
+			symbol: pos.pair,
+		});
+		context.userList[userIndex].openOrders = context.userList[
+			userIndex
+		].openOrders.filter((o) => o.pair !== pos.pair);
 	}
 };
