@@ -157,6 +157,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
 		const pos = user.openPositions[posIndex];
 		if (pos.status !== "PROTECTED") continue;
+		if (pos.len < 2) continue;
 		const symbol = context.symbolList.find((s) => s.pair === pos.pair);
 		if (!symbol) {
 			continue;
