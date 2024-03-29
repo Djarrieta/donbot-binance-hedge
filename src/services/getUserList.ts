@@ -127,7 +127,7 @@ export const getUserList = async () => {
 				samePairPositions.length === 1 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
-				).length === 2
+				).length >= 2
 			) {
 				openPositions[posIndex].status = "PROTECTED";
 			}
@@ -135,10 +135,10 @@ export const getUserList = async () => {
 				samePairPositions.length === 1 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
-				).length === 1 &&
+				).length >= 1 &&
 				samePairOpenOrders.filter(
 					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
-				).length === 1
+				).length >= 1
 			) {
 				openPositions[posIndex].status = "PROTECTED";
 			}
