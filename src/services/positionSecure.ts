@@ -47,7 +47,9 @@ export const positionSecure = async ({
 					"PROTECTED" &&
 				!ordersSamePair.filter((o) => o.orderType === "BREAK").length
 			) {
-				console.log("Securing position for " + user.name + " in " + pos.pair);
+				console.log(
+					"(1) Securing position for " + user.name + " in " + pos.pair
+				);
 
 				context.userList[userIndex].openPositions[posIndex].status = "SECURED";
 
@@ -77,6 +79,17 @@ export const positionSecure = async ({
 					pnlGraph > breakEven * 4 &&
 					ordersSamePair.filter((o) => o.orderType === "BREAK").length === 1
 				) {
+					console.log(
+						"(2) Securing position for " + user.name + " in " + pos.pair
+					);
+					context.userList[userIndex].openOrders.push({
+						price: breakEven * 3,
+						pair: symbol.pair,
+						orderType: OrderType.BREAK,
+						orderId: 0,
+						coinQuantity: Number(pos.coinQuantity),
+						clientOrderId: OrderType.BREAK + ORDER_ID_DIV + breakEven * 3,
+					});
 					await placeSecureOrder({
 						positionSide: pos.positionSide,
 						entryPriceUSDT: pos.entryPriceUSDT,
@@ -95,30 +108,18 @@ export const positionSecure = async ({
 						symbol: pos.pair,
 					});
 
-					context.userList[userIndex].openOrders.push({
-						price: breakEven * 3,
-						pair: symbol.pair,
-						orderType: OrderType.BREAK,
-						orderId: 0,
-						coinQuantity: Number(pos.coinQuantity),
-						clientOrderId: OrderType.BREAK + ORDER_ID_DIV + breakEven * 3,
-					});
+					const TRPriceNumber =
+						pos.positionSide === "LONG"
+							? pos.entryPriceUSDT * (1 + breakEven * 5)
+							: pos.entryPriceUSDT * (1 - breakEven * 5);
 
-					continue;
-				}
-				if (
-					pnlGraph > breakEven * 7 &&
-					ordersSamePair.filter((o) => o.orderType === "BREAK").length === 2
-				) {
-					await placeSecureOrder({
-						positionSide: pos.positionSide,
-						entryPriceUSDT: pos.entryPriceUSDT,
-						price: breakEven * 5,
-						symbol,
-						authExchange,
-						quantity: pos.coinQuantity,
+					const TRPrice = fixPrecision({
+						value: TRPriceNumber,
+						precision: symbol.pricePrecision,
 					});
-
+					console.log(
+						"Placing trailing order for " + user.name + " in " + pos.pair
+					);
 					context.userList[userIndex].openOrders.push({
 						price: breakEven * 5,
 						pair: symbol.pair,
@@ -127,16 +128,6 @@ export const positionSecure = async ({
 						coinQuantity: Number(pos.coinQuantity),
 						clientOrderId: OrderType.BREAK + ORDER_ID_DIV + breakEven * 5,
 					});
-					const TRPriceNumber =
-						pos.positionSide === "LONG"
-							? pos.entryPriceUSDT * (1 + breakEven * 10)
-							: pos.entryPriceUSDT * (1 - breakEven * 10);
-
-					const TRPrice = fixPrecision({
-						value: TRPriceNumber,
-						precision: symbol.pricePrecision,
-					});
-
 					await authExchange.futuresOrder({
 						type: "TRAILING_STOP_MARKET",
 						side: pos.positionSide === "LONG" ? "SELL" : "BUY",
@@ -148,6 +139,7 @@ export const positionSecure = async ({
 						recvWindow: 59999,
 						newClientOrderId: OrderType.BREAK + ORDER_ID_DIV + TRPrice,
 					});
+
 					continue;
 				}
 
