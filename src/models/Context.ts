@@ -27,7 +27,7 @@ export class Context {
 	public static leverage = 10; //WIP: Implement
 	public static lookBackLength = 200;
 	public static lookBackLengthBacktest = (2 * Interval["1d"]) / Interval["5m"];
-	public static amountToTradePt = 0.75;
+	public static amountToTradePt = 0.5;
 	public static maxTradeLength = 200;
 	public static minVolatility = 10 / 100;
 	public static minAmountToTrade = 6;
