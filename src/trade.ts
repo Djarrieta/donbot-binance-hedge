@@ -144,10 +144,13 @@ const startModel = async () => {
 
 	for (const user of context.userList) {
 		try {
-			await positionManageExisting({ user });
-			context.userList = await getUserList();
-			console.log("");
-			console.log(user.text);
+			const func = async () => {
+				await positionManageExisting({ user });
+				context.userList = await getUserList();
+				console.log("");
+				console.log(user.text);
+			};
+			func();
 		} catch (e) {
 			console.error(e);
 		}

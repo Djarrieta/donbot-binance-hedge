@@ -21,7 +21,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	const openPosUniquePairs = Array.from(
 		new Set(user.openPositions.map((x) => x.pair))
 	);
-	if (openOrdersUniquePairs.length && !openPosUniquePairs.length) {
+	if (openOrdersUniquePairs.length) {
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
 
