@@ -21,19 +21,17 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	const openPosUniquePairs = Array.from(
 		new Set(user.openPositions.map((x) => x.pair))
 	);
-	if (openOrdersUniquePairs.length) {
-		for (const pair of openOrdersUniquePairs) {
-			if (openPosUniquePairs.includes(pair)) continue;
+	for (const pair of openOrdersUniquePairs) {
+		if (openPosUniquePairs.includes(pair)) continue;
 
-			console.log("Canceling orders for " + user.name + " in " + pair);
-			await authExchange.futuresCancelAllOpenOrders({
-				symbol: pair,
-			});
+		console.log("Canceling orders for " + user.name + " in " + pair);
+		await authExchange.futuresCancelAllOpenOrders({
+			symbol: pair,
+		});
 
-			context.userList[userIndex].openOrders = context.userList[
-				userIndex
-			].openOrders.filter((o) => o.pair !== pair);
-		}
+		context.userList[userIndex].openOrders = context.userList[
+			userIndex
+		].openOrders.filter((o) => o.pair !== pair);
 	}
 
 	//Cancel orders if Hedge order is reached
