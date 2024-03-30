@@ -3,6 +3,7 @@ import { Context } from "../models/Context";
 import { User } from "../models/User";
 import { positionProtect } from "./positionProtect";
 import { fixPrecision } from "../utils/fixPrecision";
+import { ORDER_ID_DIV, OrderType } from "../models/Order";
 
 export const positionManageExisting = async ({ user }: { user: User }) => {
 	const authExchange = Binance({
@@ -20,22 +21,20 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	const openPosUniquePairs = Array.from(
 		new Set(user.openPositions.map((x) => x.pair))
 	);
-	if (openOrdersUniquePairs.length && !openPosUniquePairs.length) {
-		for (const pair of openOrdersUniquePairs) {
-			if (openPosUniquePairs.includes(pair)) continue;
+	for (const pair of openOrdersUniquePairs) {
+		if (openPosUniquePairs.includes(pair)) continue;
 
-			console.log("Canceling orders for " + user.name + " in " + pair);
-			await authExchange.futuresCancelAllOpenOrders({
-				symbol: pair,
-			});
+		console.log("Canceling orders for " + user.name + " in " + pair);
+		await authExchange.futuresCancelAllOpenOrders({
+			symbol: pair,
+		});
 
-			context.userList[userIndex].openOrders = context.userList[
-				userIndex
-			].openOrders.filter((o) => o.pair !== pair);
-		}
+		context.userList[userIndex].openOrders = context.userList[
+			userIndex
+		].openOrders.filter((o) => o.pair !== pair);
 	}
 
-	//Cancel orders if Hedge is reached
+	//Cancel orders if Hedge order is reached
 	const hedgePosUniquePairs = Array.from(
 		new Set(
 			user.openPositions.filter((p) => p.status === "HEDGED").map((x) => x.pair)
@@ -102,7 +101,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		}
 	}
 
-	//Quit if today Pnl > openPosPnl
+	//Quit if today Pnl > hedge open PosPnl
 	for (const pair of hedgePosUniquePairs) {
 		const openPosSamePair = user.openPositions.filter((p) => p.pair === pair);
 		const samePairOpenPosPnlPt = openPosSamePair.reduce((acc, pos) => {
@@ -122,6 +121,100 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 				});
 			}
 			return;
+		}
+	}
+
+	// Hedge position if protected position is taking too long
+	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
+		const pos = user.openPositions[posIndex];
+		if (pos.status !== "PROTECTED" || pos.len < Context.maxTradeLength)
+			continue;
+		console.log(
+			"Hedged protected position taking too long for " +
+				user.name +
+				" in " +
+				pos.pair
+		);
+		await authExchange.futuresOrder({
+			type: "MARKET",
+			side: pos.positionSide === "LONG" ? "SELL" : "BUY",
+			positionSide: pos.positionSide === "LONG" ? "SHORT" : "LONG",
+			symbol: pos.pair,
+			quantity: pos.coinQuantity,
+			recvWindow: 59999,
+		});
+		context.userList[userIndex].openPositions[posIndex].status = "HEDGED";
+
+		await authExchange.futuresCancelAllOpenOrders({
+			symbol: pos.pair,
+		});
+		context.userList[userIndex].openOrders = context.userList[
+			userIndex
+		].openOrders.filter((o) => o.pair !== pos.pair);
+	}
+
+	// Moving tp for risky positions
+	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
+		const pos = user.openPositions[posIndex];
+		if (pos.status !== "PROTECTED") continue;
+		if (pos.len < 2) continue;
+		const symbol = context.symbolList.find((s) => s.pair === pos.pair);
+		if (!symbol) {
+			continue;
+		}
+		const protectedOrders = user.openOrders.filter(
+			(o) => o.pair === pos.pair && o.orderType === "PROFIT"
+		);
+		if (protectedOrders.length > 1) continue;
+
+		const riskyValue =
+			pos.positionSide === "LONG"
+				? Math.min(...symbol.candlestick.slice(-pos.len).map((c) => c.low))
+				: Math.max(...symbol.candlestick.slice(-pos.len).map((c) => c.high));
+
+		const riskyValuePt =
+			pos.positionSide === "LONG"
+				? (riskyValue - pos.entryPriceUSDT) / pos.entryPriceUSDT
+				: (pos.entryPriceUSDT - riskyValue) / pos.entryPriceUSDT;
+
+		if (riskyValuePt < -Context.defaultSL / 2) {
+			console.log({ riskyValuePt, entryPriceUSDT: pos.entryPriceUSDT });
+			console.log(
+				"Moving TP for risky protected position for " +
+					user.name +
+					" in " +
+					pos.pair
+			);
+
+			const TPPriceNumber =
+				pos.positionSide === "LONG"
+					? pos.entryPriceUSDT * (1 + Context.defaultBE)
+					: pos.entryPriceUSDT * (1 - Context.defaultBE);
+
+			const TPPrice = fixPrecision({
+				value: TPPriceNumber,
+				precision: symbol.pricePrecision,
+			});
+
+			context.userList[userIndex].openOrders.push({
+				price: Number(TPPrice),
+				pair: symbol.pair,
+				orderType: OrderType.PROFIT,
+				orderId: 0,
+				coinQuantity: Number(pos.coinQuantity),
+				clientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
+			});
+
+			await authExchange.futuresOrder({
+				type: "TAKE_PROFIT_MARKET",
+				side: pos.positionSide === "LONG" ? "SELL" : "BUY",
+				positionSide: pos.positionSide,
+				symbol: symbol.pair,
+				quantity: pos.coinQuantity,
+				stopPrice: TPPrice,
+				recvWindow: 59999,
+				newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
+			});
 		}
 	}
 };

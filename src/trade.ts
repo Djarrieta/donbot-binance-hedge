@@ -99,7 +99,6 @@ export const trade = async () => {
 	});
 
 	const context = await Context.getInstance();
-
 	for (const symbol of context.symbolList) {
 		subscribeToSymbolUpdates({ pair: symbol.pair, interval: Context.interval });
 	}
@@ -107,13 +106,15 @@ export const trade = async () => {
 	for (const user of context.userList) {
 		subscribeToUserUpdates({ user });
 	}
+
 	do {
 		try {
 			await positionSecure({
-				sc: Context.defaultSC,
+				breakEven: Context.defaultBE,
 				alertPt: Context.defaultTP / 2,
 			});
-			await delay(30000);
+
+			await delay(10000);
 		} catch (e) {
 			console.error(e);
 		}
@@ -142,11 +143,17 @@ const startModel = async () => {
 	);
 
 	for (const user of context.userList) {
-		await positionManageExisting({ user });
-	}
-	for (const user of context.userList) {
-		console.log("");
-		console.log(user.text);
+		try {
+			const func = async () => {
+				await positionManageExisting({ user });
+				context.userList = await getUserList();
+				console.log("");
+				console.log(user.text);
+			};
+			func();
+		} catch (e) {
+			console.error(e);
+		}
 	}
 
 	updateStrategyStat();

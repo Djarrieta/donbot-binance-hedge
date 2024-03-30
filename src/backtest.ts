@@ -180,5 +180,6 @@ export const updateStrategyStat = async () => {
 
 		console.log("");
 		console.log(log);
+		console.log("");
 	}
 };

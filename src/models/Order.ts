@@ -4,11 +4,12 @@ export enum OrderType {
 	NEW = "NEW",
 	HEDGE = "HEDGE",
 	PROFIT = "PROFIT",
-	SEC = "SEC",
+	BREAK = "BREAK",
 	UNKNOWN = "UNKNOWN",
 }
 
 export interface Order {
+	orderId: number;
 	pair: string;
 	clientOrderId: string;
 	price: number;
