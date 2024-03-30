@@ -123,7 +123,61 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			return;
 		}
 	}
+	// Handle un balanced hedge positions
+	for (const pair of hedgePosUniquePairs) {
+		const openPosSamePair = user.openPositions.filter((p) => p.pair === pair);
 
+		if (openPosSamePair.length !== 2) continue;
+
+		const q1 = Number(openPosSamePair[0].coinQuantity);
+		const q2 = Number(openPosSamePair[1].coinQuantity);
+
+		if (q1 !== q2 && q1 > q2) {
+			const symbol = context.symbolList.find(
+				(s) => s.pair === openPosSamePair[0].pair
+			);
+			if (!symbol) continue;
+
+			const quantity = fixPrecision({
+				precision: symbol.quantityPrecision,
+				value: q1 - q2,
+			});
+			console.log(
+				"Balancing hedged positions for " + user.name + " in " + symbol.pair
+			);
+			await authExchange.futuresOrder({
+				type: "MARKET",
+				side: openPosSamePair[0].positionSide === "LONG" ? "SELL" : "BUY",
+				positionSide: openPosSamePair[0].positionSide,
+				symbol: openPosSamePair[0].pair,
+				quantity,
+				recvWindow: 59999,
+			});
+		}
+		if (q1 !== q2 && q2 > q1) {
+			const symbol = context.symbolList.find(
+				(s) => s.pair === openPosSamePair[0].pair
+			);
+			if (!symbol) continue;
+
+			const quantity = fixPrecision({
+				precision: symbol.quantityPrecision,
+				value: q2 - q1,
+			});
+			console.log(
+				"Balancing hedged positions for " + user.name + " in " + symbol.pair
+			);
+
+			await authExchange.futuresOrder({
+				type: "MARKET",
+				side: openPosSamePair[1].positionSide === "LONG" ? "SELL" : "BUY",
+				positionSide: openPosSamePair[1].positionSide,
+				symbol: openPosSamePair[1].pair,
+				quantity,
+				recvWindow: 59999,
+			});
+		}
+	}
 	// Hedge position if protected position is taking too long
 	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
 		const pos = user.openPositions[posIndex];
