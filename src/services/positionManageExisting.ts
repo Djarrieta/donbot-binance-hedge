@@ -34,7 +34,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		].openOrders.filter((o) => o.pair !== pair);
 	}
 
-	//Cancel orders if Hedge order is reached
+	//Cancel orders for Hedge positions
 	const hedgePosUniquePairs = Array.from(
 		new Set(
 			user.openPositions.filter((p) => p.status === "HEDGED").map((x) => x.pair)
@@ -43,7 +43,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 	for (const pair of hedgePosUniquePairs) {
 		const openOrders = user.openOrders.filter((o) => o.pair === pair);
 
-		if (openOrders.length === 1) {
+		if (openOrders.length >= 1) {
 			console.log("Canceling orders for " + user.name + " in " + pair);
 			await authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
