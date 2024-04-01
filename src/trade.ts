@@ -26,7 +26,7 @@ export const trade = async () => {
 		console.error(e);
 	}
 
-	cron.schedule(CronInterval["4h"], async () => {
+	cron.schedule(CronInterval["8h"], async () => {
 		try {
 			await startModel();
 		} catch (e) {
