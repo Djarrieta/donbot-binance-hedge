@@ -36,6 +36,6 @@ export class Context {
 	public static defaultTP = 1 / 100;
 	public static defaultBE = 0.2 / 100;
 	public static shouldStop = false;
-	public static maxHedgePositions = 3;
+	public static maxHedgePositions = 4;
 	public static maxProtectedPositions = 1;
 }

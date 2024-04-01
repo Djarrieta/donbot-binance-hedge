@@ -199,7 +199,7 @@ export const backtestVariants = async () => {
 		return Array.from({ length }, (_, index) => start + index * step);
 	};
 
-	const maxTradeLengths = generateArray({ start: 10, end: 100, step: 10 });
+	const maxTradeLengths = generateArray({ start: 50, end: 500, step: 50 });
 	for (const maxTradeLength of maxTradeLengths) {
 		Context.maxTradeLength = maxTradeLength;
 		console.log("maxTradeLength", Context.maxTradeLength);
