@@ -185,30 +185,52 @@ export const updateStrategyStat = async () => {
 };
 
 export const backtestVariants = async () => {
-	const generateArray = ({
-		start,
-		end,
-		step,
-	}: {
-		start: number;
-		end: number;
-		step: number;
-	}) => {
-		const length = Math.floor((end - start) / step) + 1;
+	const array = [1 / 100, 5 / 100, 10 / 100];
+	Context.lookBackLengthBacktest = (30 * Interval["1d"]) / Interval["5m"];
+	for (const tp of array) {
+		for (const sl of array) {
+			Context.defaultTP = tp;
+			Context.defaultSL = sl;
 
-		return Array.from({ length }, (_, index) => start + index * step);
-	};
-
-	const maxTradeLengths = generateArray({ start: 50, end: 500, step: 50 });
-	for (const maxTradeLength of maxTradeLengths) {
-		Context.maxTradeLength = maxTradeLength;
-		console.log("maxTradeLength", Context.maxTradeLength);
-		const backtestResult = await backtest({
-			strategy: chosenStrategies[0],
-		});
-		console.table({
-			...backtestResult,
-			avPnl: formatPercent(backtestResult.avPnl),
-		});
+			try {
+				const backtestResult = await backtest({
+					strategy: chosenStrategies[0],
+				});
+				console.table({
+					...backtestResult,
+					avPnl: formatPercent(backtestResult.avPnl),
+				});
+			} catch (e) {
+				console.log(e);
+			}
+		}
 	}
+	// const generateArray = ({
+	// 	start,
+	// 	end,
+	// 	step,
+	// }: {
+	// 	start: number;
+	// 	end: number;
+	// 	step: number;
+	// }) => {
+	// 	const length = Math.floor((end - start) / step) + 1;
+
+	// 	return Array.from({ length }, (_, index) => start + index * step);
+	// };
+
+	// const maxTradeLengths = generateArray({ start: 50, end: 500, step: 50 });
+
+	// Context.lookBackLengthBacktest = (30 * Interval["1d"]) / Interval["5m"];
+	// for (const maxTradeLength of maxTradeLengths) {
+	// 	Context.maxTradeLength = maxTradeLength;
+	// 	console.log("maxTradeLength", Context.maxTradeLength);
+	// 	const backtestResult = await backtest({
+	// 		strategy: chosenStrategies[0],
+	// 	});
+	// 	console.table({
+	// 		...backtestResult,
+	// 		avPnl: formatPercent(backtestResult.avPnl),
+	// 	});
+	// }
 };
