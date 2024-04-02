@@ -167,6 +167,17 @@ export const getUserList = async () => {
 			) {
 				openPositions[posIndex].status = "UNPROTECTED";
 			}
+
+			if (
+				pos.status === "UNKNOWN" &&
+				samePairPositions.length === 1 &&
+				samePairOpenOrders.length === 2 &&
+				samePairOpenOrders.filter(
+					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
+				).length === 2
+			) {
+				openPositions[posIndex].status = "UNPROTECTED";
+			}
 		}
 
 		//PNL
