@@ -22,7 +22,7 @@ export class Context {
 	expositionLevel = 1;
 
 	public static candlestickAPILimit = 500;
-	public static branch: "main" | "test" | "risk" = "main";
+	public static branch: "main" | "test" | "risk" = "test";
 	public static interval = Interval["5m"];
 	public static leverage = 10; //WIP: Implement
 	public static lookBackLength = 200;
@@ -33,8 +33,9 @@ export class Context {
 	public static minAmountToTrade = 6;
 	public static fee = 0.0005;
 	public static defaultSL = 10 / 100;
-	public static defaultTP = 1 / 100;
+	public static defaultTP = 10 / 100;
 	public static defaultBE = 0.2 / 100;
+	public static defaultTR = 2 / 100;
 	public static shouldStop = false;
 	public static maxHedgePositions = 3;
 	public static maxProtectedPositions = 1;
