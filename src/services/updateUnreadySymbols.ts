@@ -21,6 +21,7 @@ export const updateUnreadySymbols = async () => {
 				interval: Context.interval,
 				apiLimit: Context.candlestickAPILimit,
 			});
+			if (!candlestick) continue;
 
 			context.symbolList[index].currentPrice =
 				candlestick[candlestick.length - 1].close;
