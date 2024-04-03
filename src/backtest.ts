@@ -185,10 +185,29 @@ export const updateStrategyStat = async () => {
 };
 
 export const backtestVariantsSL_TP = async () => {
-	const array = [1 / 100, 5 / 100, 10 / 100];
+	const generateArray = ({
+		start,
+		end,
+		step,
+	}: {
+		start: number;
+		end: number;
+		step: number;
+	}) => {
+		const length = Math.floor((end - start) / step) + 1;
+
+		return Array.from({ length }, (_, index) => start + index * step);
+	};
+
+	const slAndTpArray = generateArray({
+		start: 1 / 100,
+		end: 10 / 100,
+		step: 1 / 100,
+	});
+
 	Context.lookBackLengthBacktest = (30 * Interval["1d"]) / Interval["5m"];
-	for (const tp of array) {
-		for (const sl of array) {
+	for (const tp of slAndTpArray) {
+		for (const sl of slAndTpArray) {
 			Context.defaultTP = tp;
 			Context.defaultSL = sl;
 
