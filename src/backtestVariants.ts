@@ -1,3 +1,4 @@
-import { backtestVariants } from "./backtest";
+import { backtestVariantsTradeLength } from "./backtest";
+import { backtestVariantsSL_TP } from "./backtest";
 
-backtestVariants();
+backtestVariantsTradeLength();

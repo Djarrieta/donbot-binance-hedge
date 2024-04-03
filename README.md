@@ -3,6 +3,8 @@
 ## Overview
 `donbot-hedge` is a versatile trading bot designed for futures trading on [Binance](https://www.binance.com/en/futures/BTCUSDT) in Hedge mode, enabling multiple positions to be open simultaneously. The bot utilizes the [Xata](https://app.xata.io/) database service, requiring a specific table structure named "user" with essential columns.
 
+**Please note:** Due to API 2400 requests per minute limits, only one instance of the bot can be run per IP address at a time. This means you cannot run a backtest while the trading bot is active.
+
 ## Installation
 To install dependencies, execute the following command in your terminal:
 
@@ -45,6 +47,12 @@ For backtesting your strategies, use:
 
 ```bash
 bun backtest
+```
+
+For backtesting with several variants for take profit and stop loss or for maximum trade length  use:
+
+```bash
+bun backtestVariants
 ```
 
 The backtest script evaluates chosen strategies outlined in `strategies/index.ts`. It provides insightful statistics such as win ratio, profits, and more to help you assess the effectiveness of your trading strategies.
