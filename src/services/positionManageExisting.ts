@@ -231,7 +231,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 				? (riskyValue - pos.entryPriceUSDT) / pos.entryPriceUSDT
 				: (pos.entryPriceUSDT - riskyValue) / pos.entryPriceUSDT;
 
-		if (riskyValuePt < -Context.defaultSL / 2) {
+		if (riskyValuePt < -Context.defaultSL / 3) {
 			console.log({ riskyValuePt, entryPriceUSDT: pos.entryPriceUSDT });
 			console.log(
 				"Moving TP for risky protected position for " +
