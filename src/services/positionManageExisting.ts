@@ -101,14 +101,14 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		}
 	}
 
-	//Quit if today Pnl > hedge open PosPnl
+	//Quit if total Pnl > hedge open PosPnl
 	for (const pair of hedgePosUniquePairs) {
 		const openPosSamePair = user.openPositions.filter((p) => p.pair === pair);
 		const samePairOpenPosPnlPt = openPosSamePair.reduce((acc, pos) => {
 			return acc + pos.pnl;
 		}, 0);
 
-		if (user.todayPnlPt + samePairOpenPosPnlPt > 0) {
+		if (user.totalPnlPt + samePairOpenPosPnlPt > 0) {
 			for (const pos of openPosSamePair) {
 				console.log("Quit Hedged position for " + pos.pair);
 				await authExchange.futuresOrder({
