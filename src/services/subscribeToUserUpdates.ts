@@ -54,6 +54,7 @@ const handleOrderUpdate = async ({
 			await authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
 			});
+			if (!context.userList.length) return;
 
 			context.userList[userIndex].openOrders = context.userList[
 				userIndex
