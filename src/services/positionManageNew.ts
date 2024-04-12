@@ -12,6 +12,8 @@ interface IPositionManageNew {
 	shouldTrade: PositionSide;
 	sl: number;
 	tp: number;
+	tr: number;
+	cb: number;
 }
 export const positionManageNew = async ({
 	user,
@@ -19,6 +21,8 @@ export const positionManageNew = async ({
 	shouldTrade,
 	sl,
 	tp,
+	tr,
+	cb,
 }: IPositionManageNew) => {
 	const context = await Context.getInstance();
 	const userIndex = context.userList.findIndex((u) => u.id === user.id);
@@ -49,16 +53,16 @@ export const positionManageNew = async ({
 	const tooManyOpenWithoutHedge =
 		!hedgedPosUniquePairs.length &&
 		openPosUnsecuredUniquePairs.length >=
-			context.expositionLevel * Context.maxProtectedPositions;
+			Context.expositionLevel * Context.maxProtectedPositions;
 
 	const tooManyOpenWithHedge =
 		hedgedPosUniquePairs.length &&
 		openPosUnsecuredUniquePairs.length - hedgedPosUniquePairs.length >=
-			context.expositionLevel * Context.maxProtectedPositions;
+			Context.expositionLevel * Context.maxProtectedPositions;
 
 	const tooManyHedge =
 		hedgedPosUniquePairs.length >=
-		Context.maxHedgePositions * context.expositionLevel;
+		Context.maxHedgePositions * Context.expositionLevel;
 
 	if (
 		tooManyOpenWithoutHedge ||
@@ -71,15 +75,27 @@ export const positionManageNew = async ({
 		return;
 	}
 
-	console.log("Open  position for " + user.name + " in " + symbol.pair);
-
 	context.userList[userIndex].isAddingPosition = true;
 
 	const quantityUSDT =
 		Math.max(
 			Context.minAmountToTrade,
-			user.balanceUSDT * Context.amountToTradePt
+			(user.balanceUSDT + user.openPosPnlPt * user.balanceUSDT) *
+				Context.amountToTradePt
 		) / symbol.currentPrice;
+
+	if (quantityUSDT < Context.minAmountToTrade) {
+		console.log("Not ideal balance to open position");
+	}
+
+	console.log(
+		"Open  position for " +
+			user.name +
+			" in " +
+			symbol.pair +
+			" with $" +
+			quantityUSDT.toFixed(2)
+	);
 
 	const quantity = fixPrecision({
 		value: quantityUSDT,
@@ -91,6 +107,8 @@ export const positionManageNew = async ({
 		shouldTrade,
 		sl,
 		tp,
+		tr,
+		cb,
 		price: symbol.currentPrice,
 		quantity,
 		symbol,

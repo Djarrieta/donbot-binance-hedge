@@ -174,9 +174,7 @@ export const updateStrategyStat = async () => {
 				s.status ? "Active" : "Inactive"
 			}; ${s.trades} trades; ${s.winRate} winRate`;
 		});
-		log += `\n Exposition level ${
-			context.expositionLevel * Context.maxProtectedPositions
-		}`;
+		log += `\n Exposition level ${Context.expositionLevel}`;
 
 		console.log("");
 		console.log(log);

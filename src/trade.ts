@@ -11,7 +11,6 @@ import { getUserList } from "./services/getUserList";
 import { markUnreadySymbols } from "./services/markUnreadySymbols";
 import { positionManageExisting } from "./services/positionManageExisting";
 import { positionManageNew } from "./services/positionManageNew";
-import { positionSecure } from "./services/positionSecure";
 import { subscribeToSymbolUpdates } from "./services/subscribeToSymbolUpdates";
 import { subscribeToUserUpdates } from "./services/subscribeToUserUpdates";
 import { updateUnreadySymbols } from "./services/updateUnreadySymbols";
@@ -66,7 +65,9 @@ export const trade = async () => {
 								symbol: trade.symbol,
 								shouldTrade: trade.stgResponse.shouldTrade,
 								sl: trade.stgResponse.sl,
-								tp: Number(trade.stgResponse.tp),
+								tp: trade.stgResponse.tp,
+								tr: trade.stgResponse.tr,
+								cb: trade.stgResponse.cb,
 							});
 					}
 				}
@@ -106,20 +107,6 @@ export const trade = async () => {
 	for (const user of context.userList) {
 		subscribeToUserUpdates({ user });
 	}
-
-	do {
-		try {
-			await positionSecure({
-				breakEven: Context.defaultBE,
-				alertPt: Context.defaultTP / 2,
-				trailing: Context.defaultTR,
-			});
-
-			await delay(10000);
-		} catch (e) {
-			console.error(e);
-		}
-	} while (true);
 };
 
 const startModel = async () => {

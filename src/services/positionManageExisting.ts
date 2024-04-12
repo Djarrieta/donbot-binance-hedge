@@ -123,6 +123,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			return;
 		}
 	}
+
 	// Handle un balanced hedge positions
 	for (const pair of hedgePosUniquePairs) {
 		const openPosSamePair = user.openPositions.filter((p) => p.pair === pair);
@@ -178,6 +179,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 			});
 		}
 	}
+
 	// Hedge position if protected position is taking too long
 	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
 		const pos = user.openPositions[posIndex];
@@ -207,7 +209,7 @@ export const positionManageExisting = async ({ user }: { user: User }) => {
 		].openOrders.filter((o) => o.pair !== pos.pair);
 	}
 
-	// Moving tp for risky positions
+	// Move tp closer for risky positions
 	for (let posIndex = 0; posIndex < user.openPositions.length; posIndex++) {
 		const pos = user.openPositions[posIndex];
 		if (pos.status !== "PROTECTED") continue;
