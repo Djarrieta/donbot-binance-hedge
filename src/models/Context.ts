@@ -23,7 +23,7 @@ export class Context {
 
 	public static expositionLevel = 1;
 	public static candlestickAPILimit = 500;
-	public static branch: "main" | "dev" = "main";
+	public static branch: "main" | "dev" = "dev";
 	public static interval = Interval["5m"];
 	public static leverage = 10; //WIP: Implement
 	public static lookBackLength = 200;
