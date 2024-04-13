@@ -12,8 +12,6 @@ interface IPositionManageNew {
 	shouldTrade: PositionSide;
 	sl: number;
 	tp: number;
-	tr: number;
-	cb: number;
 }
 export const positionManageNew = async ({
 	user,
@@ -21,8 +19,6 @@ export const positionManageNew = async ({
 	shouldTrade,
 	sl,
 	tp,
-	tr,
-	cb,
 }: IPositionManageNew) => {
 	const context = await Context.getInstance();
 	const userIndex = context.userList.findIndex((u) => u.id === user.id);
@@ -107,8 +103,6 @@ export const positionManageNew = async ({
 		shouldTrade,
 		sl,
 		tp,
-		tr,
-		cb,
 		price: symbol.currentPrice,
 		quantity,
 		symbol,

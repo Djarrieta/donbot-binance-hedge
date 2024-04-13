@@ -7,8 +7,6 @@ export interface StrategyResponse {
 	shouldTrade: PositionSide | null;
 	sl: number;
 	tp: number;
-	tr: number;
-	cb: number;
 }
 
 export interface Strategy {

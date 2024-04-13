@@ -46,8 +46,7 @@ const handleOrderUpdate = async ({
 		if (
 			orderType === OrderType.HEDGE ||
 			orderType === OrderType.PROFIT ||
-			orderType === OrderType.BREAK ||
-			orderType === OrderType.TRAILING
+			orderType === OrderType.BREAK
 		) {
 			const context = await Context.getInstance();
 			const userIndex = context.userList.findIndex((u) => u.id === user.id);
@@ -64,11 +63,7 @@ const handleOrderUpdate = async ({
 			if (orderType === OrderType.HEDGE) {
 				context.strategyStats = [];
 			}
-			if (
-				orderType === OrderType.PROFIT ||
-				orderType === OrderType.BREAK ||
-				orderType === OrderType.TRAILING
-			) {
+			if (orderType === OrderType.PROFIT || orderType === OrderType.BREAK) {
 				context.userList[userIndex].openPositions = context.userList[
 					userIndex
 				].openPositions.filter((p) => p.pair !== pair);

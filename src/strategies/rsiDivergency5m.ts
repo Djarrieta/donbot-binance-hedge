@@ -13,8 +13,6 @@ const stg: Strategy = {
 			shouldTrade: null,
 			sl: Context.defaultSL,
 			tp: Context.defaultTP,
-			tr: Context.defaultTR,
-			cb: Context.defaultCB,
 			stgName: STG_NAME,
 		};
 

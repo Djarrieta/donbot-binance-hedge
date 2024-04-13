@@ -9,8 +9,6 @@ interface PositionOpenProps {
 	price: number;
 	sl: number;
 	tp: number;
-	tr: number;
-	cb: number;
 	shouldTrade: PositionSide;
 	authExchange: IBinance;
 	quantity: string;
@@ -24,8 +22,6 @@ export const positionOpen = async ({
 	price,
 	sl,
 	tp,
-	tr,
-	cb,
 }: PositionOpenProps) => {
 	await authExchange.futuresCancelAllOpenOrders({
 		symbol: symbol.pair,
@@ -68,25 +64,6 @@ export const positionOpen = async ({
 		stopPrice: TPPrice,
 		recvWindow: 59999,
 		newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
-	});
-
-	const TRPriceNumber =
-		shouldTrade === "LONG" ? price * (1 + tr) : price * (1 - tr);
-
-	const TRPrice = fixPrecision({
-		value: TRPriceNumber,
-		precision: symbol.pricePrecision,
-	});
-	await authExchange.futuresOrder({
-		type: "TRAILING_STOP_MARKET",
-		side: shouldTrade === "LONG" ? "SELL" : "BUY",
-		positionSide: shouldTrade,
-		symbol: symbol.pair,
-		quantity,
-		callbackRate: (cb * 100).toFixed(1),
-		activationPrice: TRPrice,
-		recvWindow: 59999,
-		newClientOrderId: OrderType.TRAILING + ORDER_ID_DIV + TRPrice,
 	});
 
 	await authExchange.futuresOrder({
