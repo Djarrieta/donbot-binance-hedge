@@ -15,7 +15,7 @@ export interface Strategy {
 	interval: Interval;
 	validate: (props: {
 		candlestick: Candle[];
-		pair?: string;
+		pair: string;
 	}) => StrategyResponse;
 }
 

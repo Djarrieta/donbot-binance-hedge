@@ -24,6 +24,7 @@ export const backtest = async ({
 		candlestick: [
 			{ open: 0, close: 0, high: 0, low: 0, openTime: new Date(), volume: 0 },
 		],
+		pair: "",
 	});
 
 	log &&
@@ -103,6 +104,24 @@ export const backtest = async ({
 		);
 	}
 
+	let winningPairs: string[] = [];
+
+	for (
+		let symbolIndex = 0;
+		symbolIndex < completePairList.length;
+		symbolIndex++
+	) {
+		const { pair } = completePairList[symbolIndex];
+		const statsForSymbol = stats.filter((stat) => stat.pair === pair);
+		const tradesQty = statsForSymbol.length;
+		const totalPnl = statsForSymbol.reduce((acc, a) => acc + a.pnl, 0);
+		const avPnl = totalPnl / tradesQty || 0;
+
+		if (avPnl > 0) {
+			winningPairs.push(pair);
+		}
+	}
+
 	const tradesQty = stats.length;
 	const totalPnl = stats.reduce((acc, a) => acc + a.pnl, 0);
 	const avPnl = totalPnl / tradesQty || 0;
@@ -126,6 +145,7 @@ export const backtest = async ({
 		totalPnl: formatPercent(totalPnl),
 		tradesQty,
 		avTradeLength: Number(fixPrecision({ value: avTradeLength, precision: 0 })),
+		winningSymbols: winningPairs,
 	};
 
 	return result;
@@ -138,10 +158,15 @@ export const backtestAllAtOne = async () => {
 		if (Context.interval !== strategy.interval) continue;
 
 		const backtestResult = await backtest({ strategy, log: true });
+		const { winningSymbols, ...loggableResult } = backtestResult;
+
 		console.table({
-			...backtestResult,
-			avPnl: formatPercent(backtestResult.avPnl),
+			...loggableResult,
+			avPnl: formatPercent(loggableResult.avPnl),
 		});
+
+		console.log(winningSymbols);
+
 		const endTime = getDate().dateMs;
 		console.log(
 			((endTime - startTime) / Interval["1m"]).toFixed() + " minutes"

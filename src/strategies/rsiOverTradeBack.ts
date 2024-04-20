@@ -4,6 +4,7 @@ import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
 
 const STG_NAME = "rsiOverTradeBack";
+const ALLOWED_PAIRS: string[] = [];
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
@@ -17,6 +18,7 @@ const stg: Strategy = {
 		};
 
 		if (candlestick.length < Context.lookBackLength) return response;
+		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
 		const MIN_VOL = 3 / 100;
 		const MAX_VOL = 10 / 100;

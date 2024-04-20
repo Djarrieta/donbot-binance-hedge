@@ -4,6 +4,154 @@ import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
 
 const STG_NAME = "rsiDivergency5m";
+const ALLOWED_PAIRS: string[] = [
+	"XRPUSDT",
+	"XMRUSDT",
+	"DASHUSDT",
+	"XTZUSDT",
+	"IOTAUSDT",
+	"BATUSDT",
+	"VETUSDT",
+	"IOSTUSDT",
+	"COMPUSDT",
+	"SXPUSDT",
+	"KAVAUSDT",
+	"BANDUSDT",
+	"MKRUSDT",
+	"SNXUSDT",
+	"DOTUSDT",
+	"YFIUSDT",
+	"BALUSDT",
+	"SUSHIUSDT",
+	"EGLDUSDT",
+	"ICXUSDT",
+	"STORJUSDT",
+	"BLZUSDT",
+	"FTMUSDT",
+	"ENJUSDT",
+	"FLMUSDT",
+	"KSMUSDT",
+	"NEARUSDT",
+	"FILUSDT",
+	"LRCUSDT",
+	"MATICUSDT",
+	"OCEANUSDT",
+	"1INCHUSDT",
+	"CHZUSDT",
+	"SANDUSDT",
+	"ANKRUSDT",
+	"UNFIUSDT",
+	"REEFUSDT",
+	"SFPUSDT",
+	"COTIUSDT",
+	"MANAUSDT",
+	"ONEUSDT",
+	"LINAUSDT",
+	"CELRUSDT",
+	"HOTUSDT",
+	"MTLUSDT",
+	"NKNUSDT",
+	"1000SHIBUSDT",
+	"IOTXUSDT",
+	"AUDIOUSDT",
+	"C98USDT",
+	"MASKUSDT",
+	"ATAUSDT",
+	"DYDXUSDT",
+	"KLAYUSDT",
+	"ARPAUSDT",
+	"CTSIUSDT",
+	"ENSUSDT",
+	"ROSEUSDT",
+	"FLOWUSDT",
+	"API3USDT",
+	"APEUSDT",
+	"WOOUSDT",
+	"DARUSDT",
+	"INJUSDT",
+	"SPELLUSDT",
+	"1000LUNCUSDT",
+	"LDOUSDT",
+	"CVXUSDT",
+	"ICPUSDT",
+	"APTUSDT",
+	"QNTUSDT",
+	"MAGICUSDT",
+	"TUSDT",
+	"RNDRUSDT",
+	"HIGHUSDT",
+	"MINAUSDT",
+	"ASTRUSDT",
+	"AGIXUSDT",
+	"PHBUSDT",
+	"CFXUSDT",
+	"STXUSDT",
+	"BNXUSDT",
+	"SSVUSDT",
+	"CKBUSDT",
+	"PERPUSDT",
+	"TRUUSDT",
+	"IDUSDT",
+	"ARBUSDT",
+	"AMBUSDT",
+	"RDNTUSDT",
+	"HFTUSDT",
+	"XVSUSDT",
+	"BLURUSDT",
+	"IDEXUSDT",
+	"UMAUSDT",
+	"RADUSDT",
+	"KEYUSDT",
+	"NMRUSDT",
+	"MAVUSDT",
+	"MDTUSDT",
+	"XVGUSDT",
+	"WLDUSDT",
+	"PENDLEUSDT",
+	"DODOXUSDT",
+	"BNTUSDT",
+	"SEIUSDT",
+	"ARKUSDT",
+	"BONDUSDT",
+	"RIFUSDT",
+	"POWRUSDT",
+	"SLPUSDT",
+	"TIAUSDT",
+	"SNTUSDT",
+	"CAKEUSDT",
+	"MEMEUSDT",
+	"TWTUSDT",
+	"BADGERUSDT",
+	"KASUSDT",
+	"BEAMXUSDT",
+	"1000BONKUSDT",
+	"USTCUSDT",
+	"ETHWUSDT",
+	"JTOUSDT",
+	"1000SATSUSDT",
+	"AUCTIONUSDT",
+	"1000RATSUSDT",
+	"AIUSDT",
+	"XAIUSDT",
+	"MANTAUSDT",
+	"ONDOUSDT",
+	"LSKUSDT",
+	"ALTUSDT",
+	"JUPUSDT",
+	"ZETAUSDT",
+	"DYMUSDT",
+	"PIXELUSDT",
+	"MAVIAUSDT",
+	"TONUSDT",
+	"MYROUSDT",
+	"BOMEUSDT",
+	"ETHFIUSDT",
+	"ENAUSDT",
+	"WUSDT",
+	"TNSRUSDT",
+	"TAOUSDT",
+	"OMNIUSDT",
+];
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
@@ -17,6 +165,7 @@ const stg: Strategy = {
 		};
 
 		if (candlestick.length < Context.lookBackLength) return response;
+		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
 		const MIN_RSI = 30;
 		const CANDLESTICK_SIZE = 50;
@@ -102,17 +251,17 @@ export default stg;
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ rsiDivergency5m     │
-// │             sl │ 5.00%               │
+// │             sl │ 10.00%              │
 // │             tp │ 1.00%               │
-// │      startTime │ 2024 01 19 10:32:54 │
-// │        endTime │ 2024 02 18 10:56:22 │
+// │      startTime │ 2024 03 21 08:32:07 │
+// │        endTime │ 2024 04 20 08:54:31 │
 // │       lookBack │ 8640                │
 // │       interval │ 5m                  │
-// │ maxTradeLength │ 200                 │
+// │ maxTradeLength │ 300                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 84.16%              │
-// │          avPnl │ 0.09%               │
-// │       totalPnl │ 67.89%              │
-// │      tradesQty │ 745                 │
-// │  avTradeLength │ 26                  │
+// │      avWinRate │ 95.03%              │
+// │          avPnl │ 0.50%               │
+// │       totalPnl │ 436.19%             │
+// │      tradesQty │ 865                 │
+// │  avTradeLength │ 24                  │
 // └────────────────┴─────────────────────┘

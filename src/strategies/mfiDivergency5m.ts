@@ -4,6 +4,158 @@ import { Context } from "../models/Context";
 import { getVolatility } from "../services/getSymbolList";
 
 const STG_NAME = "mfiDivergency5m";
+const ALLOWED_PAIRS: string[] = [
+	"XLMUSDT",
+	"XMRUSDT",
+	"XTZUSDT",
+	"ATOMUSDT",
+	"ONTUSDT",
+	"IOTAUSDT",
+	"BATUSDT",
+	"VETUSDT",
+	"THETAUSDT",
+	"ALGOUSDT",
+	"KNCUSDT",
+	"COMPUSDT",
+	"DOGEUSDT",
+	"KAVAUSDT",
+	"BANDUSDT",
+	"RLCUSDT",
+	"WAVESUSDT",
+	"RUNEUSDT",
+	"SUSHIUSDT",
+	"EGLDUSDT",
+	"SOLUSDT",
+	"ICXUSDT",
+	"STORJUSDT",
+	"BLZUSDT",
+	"UNIUSDT",
+	"ENJUSDT",
+	"FLMUSDT",
+	"NEARUSDT",
+	"AAVEUSDT",
+	"FILUSDT",
+	"LRCUSDT",
+	"OCEANUSDT",
+	"AXSUSDT",
+	"SKLUSDT",
+	"GRTUSDT",
+	"CHZUSDT",
+	"SANDUSDT",
+	"ANKRUSDT",
+	"LITUSDT",
+	"RVNUSDT",
+	"SFPUSDT",
+	"COTIUSDT",
+	"CHRUSDT",
+	"MANAUSDT",
+	"ONEUSDT",
+	"LINAUSDT",
+	"STMXUSDT",
+	"DENTUSDT",
+	"CELRUSDT",
+	"HOTUSDT",
+	"MTLUSDT",
+	"OGNUSDT",
+	"NKNUSDT",
+	"1000SHIBUSDT",
+	"BTCDOMUSDT",
+	"IOTXUSDT",
+	"AUDIOUSDT",
+	"C98USDT",
+	"DYDXUSDT",
+	"GALAUSDT",
+	"CELOUSDT",
+	"KLAYUSDT",
+	"CTSIUSDT",
+	"LPTUSDT",
+	"PEOPLEUSDT",
+	"ROSEUSDT",
+	"FLOWUSDT",
+	"IMXUSDT",
+	"GMTUSDT",
+	"DARUSDT",
+	"OPUSDT",
+	"STGUSDT",
+	"1000LUNCUSDT",
+	"LDOUSDT",
+	"QNTUSDT",
+	"FXSUSDT",
+	"MAGICUSDT",
+	"RNDRUSDT",
+	"MINAUSDT",
+	"AGIXUSDT",
+	"PHBUSDT",
+	"CFXUSDT",
+	"STXUSDT",
+	"ACHUSDT",
+	"SSVUSDT",
+	"LQTYUSDT",
+	"IDUSDT",
+	"AMBUSDT",
+	"LEVERUSDT",
+	"RDNTUSDT",
+	"HFTUSDT",
+	"EDUUSDT",
+	"SUIUSDT",
+	"1000FLOKIUSDT",
+	"UMAUSDT",
+	"RADUSDT",
+	"KEYUSDT",
+	"MDTUSDT",
+	"XVGUSDT",
+	"WLDUSDT",
+	"PENDLEUSDT",
+	"ARKMUSDT",
+	"AGLDUSDT",
+	"DODOXUSDT",
+	"BNTUSDT",
+	"SEIUSDT",
+	"ARKUSDT",
+	"FRONTUSDT",
+	"GLMRUSDT",
+	"BICOUSDT",
+	"LOOMUSDT",
+	"BONDUSDT",
+	"ORBSUSDT",
+	"WAXPUSDT",
+	"BSVUSDT",
+	"RIFUSDT",
+	"POLYXUSDT",
+	"POWRUSDT",
+	"TIAUSDT",
+	"SNTUSDT",
+	"CAKEUSDT",
+	"MEMEUSDT",
+	"TWTUSDT",
+	"ORDIUSDT",
+	"BADGERUSDT",
+	"ILVUSDT",
+	"BEAMXUSDT",
+	"SUPERUSDT",
+	"USTCUSDT",
+	"ETHWUSDT",
+	"JTOUSDT",
+	"1000SATSUSDT",
+	"AUCTIONUSDT",
+	"1000RATSUSDT",
+	"MOVRUSDT",
+	"MANTAUSDT",
+	"ALTUSDT",
+	"JUPUSDT",
+	"ZETAUSDT",
+	"PIXELUSDT",
+	"STRKUSDT",
+	"GLMUSDT",
+	"TONUSDT",
+	"AEVOUSDT",
+	"VANRYUSDT",
+	"BOMEUSDT",
+	"ETHFIUSDT",
+	"ENAUSDT",
+	"TAOUSDT",
+	"OMNIUSDT",
+];
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: Context.lookBackLength,
@@ -17,6 +169,7 @@ const stg: Strategy = {
 		};
 
 		if (candlestick.length < Context.lookBackLength) return response;
+		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
 		const MIN_MFI = 20;
 		const CANDLESTICK_SIZE = 50;
@@ -107,36 +260,17 @@ export default stg;
 // │                │ Values              │
 // ├────────────────┼─────────────────────┤
 // │        stgName │ mfiDivergency5m     │
-// │             sl │ 5.00%               │
-// │             tp │ 1.00%               │
-// │      startTime │ 2024 01 19 10:56:22 │
-// │        endTime │ 2024 02 18 11:19:56 │
-// │       lookBack │ 8640                │
-// │       interval │ 5m                  │
-// │ maxTradeLength │ 200                 │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 84.51%              │
-// │          avPnl │ 0.11%               │
-// │       totalPnl │ 73.41%              │
-// │      tradesQty │ 665                 │
-// │  avTradeLength │ 34                  │
-// └────────────────┴─────────────────────┘
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ stg_name            │
 // │             sl │ 10.00%              │
 // │             tp │ 1.00%               │
-// │      startTime │ 2024 01 16 15:31:51 │
-// │        endTime │ 2024 02 15 15:51:30 │
+// │      startTime │ 2024 03 21 08:54:31 │
+// │        endTime │ 2024 04 20 09:17:02 │
 // │       lookBack │ 8640                │
 // │       interval │ 5m                  │
-// │ maxTradeLength │ 200                 │
+// │ maxTradeLength │ 300                 │
 // │            fee │ 0.05%               │
-// │      avWinRate │ 87.48%              │
-// │          avPnl │ 0.15%               │
-// │       totalPnl │ 106.48%             │
-// │      tradesQty │ 711                 │
-// │  avTradeLength │ 46                  │
+// │      avWinRate │ 93.78%              │
+// │          avPnl │ 0.52%               │
+// │       totalPnl │ 563.91%             │
+// │      tradesQty │ 1094                │
+// │  avTradeLength │ 36                  │
 // └────────────────┴─────────────────────┘
