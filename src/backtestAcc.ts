@@ -31,6 +31,8 @@ export const backtestAcc = async ({
 		});
 
 	const completeSymbolList = await getCompletePairList(false);
+	console.log("Getting symbol candlesticks...");
+
 	for (
 		let symbolIndex = 0;
 		symbolIndex < completeSymbolList.length;
@@ -45,11 +47,21 @@ export const backtestAcc = async ({
 			apiLimit: Context.candlestickAPILimit,
 		});
 		completeSymbolList[symbolIndex].candlestick = candlestick;
+		log &&
+			console.log(
+				formatPercent(symbolIndex / completeSymbolList.length) +
+					" " +
+					symbol.pair
+			);
 	}
 	let openPosition: Position | null = null;
 	const closedPositions: Position[] = [];
 
 	let candleIndex = Context.lookBackLength;
+	let maxAccPnl = 0;
+	let minAccPnl = 0;
+	let accPnl = 0;
+
 	do {
 		const readySymbols: Symbol[] = completeSymbolList.map((s) => {
 			return {
@@ -113,6 +125,29 @@ export const backtestAcc = async ({
 			) {
 				openPosition.pnl = -Context.defaultSL - Context.fee;
 				openPosition.len++;
+				accPnl += openPosition.pnl;
+				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
+				if (accPnl < minAccPnl) minAccPnl = accPnl;
+				log &&
+					console.log(
+						formatPercent(
+							(candleIndex + 1) /
+								(Context.lookBackLengthBacktest + Context.lookBackLength)
+						) +
+							" " +
+							`${openPosition.pair} ${
+								getDate(openPosition.startTime).dateString
+							} ${openPosition.pnl > 0 ? "WON " : "LOST"} ${
+								openPosition.positionSide === "LONG" ? "LONG " : "SHORT"
+							} E:${openPosition.entryPriceUSDT.toFixed(
+								3
+							)} SL:${stopLoss.toFixed(3)}-TP:${takeProfit.toFixed(
+								3
+							)}-PNL:${formatPercent(openPosition.pnl)}-ACC:${formatPercent(
+								accPnl
+							)}`
+					);
+
 				closedPositions.push(openPosition);
 				openPosition = null;
 				candleIndex++;
@@ -128,6 +163,28 @@ export const backtestAcc = async ({
 			) {
 				openPosition.pnl = Context.defaultTP - Context.fee;
 				openPosition.len++;
+				accPnl += openPosition.pnl;
+				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
+				if (accPnl < minAccPnl) minAccPnl = accPnl;
+				log &&
+					console.log(
+						formatPercent(
+							(candleIndex + 1) /
+								(Context.lookBackLengthBacktest + Context.lookBackLength)
+						) +
+							" " +
+							`${openPosition.pair} ${
+								getDate(openPosition.startTime).dateString
+							} ${openPosition.pnl > 0 ? "WON " : "LOST"} ${
+								openPosition.positionSide === "LONG" ? "LONG " : "SHORT"
+							} E:${openPosition.entryPriceUSDT.toFixed(
+								3
+							)} SL:${stopLoss.toFixed(3)}-TP:${takeProfit.toFixed(
+								3
+							)}-PNL:${formatPercent(openPosition.pnl)}-ACC:${formatPercent(
+								accPnl
+							)}`
+					);
 				closedPositions.push(openPosition);
 				openPosition = null;
 				candleIndex++;
@@ -141,9 +198,30 @@ export const backtestAcc = async ({
 						  openPosition.entryPriceUSDT
 						: (openPosition.entryPriceUSDT - lastCandle.close) /
 						  openPosition.entryPriceUSDT;
-
-				openPosition.pnl = pnlWithoutFee - Context.fee;
 				openPosition.len++;
+				openPosition.pnl = pnlWithoutFee - Context.fee;
+				accPnl += openPosition.pnl;
+				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
+				if (accPnl < minAccPnl) minAccPnl = accPnl;
+				log &&
+					console.log(
+						formatPercent(
+							(candleIndex + 1) /
+								(Context.lookBackLengthBacktest + Context.lookBackLength)
+						) +
+							" " +
+							`${openPosition.pair} ${
+								getDate(openPosition.startTime).dateString
+							} ${openPosition.pnl > 0 ? "WON " : "LOST"} ${
+								openPosition.positionSide === "LONG" ? "LONG " : "SHORT"
+							} E:${openPosition.entryPriceUSDT.toFixed(
+								3
+							)} SL:${stopLoss.toFixed(3)}-TP:${takeProfit.toFixed(
+								3
+							)}-PNL:${formatPercent(openPosition.pnl)}-ACC:${formatPercent(
+								accPnl
+							)}`
+					);
 				closedPositions.push(openPosition);
 				openPosition = null;
 				candleIndex++;
@@ -185,17 +263,10 @@ export const backtestAcc = async ({
 	const totalPositions = closedPositions.length;
 	const winningPositions = closedPositions.filter((p) => p.pnl > 0);
 	const winRate = winningPositions.length / totalPositions;
-	let maxAccPnl = 0;
-	let minAccPnl = 0;
-	let accPnl = 0;
-	closedPositions.forEach((p) => {
-		accPnl += p.pnl;
-		if (accPnl > maxAccPnl) maxAccPnl = accPnl;
-		if (accPnl < minAccPnl) minAccPnl = accPnl;
-	});
 
 	log &&
 		console.table({
+			totalPositions,
 			maxAccPnl: formatPercent(maxAccPnl),
 			minAccPnl: formatPercent(minAccPnl),
 			accPnl: formatPercent(accPnl),
