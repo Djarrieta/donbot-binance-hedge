@@ -7,30 +7,35 @@ export const checkForTrades = async ({
 	interval,
 	strategyStats,
 	chosenStrategies,
+	logs = true,
 }: {
 	readySymbols: Symbol[];
 	interval: Interval;
 	strategyStats: StrategyStat[];
 	chosenStrategies: Strategy[];
+	logs?: boolean;
 }) => {
 	const response: {
 		text: string;
 		tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
 	} = { text: "", tradeArray: [] };
 
-	readySymbols.length > 4
-		? console.log(
-				"Checking for trades in  " +
-					readySymbols[0].pair +
-					", " +
-					readySymbols[1].pair +
-					", ...(" +
-					(readySymbols.length - 2) +
-					" more) "
-		  )
-		: console.log(
-				"Checking for trades in  " + readySymbols.map((s) => s.pair).join(", ")
-		  );
+	if (logs) {
+		readySymbols.length > 4
+			? console.log(
+					"Checking for trades in  " +
+						readySymbols[0].pair +
+						", " +
+						readySymbols[1].pair +
+						", ...(" +
+						(readySymbols.length - 2) +
+						" more) "
+			  )
+			: console.log(
+					"Checking for trades in  " +
+						readySymbols.map((s) => s.pair).join(", ")
+			  );
+	}
 
 	const strategiesToRun = chosenStrategies.filter(
 		(s) =>
@@ -41,9 +46,10 @@ export const checkForTrades = async ({
 				.includes(s.stgName)
 	);
 
-	console.log(
-		"Strategies: " + strategiesToRun.map((s) => s?.stgName).join(", ")
-	);
+	logs &&
+		console.log(
+			"Strategies: " + strategiesToRun.map((s) => s?.stgName).join(", ")
+		);
 
 	for (const strategy of strategiesToRun) {
 		for (const symbol of readySymbols) {

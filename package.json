@@ -11,6 +11,7 @@
   "scripts": {
     "trade": "bun src/trade.ts",
     "backtest": "bun src/backtestAllAtOne.ts",
+    "backtestAcc": "bun src/backtestAcc.ts",
     "backtestVariants":"bun src/backtestVariants.ts",
     "lint": "bunx oxlint && tsc && bun run prune",
     "prune": "ts-prune | grep -v src/xata.ts | grep -v src/trade.ts | grep -v src/backtest.ts | grep -v src/strategies/strategy.example.ts"
