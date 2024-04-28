@@ -1,3 +1,4 @@
+import cliProgress from "cli-progress";
 import { Context } from "./models/Context";
 import { Interval } from "./models/Interval";
 import { Position } from "./models/Position";
@@ -21,6 +22,11 @@ export const backtestAcc = async ({
 	console.log("Getting symbol candlesticks...");
 	Context.lookBackLengthBacktest = (30 * Interval["1d"]) / Interval["5m"];
 
+	const progressBar = new cliProgress.SingleBar(
+		{},
+		cliProgress.Presets.shades_classic
+	);
+	progressBar.start(completeSymbolList.length, 0);
 	for (
 		let symbolIndex = 0;
 		symbolIndex < completeSymbolList.length;
@@ -35,10 +41,9 @@ export const backtestAcc = async ({
 			apiLimit: Context.candlestickAPILimit,
 		});
 		completeSymbolList[symbolIndex].candlestick = candlestick;
-		console.log(
-			formatPercent(symbolIndex / completeSymbolList.length) + " " + symbol.pair
-		);
+		progressBar.update(symbolIndex + 1);
 	}
+	progressBar.stop();
 
 	const slArray = [10 / 100, 9 / 100, 8 / 100];
 	const tpArray = [1 / 100, 2 / 100, 3 / 100];
@@ -58,6 +63,13 @@ export const backtestAcc = async ({
 	});
 
 	const result = [];
+	const totalProgressBar =
+		maxTradeLengthArray.length *
+		slArray.length *
+		tpArray.length *
+		(Context.lookBackLengthBacktest - Context.lookBackLength);
+	let progressBarCounter = 0;
+	progressBar.start(totalProgressBar, 0);
 	for (const maxTradeLength of maxTradeLengthArray) {
 		for (const tp of slArray) {
 			for (const sl of tpArray) {
@@ -68,7 +80,7 @@ export const backtestAcc = async ({
 				let openPosition: Position | null = null;
 				const closedPositions: Position[] = [];
 
-				let candleIndex = Context.lookBackLength;
+				let candleIndex = 0;
 				let maxAccPnl = 0;
 				let minAccPnl = 0;
 				let accPnl = 0;
@@ -81,8 +93,8 @@ export const backtestAcc = async ({
 							isLoading: false,
 							candlestick: [
 								...s.candlestick.slice(
-									candleIndex - Context.lookBackLength,
-									candleIndex
+									candleIndex,
+									candleIndex + Context.lookBackLength
 								),
 							],
 							pricePrecision: 0,
@@ -269,7 +281,12 @@ export const backtestAcc = async ({
 					}
 
 					candleIndex++;
-				} while (candleIndex < Context.lookBackLengthBacktest);
+					progressBarCounter++;
+					progressBar.update(progressBarCounter);
+				} while (
+					candleIndex <
+					Context.lookBackLengthBacktest - Context.lookBackLength
+				);
 				const totalPositions = closedPositions.length;
 				const winningPositions = closedPositions.filter((p) => p.pnl > 0);
 				const winRate = winningPositions.length / totalPositions;
@@ -287,11 +304,17 @@ export const backtestAcc = async ({
 			}
 		}
 	}
-	result.sort((a, b) => b.accPnl - a.accPnl);
+	progressBar.update(1);
+	progressBar.stop();
+
+	result
+		.sort((a, b) => b.maxAccPnl - a.maxAccPnl)
+		.sort((a, b) => b.minAccPnl - a.minAccPnl)
+		.sort((a, b) => b.accPnl - a.accPnl);
 
 	console.table(
 		result.map((r) => ({
-			maxTradeLengthArray: formatPercent(r.maxTradeLength),
+			maxTradeLengthArray: r.maxTradeLength,
 			sl: formatPercent(r.sl),
 			tp: formatPercent(r.tp),
 			totalPositions: r.totalPositions,
