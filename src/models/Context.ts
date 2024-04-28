@@ -29,12 +29,12 @@ export class Context {
 	public static lookBackLength = 200;
 	public static lookBackLengthBacktest = (2 * Interval["1d"]) / Interval["5m"];
 	public static amountToTradePt = 0.5;
-	public static maxTradeLength = 300;
+	public static maxTradeLength = 50;
 	public static minVolatility = 10 / 100;
 	public static minAmountToTrade = 6;
 	public static fee = 0.0005;
-	public static defaultSL = 10 / 100;
-	public static defaultTP = 1 / 100;
+	public static defaultSL = 1 / 100;
+	public static defaultTP = 10 / 100;
 	public static defaultBE = 0.2 / 100;
 	public static shouldStop = false;
 	public static maxHedgePositions = 3;
