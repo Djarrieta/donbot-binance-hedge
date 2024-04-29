@@ -45,9 +45,9 @@ export const backtestAcc = async ({
 	}
 	progressBar.stop();
 
-	const slArray = [10 / 100, 9 / 100, 8 / 100];
-	const tpArray = [1 / 100, 2 / 100, 3 / 100];
-	const maxTradeLengthArray = [50, 100, 150, 200, 250, 300, 350];
+	const slArray = [1 / 100, 3 / 100, 5 / 100, 7 / 100, 10 / 100];
+	const tpArray = [10 / 100, 7 / 100, 5 / 100, 3 / 100, 1 / 100];
+	const maxTradeLengthArray = [50, 150, 300];
 
 	const startTime =
 		getDate().dateMs - Context.lookBackLengthBacktest * Context.interval;
@@ -69,7 +69,7 @@ export const backtestAcc = async ({
 		tpArray.length *
 		(Context.lookBackLengthBacktest - Context.lookBackLength);
 	let progressBarCounter = 0;
-	progressBar.start(totalProgressBar, 0);
+	!log && progressBar.start(totalProgressBar, 0);
 	for (const maxTradeLength of maxTradeLengthArray) {
 		for (const tp of slArray) {
 			for (const sl of tpArray) {
@@ -130,6 +130,7 @@ export const backtestAcc = async ({
 						if (!symbolOpened) continue;
 						const lastCandle =
 							symbolOpened.candlestick[symbolOpened.candlestick.length - 1];
+						if (!lastCandle) continue;
 
 						const stopLoss =
 							openPosition.positionSide === "LONG"
@@ -274,7 +275,9 @@ export const backtestAcc = async ({
 							pnl: 0,
 							len: 0,
 							isHedgeUnbalance: false,
-							entryPriceUSDT: symbolOpened.currentPrice,
+							entryPriceUSDT:
+								symbolOpened.candlestick[symbolOpened.candlestick.length - 1]
+									.close,
 						};
 						candleIndex++;
 						continue;
@@ -282,7 +285,7 @@ export const backtestAcc = async ({
 
 					candleIndex++;
 					progressBarCounter++;
-					progressBar.update(progressBarCounter);
+					!log && progressBar.update(progressBarCounter);
 				} while (
 					candleIndex <
 					Context.lookBackLengthBacktest - Context.lookBackLength
@@ -304,8 +307,8 @@ export const backtestAcc = async ({
 			}
 		}
 	}
-	progressBar.update(1);
-	progressBar.stop();
+	!log && progressBar.update(1);
+	!log && progressBar.stop();
 
 	result
 		.sort((a, b) => b.maxAccPnl - a.maxAccPnl)
@@ -330,18 +333,3 @@ await backtestAcc({
 	strategies: chosenStrategies,
 	log: false,
 });
-
-// ┌────┬─────────────────────┬───────┬────────┬────────────────┬───────────┬───────────┬──────────┬─────────┐
-// │    │ maxTradeLengthArray │ sl    │ tp     │ totalPositions │ maxAccPnl │ minAccPnl │ accPnl   │ winRate │
-// ├────┼─────────────────────┼───────┼────────┼────────────────┼───────────┼───────────┼──────────┼─────────┤
-// │  0 │ 50                  │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  1 │ 100                 │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  2 │ 150                 │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  3 │ 200                 │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  4 │ 250                 │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  5 │ 300                 │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  6 │ 350                 │ 1.00% │ 10.00% │ 982            │ 4785.30%  │ 0.00%     │ 4776.90% │ 53.77%  │
-// │  7 │ 50                  │ 2.00% │ 10.00% │ 982            │ 4339.30%  │ 0.00%     │ 4322.90% │ 53.77%  │
-// │  8 │ 100                 │ 2.00% │ 10.00% │ 982            │ 4339.30%  │ 0.00%     │ 4322.90% │ 53.77%  │
-// │  9 │ 150                 │ 2.00% │ 10.00% │ 982            │ 4339.30%  │ 0.00%     │ 4322.90% │ 53.77%  │
-// │ 10 │ 200                 │ 2.00% │ 10.00% │ 982            │ 4339.30%  │ 0.00%     │ 4322.90% │ 53.77%  │
