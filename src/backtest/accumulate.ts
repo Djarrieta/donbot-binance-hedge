@@ -321,7 +321,7 @@ const tpArray = [
 	9 / 100,
 	10 / 100,
 ];
-const maxTradeLengthArray = [50, 100, 150, 200, 250, 300];
+const maxTradeLengthArray = [100, 200, 300];
 const results = [];
 const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.rect);
