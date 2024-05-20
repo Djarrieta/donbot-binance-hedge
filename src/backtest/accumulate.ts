@@ -333,7 +333,7 @@ for (const maxTradeLength of maxTradeLengthArray) {
 			InitialParams.defaultSL = sl;
 			InitialParams.defaultTP = tp;
 			InitialParams.maxTradeLength = maxTradeLength;
-			const result = await accumulate({ updateData: true, log: false });
+			const result = await accumulate({ updateData: false, log: false });
 			results.push(result);
 			loop++;
 			progressBar.update(loop);
