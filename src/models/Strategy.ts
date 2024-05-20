@@ -1,15 +1,14 @@
-import { Candle } from "./Candle";
-import { Interval } from "./Interval";
-import { PositionSide } from "./Position";
+import type { Candle, Interval } from "../schema";
+import type { PositionSide } from "./Position";
 
-export interface StrategyResponse {
+export type StrategyResponse = {
 	stgName: string;
 	shouldTrade: PositionSide | null;
 	sl: number;
 	tp: number;
-}
+};
 
-export interface Strategy {
+export type Strategy = {
 	stgName: string;
 	lookBackLength: number;
 	interval: Interval;
@@ -17,12 +16,12 @@ export interface Strategy {
 		candlestick: Candle[];
 		pair: string;
 	}) => StrategyResponse;
-}
+};
 
-export interface StrategyStat {
+export type StrategyStat = {
 	stgName: string;
 	status: boolean;
 	trades: number;
 	avPnl: number;
 	winRate: string;
-}
+};

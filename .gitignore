@@ -1,5 +1,8 @@
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 
+data
+drizzle
+
 # Logs
 
 logs
@@ -174,5 +177,3 @@ dist
 # Finder (MacOS) folder config
 .DS_Store
 
-
-.env

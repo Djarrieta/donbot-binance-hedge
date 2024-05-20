@@ -1,18 +1,15 @@
-import { Interval } from "../models/Interval";
-import { Strategy, StrategyResponse, StrategyStat } from "../models/Strategy";
-import { Symbol } from "../models/Symbol";
+import type { Strategy, StrategyResponse } from "../models/Strategy";
+import type { Interval } from "../schema";
+import type { Symbol } from "../models/Symbol";
 
 export const checkForTrades = async ({
-	readySymbols,
-	interval,
-	strategyStats,
-	chosenStrategies,
+	symbolList,
+	strategies,
 	logs = true,
 }: {
-	readySymbols: Symbol[];
+	symbolList: Symbol[];
 	interval: Interval;
-	strategyStats: StrategyStat[];
-	chosenStrategies: Strategy[];
+	strategies: Strategy[];
 	logs?: boolean;
 }) => {
 	const response: {
@@ -21,38 +18,26 @@ export const checkForTrades = async ({
 	} = { text: "", tradeArray: [] };
 
 	if (logs) {
-		readySymbols.length > 4
+		symbolList.length > 4
 			? console.log(
 					"Checking for trades in  " +
-						readySymbols[0].pair +
+						symbolList[0].pair +
 						", " +
-						readySymbols[1].pair +
+						symbolList[1].pair +
 						", ...(" +
-						(readySymbols.length - 2) +
+						(symbolList.length - 2) +
 						" more) "
 			  )
 			: console.log(
-					"Checking for trades in  " +
-						readySymbols.map((s) => s.pair).join(", ")
+					"Checking for trades in  " + symbolList.map((s) => s.pair).join(", ")
 			  );
 	}
 
-	const strategiesToRun = chosenStrategies.filter(
-		(s) =>
-			s.interval === interval &&
-			strategyStats
-				.filter((stat) => stat.status)
-				.map((stat) => stat.stgName)
-				.includes(s.stgName)
-	);
-
 	logs &&
-		console.log(
-			"Strategies: " + strategiesToRun.map((s) => s?.stgName).join(", ")
-		);
+		console.log("Strategies: " + strategies.map((s) => s?.stgName).join(", "));
 
-	for (const strategy of strategiesToRun) {
-		for (const symbol of readySymbols) {
+	for (const strategy of strategies) {
+		for (const symbol of symbolList) {
 			const stgResponse =
 				strategy?.validate({
 					candlestick: symbol.candlestick,

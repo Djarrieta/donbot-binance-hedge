@@ -1,23 +1,23 @@
 import { rsi } from "technicalindicators";
-import { Strategy, StrategyResponse } from "../models/Strategy";
-import { Context } from "../models/Context";
-import { getVolatility } from "../services/getSymbolList";
+import type { Strategy, StrategyResponse } from "../models/Strategy";
+import { InitialParams } from "../InitialParams";
+import { getVolatility } from "../utils/getVolatility";
 
 const STG_NAME = "stg_name";
 const ALLOWED_PAIRS: string[] = []; // Optionally add allowed pairs, if not set all pairs will be allowed
 const stg: Strategy = {
 	stgName: STG_NAME,
-	lookBackLength: Context.lookBackLength,
-	interval: Context.interval,
+	lookBackLength: InitialParams.lookBackLength,
+	interval: InitialParams.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: Context.defaultSL,
-			tp: Context.defaultTP,
+			sl: InitialParams.defaultSL,
+			tp: InitialParams.defaultTP,
 			stgName: STG_NAME,
 		};
 
-		if (candlestick.length < Context.lookBackLength) return response;
+		if (candlestick.length < InitialParams.lookBackLength) return response;
 		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
 		const MIN_VOL = 10 / 100;

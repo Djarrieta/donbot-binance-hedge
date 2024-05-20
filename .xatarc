@@ -1,6 +1,0 @@
-{
-  "databaseURL": "https://Dar-o-Arrieta-s-workspace-3c7o2n.us-east-1.xata.sh/db/donbot",
-  "codegen": {
-    "output": "src/xata.ts"
-  }
-}

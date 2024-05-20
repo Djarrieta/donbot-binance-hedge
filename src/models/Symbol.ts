@@ -1,6 +1,6 @@
-import { Candle } from "./Candle";
+import type { Candle } from "../schema";
 
-export interface Symbol {
+export type Symbol = {
 	pair: string;
 	pricePrecision: number;
 	quantityPrecision: number;
@@ -11,4 +11,4 @@ export interface Symbol {
 	isReady: boolean;
 	isLoading: boolean;
 	volatility?: number;
-}
+};

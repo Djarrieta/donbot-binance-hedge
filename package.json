@@ -1,32 +1,30 @@
 {
-  "name": "donbot-hedge",
+  "name": "telegram-bot",
   "module": "main.ts",
   "type": "module",
+  "scripts": {
+    "DBCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",
+    "DBMigrate": "bun ./src/migrate.ts",
+    "start": "bun ./src/main.ts",
+    "backtestAcc": "bun ./src/backtest/accumulate.ts",
+    "DBDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
+    "DBRestart": "bun DBDelete && bun i && bun DBCreate && bun DBMigrate "
+  },
   "devDependencies": {
-    "bun-types": "latest"
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.20.14"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "scripts": {
-    "trade": "bun src/trade.ts",
-    "backtest": "bun src/backtestAllAtOne.ts",
-    "backtestAcc": "bun src/backtestAcc.ts",
-    "backtestVariants": "bun src/backtestVariants.ts",
-    "lint": "bunx oxlint && tsc && bun run prune",
-    "prune": "ts-prune | grep -v src/xata.ts | grep -v src/trade.ts | grep -v src/backtest.ts | grep -v src/strategies/strategy.example.ts"
-  },
   "dependencies": {
     "@types/big.js": "^6.2.2",
     "@types/cli-progress": "^3.11.5",
-    "@types/node-cron": "^3.0.11",
-    "@xata.io/client": "^0.28.3",
+    "axios": "^1.6.8",
     "big.js": "^6.2.1",
     "binance-api-node": "^0.12.7",
     "cli-progress": "^3.12.0",
-    "node-binance-api": "^0.13.1",
-    "node-cron": "^3.0.3",
-    "technicalindicators": "^3.1.0",
-    "ts-prune": "^0.10.3"
+    "drizzle-orm": "^0.30.4",
+    "technicalindicators": "^3.1.0"
   }
 }

@@ -1,160 +1,23 @@
 import { rsi } from "technicalindicators";
-import { Strategy, StrategyResponse } from "../models/Strategy";
-import { Context } from "../models/Context";
-import { getVolatility } from "../services/getSymbolList";
+import type { Strategy, StrategyResponse } from "../models/Strategy";
+import { InitialParams } from "../InitialParams";
+import { getVolatility } from "../utils/getVolatility";
 
 const STG_NAME = "rsiDivergency5m";
-const ALLOWED_PAIRS: string[] = [
-	"XMRUSDT",
-	"IOTAUSDT",
-	"BATUSDT",
-	"VETUSDT",
-	"ZILUSDT",
-	"KAVAUSDT",
-	"MKRUSDT",
-	"SNXUSDT",
-	"YFIUSDT",
-	"RUNEUSDT",
-	"SUSHIUSDT",
-	"EGLDUSDT",
-	"ICXUSDT",
-	"STORJUSDT",
-	"BLZUSDT",
-	"FTMUSDT",
-	"ENJUSDT",
-	"KSMUSDT",
-	"NEARUSDT",
-	"FILUSDT",
-	"LRCUSDT",
-	"OCEANUSDT",
-	"AXSUSDT",
-	"ZENUSDT",
-	"GRTUSDT",
-	"1INCHUSDT",
-	"CHZUSDT",
-	"SANDUSDT",
-	"UNFIUSDT",
-	"REEFUSDT",
-	"XEMUSDT",
-	"COTIUSDT",
-	"MANAUSDT",
-	"ONEUSDT",
-	"STMXUSDT",
-	"CELRUSDT",
-	"HOTUSDT",
-	"MTLUSDT",
-	"NKNUSDT",
-	"1000SHIBUSDT",
-	"IOTXUSDT",
-	"AUDIOUSDT",
-	"C98USDT",
-	"MASKUSDT",
-	"ARUSDT",
-	"KLAYUSDT",
-	"ARPAUSDT",
-	"CTSIUSDT",
-	"LPTUSDT",
-	"ENSUSDT",
-	"API3USDT",
-	"APEUSDT",
-	"JASMYUSDT",
-	"DARUSDT",
-	"INJUSDT",
-	"1000LUNCUSDT",
-	"LDOUSDT",
-	"ICPUSDT",
-	"FETUSDT",
-	"FXSUSDT",
-	"MAGICUSDT",
-	"TUSDT",
-	"RNDRUSDT",
-	"HIGHUSDT",
-	"ASTRUSDT",
-	"AGIXUSDT",
-	"PHBUSDT",
-	"BNXUSDT",
-	"SSVUSDT",
-	"CKBUSDT",
-	"PERPUSDT",
-	"TRUUSDT",
-	"IDUSDT",
-	"ARBUSDT",
-	"JOEUSDT",
-	"AMBUSDT",
-	"LEVERUSDT",
-	"RDNTUSDT",
-	"XVSUSDT",
-	"BLURUSDT",
-	"IDEXUSDT",
-	"1000PEPEUSDT",
-	"1000FLOKIUSDT",
-	"UMAUSDT",
-	"KEYUSDT",
-	"NMRUSDT",
-	"MAVUSDT",
-	"XVGUSDT",
-	"ARKMUSDT",
-	"AGLDUSDT",
-	"DODOXUSDT",
-	"BNTUSDT",
-	"SEIUSDT",
-	"HIFIUSDT",
-	"ARKUSDT",
-	"FRONTUSDT",
-	"GLMRUSDT",
-	"BONDUSDT",
-	"STPTUSDT",
-	"BSVUSDT",
-	"RIFUSDT",
-	"POLYXUSDT",
-	"POWRUSDT",
-	"SLPUSDT",
-	"TIAUSDT",
-	"SNTUSDT",
-	"CAKEUSDT",
-	"MEMEUSDT",
-	"TWTUSDT",
-	"TOKENUSDT",
-	"ORDIUSDT",
-	"KASUSDT",
-	"BEAMXUSDT",
-	"1000BONKUSDT",
-	"USTCUSDT",
-	"ETHWUSDT",
-	"JTOUSDT",
-	"AUCTIONUSDT",
-	"1000RATSUSDT",
-	"AIUSDT",
-	"MANTAUSDT",
-	"ONDOUSDT",
-	"ALTUSDT",
-	"JUPUSDT",
-	"ZETAUSDT",
-	"DYMUSDT",
-	"PIXELUSDT",
-	"MAVIAUSDT",
-	"MYROUSDT",
-	"VANRYUSDT",
-	"BOMEUSDT",
-	"ENAUSDT",
-	"WUSDT",
-	"TNSRUSDT",
-	"TAOUSDT",
-	"OMNIUSDT",
-];
+const ALLOWED_PAIRS: string[] = [];
 const stg: Strategy = {
 	stgName: STG_NAME,
-	lookBackLength: Context.lookBackLength,
-	interval: Context.interval,
+	lookBackLength: InitialParams.lookBackLength,
+	interval: InitialParams.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: Context.defaultSL,
-			tp: Context.defaultTP,
+			sl: InitialParams.defaultSL,
+			tp: InitialParams.defaultTP,
 			stgName: STG_NAME,
 		};
 
-		if (candlestick.length < Context.lookBackLength) return response;
+		if (candlestick.length < InitialParams.lookBackLength) return response;
 		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
 		const MIN_RSI = 30;
@@ -236,22 +99,3 @@ const stg: Strategy = {
 };
 
 export default stg;
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ rsiDivergency5m     │
-// │             sl │ 10.00%              │
-// │             tp │ 1.00%               │
-// │      startTime │ 2024 03 21 13:06:39 │
-// │        endTime │ 2024 04 20 13:31:36 │
-// │       lookBack │ 8640                │
-// │       interval │ 5m                  │
-// │ maxTradeLength │ 300                 │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 94.84%              │
-// │          avPnl │ 0.71%               │
-// │       totalPnl │ 632.34%             │
-// │      tradesQty │ 892                 │
-// │  avTradeLength │ 24                  │
-// └────────────────┴─────────────────────┘

@@ -1,11 +1,6 @@
 {
-	"cSpell.words": [
-		"APIKEY",
-		"APISECRET",
-		"Backtest",
-		"donbot",
-		"ETHUSDT",
-		"technicalindicators",
-		"Xata"
-	]
+    "cSpell.words": [
+        "backtest",
+        "technicalindicators"
+    ]
 }

@@ -1,179 +1,23 @@
 import { mfi } from "technicalindicators";
-import { Strategy, StrategyResponse } from "../models/Strategy";
-import { Context } from "../models/Context";
-import { getVolatility } from "../services/getSymbolList";
+import type { Strategy, StrategyResponse } from "../models/Strategy";
+import { InitialParams } from "../InitialParams";
+import { getVolatility } from "../utils/getVolatility";
 
 const STG_NAME = "mfiDivergency5m";
-const ALLOWED_PAIRS: string[] = [
-	"EOSUSDT",
-	"XLMUSDT",
-	"XMRUSDT",
-	"XTZUSDT",
-	"ATOMUSDT",
-	"IOTAUSDT",
-	"BATUSDT",
-	"VETUSDT",
-	"ALGOUSDT",
-	"KNCUSDT",
-	"ZRXUSDT",
-	"DOGEUSDT",
-	"KAVAUSDT",
-	"BANDUSDT",
-	"RLCUSDT",
-	"WAVESUSDT",
-	"SNXUSDT",
-	"CRVUSDT",
-	"RUNEUSDT",
-	"SUSHIUSDT",
-	"SOLUSDT",
-	"ICXUSDT",
-	"STORJUSDT",
-	"UNIUSDT",
-	"AVAXUSDT",
-	"FTMUSDT",
-	"ENJUSDT",
-	"FLMUSDT",
-	"NEARUSDT",
-	"AAVEUSDT",
-	"FILUSDT",
-	"LRCUSDT",
-	"OCEANUSDT",
-	"AXSUSDT",
-	"ZENUSDT",
-	"SKLUSDT",
-	"GRTUSDT",
-	"CHZUSDT",
-	"SANDUSDT",
-	"ANKRUSDT",
-	"LITUSDT",
-	"RVNUSDT",
-	"SFPUSDT",
-	"COTIUSDT",
-	"CHRUSDT",
-	"MANAUSDT",
-	"ONEUSDT",
-	"LINAUSDT",
-	"STMXUSDT",
-	"CELRUSDT",
-	"HOTUSDT",
-	"MTLUSDT",
-	"OGNUSDT",
-	"NKNUSDT",
-	"1000SHIBUSDT",
-	"BTCDOMUSDT",
-	"IOTXUSDT",
-	"AUDIOUSDT",
-	"C98USDT",
-	"MASKUSDT",
-	"ATAUSDT",
-	"DYDXUSDT",
-	"1000XECUSDT",
-	"CELOUSDT",
-	"KLAYUSDT",
-	"LPTUSDT",
-	"ENSUSDT",
-	"PEOPLEUSDT",
-	"ROSEUSDT",
-	"FLOWUSDT",
-	"IMXUSDT",
-	"WOOUSDT",
-	"DARUSDT",
-	"OPUSDT",
-	"INJUSDT",
-	"1000LUNCUSDT",
-	"LUNA2USDT",
-	"LDOUSDT",
-	"CVXUSDT",
-	"QNTUSDT",
-	"FETUSDT",
-	"FXSUSDT",
-	"MAGICUSDT",
-	"RNDRUSDT",
-	"MINAUSDT",
-	"AGIXUSDT",
-	"PHBUSDT",
-	"CFXUSDT",
-	"STXUSDT",
-	"BNXUSDT",
-	"SSVUSDT",
-	"PERPUSDT",
-	"LQTYUSDT",
-	"IDUSDT",
-	"TLMUSDT",
-	"LEVERUSDT",
-	"RDNTUSDT",
-	"HFTUSDT",
-	"EDUUSDT",
-	"SUIUSDT",
-	"1000FLOKIUSDT",
-	"RADUSDT",
-	"KEYUSDT",
-	"COMBOUSDT",
-	"NMRUSDT",
-	"MDTUSDT",
-	"XVGUSDT",
-	"WLDUSDT",
-	"PENDLEUSDT",
-	"ARKMUSDT",
-	"AGLDUSDT",
-	"HIFIUSDT",
-	"ARKUSDT",
-	"GLMRUSDT",
-	"LOOMUSDT",
-	"BONDUSDT",
-	"STPTUSDT",
-	"WAXPUSDT",
-	"BSVUSDT",
-	"POLYXUSDT",
-	"POWRUSDT",
-	"TIAUSDT",
-	"SNTUSDT",
-	"CAKEUSDT",
-	"ORDIUSDT",
-	"BADGERUSDT",
-	"KASUSDT",
-	"BEAMXUSDT",
-	"1000BONKUSDT",
-	"PYTHUSDT",
-	"USTCUSDT",
-	"ETHWUSDT",
-	"JTOUSDT",
-	"1000SATSUSDT",
-	"AUCTIONUSDT",
-	"1000RATSUSDT",
-	"NFPUSDT",
-	"AIUSDT",
-	"WIFUSDT",
-	"LSKUSDT",
-	"ALTUSDT",
-	"JUPUSDT",
-	"ZETAUSDT",
-	"DYMUSDT",
-	"STRKUSDT",
-	"MAVIAUSDT",
-	"GLMUSDT",
-	"TONUSDT",
-	"AXLUSDT",
-	"AEVOUSDT",
-	"BOMEUSDT",
-	"ETHFIUSDT",
-	"ENAUSDT",
-	"TAOUSDT",
-	"OMNIUSDT",
-];
+const ALLOWED_PAIRS: string[] = [];
 const stg: Strategy = {
 	stgName: STG_NAME,
-	lookBackLength: Context.lookBackLength,
-	interval: Context.interval,
+	lookBackLength: InitialParams.lookBackLength,
+	interval: InitialParams.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			shouldTrade: null,
-			sl: Context.defaultSL,
-			tp: Context.defaultTP,
+			sl: InitialParams.defaultSL,
+			tp: InitialParams.defaultTP,
 			stgName: STG_NAME,
 		};
 
-		if (candlestick.length < Context.lookBackLength) return response;
+		if (candlestick.length < InitialParams.lookBackLength) return response;
 		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
 		const MIN_MFI = 20;
@@ -260,22 +104,3 @@ const stg: Strategy = {
 };
 
 export default stg;
-
-// ┌────────────────┬─────────────────────┐
-// │                │ Values              │
-// ├────────────────┼─────────────────────┤
-// │        stgName │ mfiDivergency5m     │
-// │             sl │ 10.00%              │
-// │             tp │ 1.00%               │
-// │      startTime │ 2024 03 21 13:31:36 │
-// │        endTime │ 2024 04 20 13:57:13 │
-// │       lookBack │ 8640                │
-// │       interval │ 5m                  │
-// │ maxTradeLength │ 300                 │
-// │            fee │ 0.05%               │
-// │      avWinRate │ 95.16%              │
-// │          avPnl │ 0.71%               │
-// │       totalPnl │ 827.11%             │
-// │      tradesQty │ 1157                │
-// │  avTradeLength │ 32                  │
-// └────────────────┴─────────────────────┘

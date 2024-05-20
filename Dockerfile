@@ -4,11 +4,11 @@ FROM oven/bun
 ENV TZ=America/Bogota
 
 WORKDIR /app
-COPY . /app
+COPY . .
 
 # Update the system packages and install the timezone data package
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN bun install
 
-CMD ["bun", "trade"]
+CMD ["bun", "start"]

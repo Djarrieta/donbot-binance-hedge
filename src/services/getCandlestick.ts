@@ -1,7 +1,7 @@
-import Binance, { CandleChartInterval_LT } from "binance-api-node";
-import { Candle } from "../models/Candle";
-import { Interval } from "../models/Interval";
+import Binance, { type CandleChartInterval_LT } from "binance-api-node";
 import { getDate } from "../utils/getDate";
+import { Interval } from "../schema";
+import type { Candle } from "../schema";
 
 interface GetCandlestickProps {
 	pair: string;
@@ -34,6 +34,7 @@ export const getCandlestick = async ({
 		const formattedCandlestick = unformattedCandlestick.map(
 			({ close, open, high, low, openTime, volume }) => {
 				return {
+					pair,
 					close: Number(close),
 					open: Number(open),
 					high: Number(high),

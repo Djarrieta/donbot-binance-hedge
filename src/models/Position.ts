@@ -7,14 +7,15 @@ type PositionStatus =
 	| "HEDGED"
 	| "SECURED";
 
-export interface Position {
+export type Position = {
 	pair: string;
 	positionSide: PositionSide;
 	coinQuantity: string;
 	startTime: Date;
+	endTime: Date | null;
 	entryPriceUSDT: number;
 	status: PositionStatus;
 	pnl: number;
 	len: number;
 	isHedgeUnbalance: boolean;
-}
+};
