@@ -1,5 +1,5 @@
+import type { Interval } from "../models/Interval";
 import type { Strategy, StrategyResponse } from "../models/Strategy";
-import type { Interval } from "../schema";
 import type { Symbol } from "../models/Symbol";
 
 export const checkForTrades = async ({

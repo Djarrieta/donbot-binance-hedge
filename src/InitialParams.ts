@@ -1,4 +1,4 @@
-import { Interval } from "./schema";
+import { Interval } from "./models/Interval";
 
 export const InitialParams = {
 	branch: "main" as "main" | "dev",

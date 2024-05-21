@@ -1,9 +1,10 @@
 import cliProgress from "cli-progress";
 import { InitialParams } from "../../InitialParams";
 import { db } from "../../db";
-import { candlesticks, symbols } from "../../schema";
 import { getCandlestick } from "../../services/getCandlestick";
 import { getDate } from "../../utils/getDate";
+import { symbolsBT } from "../../schema";
+import { getPairList } from "../../services/getPairList";
 
 type SaveBacktestDataProps = { pairList: string[] };
 
@@ -14,8 +15,7 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 		cliProgress.Presets.shades_classic
 	);
 	progressBar.start(pairList.length, 0);
-	await db.delete(candlesticks);
-	await db.delete(symbols);
+	await db.delete(symbolsBT);
 
 	for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 		const pair = pairList[pairIndex];
@@ -33,11 +33,26 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 				openTime: getDate(c.openTime).dateString,
 			};
 		});
-		progressBar.update(pairIndex + 1);
-		if (!candlestick.length) continue;
+		if (!fixedDateCandlestick.length) continue;
 		await db
-			.insert(symbols)
-			.values({ pair, candlestick: JSON.stringify(fixedDateCandlestick) });
+			.insert(symbolsBT)
+			.values({ pair, candlestickBT: JSON.stringify(fixedDateCandlestick) });
+		progressBar.update(pairIndex + 1);
 	}
 	progressBar.stop();
+
+	const results = await db.select().from(symbolsBT);
+	console.log(
+		"Backtest data saved for " +
+			results
+				.slice(0, 3)
+				.map((r) => r.pair)
+				.join(", ") +
+			" and " +
+			(results.length - 3) +
+			" other pairs."
+	);
 };
+
+const pairList = await getPairList();
+await saveBacktestData({ pairList });

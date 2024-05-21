@@ -1,4 +1,5 @@
-import type { Candle, Interval } from "../schema";
+import type { Candle } from "./Candle";
+import type { Interval } from "./Interval";
 import type { PositionSide } from "./Position";
 
 export type StrategyResponse = {
@@ -16,12 +17,4 @@ export type Strategy = {
 		candlestick: Candle[];
 		pair: string;
 	}) => StrategyResponse;
-};
-
-export type StrategyStat = {
-	stgName: string;
-	status: boolean;
-	trades: number;
-	avPnl: number;
-	winRate: string;
 };

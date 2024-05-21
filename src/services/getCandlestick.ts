@@ -1,7 +1,7 @@
 import Binance, { type CandleChartInterval_LT } from "binance-api-node";
 import { getDate } from "../utils/getDate";
-import { Interval } from "../schema";
-import type { Candle } from "../schema";
+import { Interval } from "../models/Interval";
+import type { Candle } from "../models/Candle";
 
 interface GetCandlestickProps {
 	pair: string;
