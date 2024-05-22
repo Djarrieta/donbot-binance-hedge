@@ -1,12 +1,12 @@
-import { InitialParams } from "../InitialParams";
-import { db } from "../db";
-import type { Candle } from "../models/Candle";
-import type { Position } from "../models/Position";
-import { type Symbol } from "../models/Symbol";
-import { symbolsBT, type StatsBT } from "../schema";
-import { checkForTrades } from "../services/checkForTrades";
-import { chosenStrategies } from "../strategies";
-import { getDate } from "../utils/getDate";
+import { InitialParams } from "../../InitialParams";
+import { db } from "../../db";
+import type { Candle } from "../../models/Candle";
+import type { Position } from "../../models/Position";
+import { type Symbol } from "../../models/Symbol";
+import { symbolsBT, type StatsBT } from "../../schema";
+import { checkForTrades } from "../../services/checkForTrades";
+import { chosenStrategies } from "../../strategies";
+import { getDate } from "../../utils/getDate";
 
 export const accumulate = async () => {
 	const symbolsData = await db.select().from(symbolsBT);

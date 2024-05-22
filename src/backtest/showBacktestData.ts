@@ -1,8 +1,8 @@
-import { db } from "../../db";
-import type { Candle } from "../../models/Candle";
-import { Interval } from "../../models/Interval";
-import { symbolsBT } from "../../schema";
-import { getDate } from "../../utils/getDate";
+import { db } from "../db";
+import type { Candle } from "../models/Candle";
+import { Interval } from "../models/Interval";
+import { symbolsBT } from "../schema";
+import { getDate } from "../utils/getDate";
 
 export const showBacktestData = async () => {
 	const results = await db.select().from(symbolsBT);
