@@ -44,7 +44,7 @@ export const saveStatsResults = async ({
 };
 
 await saveStatsResults({
-	slArray: [1 / 10, 10 / 100, 15 / 100],
-	tpArray: [1 / 10, 10 / 100, 15 / 100],
+	slArray: [1 / 100, 10 / 100, 15 / 100],
+	tpArray: [1 / 100, 10 / 100, 15 / 100],
 	maxTradeLengthArray: [50, 100, 200],
 });

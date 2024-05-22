@@ -197,7 +197,7 @@ export const accumulate = async () => {
 		maxAccPnl,
 		minAccPnl,
 		accPnl,
-		maxDrawdown,
+		maxDrawdown: -maxDrawdown,
 		winRate,
 	};
 
