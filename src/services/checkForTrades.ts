@@ -43,7 +43,7 @@ export const checkForTrades = async ({
 					candlestick: symbol.candlestick,
 					pair: symbol.pair,
 				}) || undefined;
-			if (stgResponse && stgResponse.shouldTrade !== null) {
+			if (stgResponse && stgResponse.positionSide !== null) {
 				response.tradeArray.push({ symbol, stgResponse });
 			}
 		}
@@ -64,7 +64,7 @@ export const checkForTrades = async ({
 			"+ Should trade " +
 			response.tradeArray.map(
 				(t) =>
-					t.stgResponse.shouldTrade +
+					t.stgResponse.positionSide +
 					" in " +
 					t.symbol.pair +
 					" with " +

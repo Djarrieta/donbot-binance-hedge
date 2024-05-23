@@ -3,9 +3,10 @@ import { db } from "../../db";
 import type { Candle } from "../../models/Candle";
 import type { Position } from "../../models/Position";
 import { type Symbol } from "../../models/Symbol";
-import { symbolsBT, type StatsBT } from "../../schema";
+import { symbolsBT, type StatsAccBT } from "../../schema";
 import { checkForTrades } from "../../services/checkForTrades";
 import { chosenStrategies } from "../../strategies";
+import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 
 export const accumulate = async () => {
@@ -93,7 +94,7 @@ export const accumulate = async () => {
 					(lastCandle.high >= stopLoss || lastCandle.close >= stopLoss))
 			) {
 				openPosition.pnl = -InitialParams.defaultSL - InitialParams.fee;
-				openPosition.len++;
+				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
@@ -114,7 +115,8 @@ export const accumulate = async () => {
 			) {
 				openPosition.pnl = InitialParams.defaultTP - InitialParams.fee;
 
-				openPosition.len++;
+				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
+
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
@@ -127,7 +129,10 @@ export const accumulate = async () => {
 
 				continue;
 			}
-			if (openPosition.len + 1 >= InitialParams.maxTradeLength) {
+			if (
+				Number(openPosition.tradeLength) + 1 >=
+				InitialParams.maxTradeLength
+			) {
 				const pnlWithoutFee =
 					openPosition.positionSide === "LONG"
 						? (lastCandle.close - openPosition.entryPriceUSDT) /
@@ -137,7 +142,8 @@ export const accumulate = async () => {
 
 				openPosition.pnl = pnlWithoutFee - InitialParams.fee;
 
-				openPosition.len++;
+				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
+
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
@@ -150,7 +156,8 @@ export const accumulate = async () => {
 
 				continue;
 			}
-			openPosition.len++;
+			openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
+
 			candleIndex++;
 			continue;
 		}
@@ -164,16 +171,14 @@ export const accumulate = async () => {
 				symbolOpened.candlestick[symbolOpened.candlestick.length - 1].openTime;
 			openPosition = {
 				pair: symbolOpened.pair,
-				coinQuantity: "0",
-				status: "PROTECTED",
+				status: "UNKNOWN",
 				startTime,
-				endTime: null,
-				positionSide: tradeArray[0].stgResponse.shouldTrade || "LONG",
+				positionSide: tradeArray[0].stgResponse.positionSide || "LONG",
 				pnl: 0,
-				len: 0,
 				isHedgeUnbalance: false,
 				entryPriceUSDT:
 					symbolOpened.candlestick[symbolOpened.candlestick.length - 1].close,
+				stgName: tradeArray[0].stgResponse.stgName,
 			};
 
 			candleIndex++;
@@ -185,23 +190,41 @@ export const accumulate = async () => {
 		InitialParams.lookBackLengthBacktest + InitialParams.lookBackLength
 	);
 
-	const totalPositions = closedPositions.length;
+	const tradesQty = closedPositions.length;
 	const winningPositions = closedPositions.filter((p) => p.pnl > 0);
-	const winRate = winningPositions.length / totalPositions;
+	const winRate = winningPositions.length / tradesQty;
 
-	const result: StatsBT = {
+	const avTradeLength =
+		closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
+			tradesQty || 0;
+	const stats: StatsAccBT = {
 		maxTradeLength: InitialParams.maxTradeLength,
 		sl: InitialParams.defaultSL,
 		tp: InitialParams.defaultTP,
-		totalPositions,
+		tradesQty,
 		maxAccPnl,
 		minAccPnl,
 		accPnl,
 		maxDrawdown: -maxDrawdown,
 		winRate,
+		avPnl: accPnl / tradesQty,
+		avTradeLength,
 	};
 
-	return result;
+	return stats;
 };
 
-await accumulate();
+// const result = await accumulate();
+// console.table({
+// 	sl: formatPercent(Number(result.sl)),
+// 	tp: formatPercent(Number(result.tp)),
+// 	maxTradeLength: Number(result.maxTradeLength),
+// 	tradesQty: Number(result.tradesQty),
+// 	maxDrawdown: formatPercent(Number(result.maxDrawdown)),
+// 	maxAccPnl: formatPercent(Number(result.maxAccPnl)),
+// 	minAccPnl: formatPercent(Number(result.minAccPnl)),
+// 	accPnl: formatPercent(Number(result.accPnl)),
+// 	winRate: formatPercent(Number(result.winRate)),
+// 	avPnl: formatPercent(Number(result.avPnl)),
+// 	avTradeLength: formatPercent(Number(result.avTradeLength)),
+// });

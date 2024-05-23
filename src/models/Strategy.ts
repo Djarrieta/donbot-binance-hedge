@@ -4,7 +4,7 @@ import type { PositionSide } from "./Position";
 
 export type StrategyResponse = {
 	stgName: string;
-	shouldTrade: PositionSide | null;
+	positionSide: PositionSide | null;
 	sl: number;
 	tp: number;
 };

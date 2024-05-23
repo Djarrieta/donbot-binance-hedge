@@ -7,15 +7,30 @@ export const symbolsBT = sqliteTable("symbols", {
 });
 export type SymbolBT = InferSelectModel<typeof symbolsBT>;
 
-export const statsBT = sqliteTable("statsBT", {
+export const statsAccBT = sqliteTable("statsAccBT", {
 	maxTradeLength: integer("maxTradeLength"),
 	sl: integer("sl"),
 	tp: integer("tp"),
-	totalPositions: integer("totalPositions"),
+	tradesQty: integer("tradesQty"),
 	maxAccPnl: integer("maxAccPnl"),
 	minAccPnl: integer("minAccPnl"),
 	accPnl: integer("accPnl"),
 	maxDrawdown: integer("maxDrawdown"),
 	winRate: integer("winRate"),
+	avPnl: integer("avPnl"),
+	avTradeLength: integer("avTradeLength"),
 });
-export type StatsBT = InferSelectModel<typeof statsBT>;
+export type StatsAccBT = InferSelectModel<typeof statsAccBT>;
+
+export const statsSnapBT = sqliteTable("statsSnapBT", {
+	maxTradeLength: integer("maxTradeLength"),
+	sl: integer("sl"),
+	tp: integer("tp"),
+	tradesQty: integer("tradesQty"),
+	accPnl: integer("accPnl"),
+	winRate: integer("winRate"),
+	avPnl: integer("avPnl"),
+	avTradeLength: integer("avTradeLength"),
+	winningPairs: text("winningPairs", { mode: "json" }),
+});
+export type StatsSnapBT = InferSelectModel<typeof statsSnapBT>;

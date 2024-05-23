@@ -4,14 +4,21 @@ import { InitialParams } from "../InitialParams";
 import { getVolatility } from "../utils/getVolatility";
 
 const STG_NAME = "mfiDivergency5m";
-const ALLOWED_PAIRS: string[] = [];
+const ALLOWED_PAIRS: string[] = [
+	"STGUSDT",
+	"SPELLUSDT",
+	"EDUUSDT",
+	"WLDUSDT",
+	"XAIUSDT",
+	"METISUSDT",
+];
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: InitialParams.lookBackLength,
 	interval: InitialParams.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
-			shouldTrade: null,
+			positionSide: null,
 			sl: InitialParams.defaultSL,
 			tp: InitialParams.defaultTP,
 			stgName: STG_NAME,
@@ -66,7 +73,7 @@ const stg: Strategy = {
 			);
 
 			if (firstMin !== 0 && secondMin !== 0 && firstMin > secondMin) {
-				response.shouldTrade = "LONG";
+				response.positionSide = "LONG";
 			}
 		}
 
@@ -95,7 +102,7 @@ const stg: Strategy = {
 			);
 
 			if (firstMax !== 0 && secondMax !== 0 && firstMax < secondMax) {
-				response.shouldTrade = "SHORT";
+				response.positionSide = "SHORT";
 			}
 		}
 

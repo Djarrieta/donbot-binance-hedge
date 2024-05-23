@@ -23,7 +23,7 @@ export const showBacktestData = async () => {
 	).toFixed(1);
 
 	console.log(
-		"Backtest data saved for " +
+		"Backtest data available for " +
 			results
 				.slice(0, 3)
 				.map((r) => r.pair)

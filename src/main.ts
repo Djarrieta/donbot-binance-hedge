@@ -1,3 +1,3 @@
-import { accumulate } from "./backtest/accumulate/accumulate";
+import { accumulate } from "./backtest/accumulate";
 
 await accumulate();
