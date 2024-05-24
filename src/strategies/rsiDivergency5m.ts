@@ -4,22 +4,7 @@ import { InitialParams } from "../InitialParams";
 import { getVolatility } from "../utils/getVolatility";
 
 const STG_NAME = "rsiDivergency5m";
-const ALLOWED_PAIRS: string[] = [
-	"MKRUSDT",
-	"BLZUSDT",
-	"GALAUSDT",
-	"LPTUSDT",
-	"PEOPLEUSDT",
-	"1000FLOKIUSDT",
-	"BIGTIMEUSDT",
-	"1000SATSUSDT",
-	"MANTAUSDT",
-	"JUPUSDT",
-	"MAVIAUSDT",
-	"BOMEUSDT",
-	"TAOUSDT",
-	"BBUSDT",
-];
+const ALLOWED_PAIRS: string[] = [];
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: InitialParams.lookBackLength,

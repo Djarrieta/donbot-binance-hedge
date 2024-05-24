@@ -5,7 +5,7 @@ export const InitialParams = {
 	interval: Interval["5m"],
 	candlestickAPILimit: 500,
 	lookBackLength: 50,
-	lookBackLengthBacktest: (7 * Interval["1d"]) / Interval["5m"],
+	lookBackLengthBacktest: (3 * Interval["1d"]) / Interval["5m"],
 	minAmountToTrade: 6,
 	maxTradeLength: 100,
 	defaultSL: 10 / 100,

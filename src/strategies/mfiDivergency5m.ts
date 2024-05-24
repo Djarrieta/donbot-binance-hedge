@@ -4,14 +4,7 @@ import { InitialParams } from "../InitialParams";
 import { getVolatility } from "../utils/getVolatility";
 
 const STG_NAME = "mfiDivergency5m";
-const ALLOWED_PAIRS: string[] = [
-	"STGUSDT",
-	"SPELLUSDT",
-	"EDUUSDT",
-	"WLDUSDT",
-	"XAIUSDT",
-	"METISUSDT",
-];
+const ALLOWED_PAIRS: string[] = [];
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: InitialParams.lookBackLength,
