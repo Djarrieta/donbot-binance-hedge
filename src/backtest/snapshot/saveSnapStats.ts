@@ -19,6 +19,7 @@ export const saveSnapStats = async ({
 	maxTradeLengthArray,
 	strategies,
 }: SaveStatsResultsProps) => {
+	console.log(strategies.map((s) => s.stgName).join(", "));
 	await db.delete(statsSnapBT);
 
 	const loopSize =

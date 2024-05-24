@@ -11,7 +11,7 @@ const stg: Strategy = {
 	interval: InitialParams.interval,
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
-			shouldTrade: null,
+			positionSide: null,
 			sl: InitialParams.defaultSL,
 			tp: InitialParams.defaultTP,
 			stgName: STG_NAME,
@@ -23,14 +23,14 @@ const stg: Strategy = {
 		const MIN_VOL = 10 / 100;
 		const volatility = getVolatility({ candlestick });
 
-		//Add your trading strategy here modifying shouldTrade, sl, tp,
+		//Add your trading strategy here modifying positionSide, sl, tp,
 		let condition = false;
 
 		if (volatility >= MIN_VOL && condition) {
-			response.shouldTrade = "LONG";
+			response.positionSide = "LONG";
 		}
 		if (volatility >= MIN_VOL && condition) {
-			response.shouldTrade = "SHORT";
+			response.positionSide = "SHORT";
 		}
 
 		return response;
