@@ -191,18 +191,3 @@ export const snapshot = async ({
 
 	return stats;
 };
-
-// const result = await snapshot({ strategy: chosenStrategies[0], log: true });
-
-// console.table({
-// 	sl: formatPercent(Number(result.sl)),
-// 	tp: formatPercent(Number(result.tp)),
-// 	maxTradeLength: Number(result.maxTradeLength),
-// 	tradesQty: Number(result.tradesQty),
-// 	accPnl: formatPercent(Number(result.accPnl)),
-// 	winRate: formatPercent(Number(result.winRate)),
-// 	avPnl: formatPercent(Number(result.avPnl)),
-// 	avTradeLength: formatPercent(Number(result.avTradeLength)),
-// });
-
-// console.log(result.winningPairs);

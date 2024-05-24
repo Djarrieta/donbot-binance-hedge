@@ -73,10 +73,16 @@ export const accumulate = async () => {
 				(s) => s.pair === openPosition?.pair
 			);
 
-			if (!symbolOpened) continue;
+			if (!symbolOpened) {
+				candleIndex++;
+				continue;
+			}
 			const lastCandle =
 				symbolOpened.candlestick[symbolOpened.candlestick.length - 1];
-			if (!lastCandle) continue;
+			if (!lastCandle) {
+				candleIndex++;
+				continue;
+			}
 
 			const stopLoss =
 				openPosition.positionSide === "LONG"

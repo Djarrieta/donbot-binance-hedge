@@ -4,18 +4,14 @@ import { db } from "../../db";
 import { accumulate } from ".";
 import { statsAccBT } from "../../schema";
 
-type SaveStatsResultsProps = {
-	slArray: number[];
-	tpArray: number[];
-	maxTradeLengthArray: number[];
-};
-
-export const saveAccStats = async ({
-	slArray,
-	tpArray,
-	maxTradeLengthArray,
-}: SaveStatsResultsProps) => {
+export const saveAccStats = async () => {
 	await db.delete(statsAccBT);
+
+	const {
+		backtestSLArray: slArray,
+		backtestTPArray: tpArray,
+		backtestMaxTradeLengthArray: maxTradeLengthArray,
+	} = InitialParams;
 
 	const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 	const progressBar = new cliProgress.SingleBar(
@@ -43,8 +39,4 @@ export const saveAccStats = async ({
 	progressBar.stop();
 };
 
-await saveAccStats({
-	slArray: [1 / 100, 10 / 100, 15 / 100],
-	tpArray: [1 / 100, 10 / 100, 15 / 100],
-	maxTradeLengthArray: [50, 100, 200],
-});
+await saveAccStats();
