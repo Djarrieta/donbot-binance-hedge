@@ -1,4 +1,4 @@
-Certainly! Here are the steps with corrected numbering:
+There are two types of back-testing: Snapshot and Accumulate. Snapshot is analyze the pattern of look-back candles simulate and entry and see if win or lose in the max-candle-length next candles. No context about other possible entries is considered, overlaping is allowed. It is important to see the ; In other hand, Accumulate back-testing is 
 
 1. Run `bun DBRestart` to create the local database or clear old data.
 2. Select the amount of time you want for backtest in `src/InitialParams.lookBackLengthBacktest` in milliseconds (e.g., `(7 * Interval["1d"]) / Interval["5m"]` for 7 days).
@@ -18,7 +18,7 @@ Certainly! Here are the steps with corrected numbering:
 16. Fill the `/src/strategies/index.ts/chosenStrategies` array with all available strategies.
 17. Run `bun saveFinalAccStats` to get the final stats.
 18. Run `bun showAccStats` to see the final results.
-19. Optionally you can run `bun saveSnapStats` again and them bun `showSnapClosedPosStats` and bun `showSnapClosedPosStats` in order to see all the positions calculated for the analysis.
+19. Optionally you can run `bun saveSnapStats` again and them bun `showSnapClosedPosStats` and bun `showAccClosedPosStats` in order to see all the positions calculated for the analysis.
 
 
 

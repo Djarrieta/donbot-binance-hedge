@@ -2,7 +2,7 @@ import cliProgress from "cli-progress";
 import { InitialParams } from "../../InitialParams";
 import { db } from "../../db";
 import type { Strategy } from "../../models/Strategy";
-import { statsSnapBT } from "../../schema";
+import { statsSnapBT, type StatsSnapBT } from "../../schema";
 import { snapshot } from ".";
 import { chosenStrategies } from "../../strategies";
 
@@ -22,11 +22,7 @@ export const saveSnapStats = async ({
 	console.log(strategies.map((s) => s.stgName).join(", "));
 	await db.delete(statsSnapBT);
 
-	const loopSize =
-		slArray.length *
-		tpArray.length *
-		maxTradeLengthArray.length *
-		strategies.length;
+	const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 
 	const progressBar = new cliProgress.SingleBar(
 		{},
@@ -38,16 +34,15 @@ export const saveSnapStats = async ({
 	for (const maxTradeLength of maxTradeLengthArray) {
 		for (const tp of slArray) {
 			for (const sl of tpArray) {
-				for (const strategy of strategies) {
-					InitialParams.defaultSL = sl;
-					InitialParams.defaultTP = tp;
-					InitialParams.maxTradeLength = maxTradeLength;
-					const result = await snapshot({ strategy, log: false });
-
-					await db.insert(statsSnapBT).values(result);
-					loop++;
-					progressBar.update(loop);
-				}
+				InitialParams.defaultSL = sl;
+				InitialParams.defaultTP = tp;
+				InitialParams.maxTradeLength = maxTradeLength;
+				let results: StatsSnapBT[] = [];
+				const result = await snapshot({ log: false });
+				results.push(result);
+				await db.insert(statsSnapBT).values(results);
+				loop++;
+				progressBar.update(loop);
 			}
 		}
 	}
@@ -56,8 +51,8 @@ export const saveSnapStats = async ({
 };
 
 await saveSnapStats({
-	slArray: [InitialParams.defaultSL],
-	tpArray: [InitialParams.defaultTP],
-	maxTradeLengthArray: [InitialParams.maxTradeLength],
+	slArray: InitialParams.backtestSLArray,
+	tpArray: InitialParams.backtestTPArray,
+	maxTradeLengthArray: InitialParams.backtestMaxTradeLengthArray,
 	strategies: chosenStrategies,
 });

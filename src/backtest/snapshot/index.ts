@@ -2,25 +2,18 @@ import { InitialParams } from "../../InitialParams";
 import { db } from "../../db";
 import type { Candle } from "../../models/Candle";
 import { type Position } from "../../models/Position";
-import type { Strategy } from "../../models/Strategy";
 import { type Symbol } from "../../models/Symbol";
 import { symbolsBT, type StatsSnapBT } from "../../schema";
+import { checkForTrades } from "../../services/checkForTrades";
 import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 
-export const snapshot = async ({
-	strategy,
-	log,
-}: {
-	strategy: Strategy;
-	log: boolean;
-}) => {
+export const snapshot = async ({ log }: { log: boolean }) => {
 	const symbolsData = await db.select().from(symbolsBT);
 
 	log &&
 		console.table({
-			stgName: strategy.stgName,
 			sl: formatPercent(InitialParams.defaultSL),
 			tp: formatPercent(InitialParams.defaultTP),
 			maxTradeLength: InitialParams.maxTradeLength,
@@ -53,107 +46,145 @@ export const snapshot = async ({
 	if (!symbolList.length) {
 		throw new Error("No symbols found trying to backtest snapshot");
 	}
+
+	let candleIndex = InitialParams.lookBackLength;
 	const closedPositions: Position[] = [];
 
-	for (let symbolIndex = 0; symbolIndex < symbolList.length; symbolIndex++) {
-		const symbol = symbolList[symbolIndex];
-		let candleIndex = 0;
-		do {
-			const endIndex = candleIndex + InitialParams.lookBackLength;
-			const candlestick = symbol.candlestick.slice(candleIndex, endIndex);
-			const profitStick = symbol.candlestick.slice(
-				endIndex,
-				Math.min(
-					symbol.candlestick.length,
-					endIndex + InitialParams.maxTradeLength
-				)
-			);
-			if (!profitStick.length) {
-				break;
-			}
+	do {
+		const candlestickStartIndex = candleIndex - InitialParams.lookBackLength;
+		const candlestickEndIndex = candleIndex;
+		const profitStickEndIndex = candleIndex + InitialParams.maxTradeLength;
+
+		const readySymbols = symbolList.map((s) => {
+			return {
+				...s,
+				candlestick: s.candlestick.slice(
+					candlestickStartIndex,
+					candlestickEndIndex
+				),
+				profitStick: s.candlestick.slice(
+					candlestickEndIndex,
+					profitStickEndIndex
+				),
+			};
+		});
+
+		const { tradeArray } = await checkForTrades({
+			symbolList: readySymbols,
+			strategies: chosenStrategies,
+			logs: false,
+			interval: InitialParams.interval,
+		});
+
+		for (const tradeCommand of tradeArray) {
 			const {
-				positionSide: shouldTrade,
-				sl,
-				tp,
-				stgName,
-			} = strategy.validate({
-				candlestick,
-				pair: symbol.pair,
-			});
-			if (shouldTrade) {
-				const entryPriceUSDT = profitStick[0].open;
+				symbol: { pair },
+				stgResponse: { positionSide: shouldTrade, sl, tp, stgName },
+			} = tradeCommand;
+			if (shouldTrade === null) continue;
+			const openedSymbol = readySymbols.find((s) => s.pair === pair);
+			if (!openedSymbol) continue;
+			const profitStick = openedSymbol.profitStick;
+			if (!profitStick.length) continue;
 
-				const stopLoss =
-					shouldTrade === "LONG"
-						? entryPriceUSDT * (1 - sl)
-						: entryPriceUSDT * (1 + sl);
-				const takeProfit = tp
-					? shouldTrade === "LONG"
-						? entryPriceUSDT * (1 + tp)
-						: entryPriceUSDT * (1 - tp)
-					: 0;
+			const entryPriceUSDT = profitStick[0].open;
 
-				let pnl = 0;
-				let tradeLength = 0;
-				for (
-					let stickIndex = 0;
-					stickIndex <= profitStick.length - 1;
-					stickIndex++
+			const stopLoss =
+				shouldTrade === "LONG"
+					? entryPriceUSDT * (1 - sl)
+					: entryPriceUSDT * (1 + sl);
+			const takeProfit = tp
+				? shouldTrade === "LONG"
+					? entryPriceUSDT * (1 + tp)
+					: entryPriceUSDT * (1 - tp)
+				: 0;
+
+			let pnl = 0;
+			let tradeLength = 0;
+
+			const startTime = profitStick[0].openTime;
+			const endTime = getDate(
+				getDate(startTime).dateMs + tradeLength * InitialParams.interval
+			).date;
+
+			for (
+				let stickIndex = 0;
+				stickIndex <= profitStick.length - 1;
+				stickIndex++
+			) {
+				const candle = profitStick[stickIndex];
+				tradeLength++;
+				if (
+					(shouldTrade === "LONG" &&
+						(candle.low <= stopLoss || candle.close <= stopLoss)) ||
+					(shouldTrade === "SHORT" &&
+						(candle.high >= stopLoss || candle.close >= stopLoss))
 				) {
-					const candle = profitStick[stickIndex];
-					tradeLength++;
-					if (
-						(shouldTrade === "LONG" &&
-							(candle.low <= stopLoss || candle.close <= stopLoss)) ||
-						(shouldTrade === "SHORT" &&
-							(candle.high >= stopLoss || candle.close >= stopLoss))
-					) {
-						pnl = -sl - InitialParams.fee;
+					pnl = -sl - InitialParams.fee;
 
-						break;
-					}
+					closedPositions.push({
+						pair: openedSymbol.pair,
+						entryPriceUSDT,
+						startTime,
+						endTime,
+						pnl,
+						tradeLength,
+						stgName,
+						positionSide: shouldTrade,
+						status: "UNKNOWN",
+					});
 
-					if (
-						(shouldTrade === "LONG" &&
-							(candle.high >= takeProfit || candle.close >= takeProfit)) ||
-						(shouldTrade === "SHORT" &&
-							(candle.low <= takeProfit || candle.close <= takeProfit))
-					) {
-						pnl = tp - InitialParams.fee;
-
-						break;
-					}
+					break;
 				}
-				if (pnl === 0) {
-					const lastPrice = profitStick[profitStick.length - 1].close;
-					pnl =
-						(shouldTrade === "LONG"
-							? lastPrice - entryPriceUSDT
-							: entryPriceUSDT - lastPrice) / entryPriceUSDT;
+
+				if (
+					(shouldTrade === "LONG" &&
+						(candle.high >= takeProfit || candle.close >= takeProfit)) ||
+					(shouldTrade === "SHORT" &&
+						(candle.low <= takeProfit || candle.close <= takeProfit))
+				) {
+					pnl = tp - InitialParams.fee;
+
+					closedPositions.push({
+						pair: openedSymbol.pair,
+						entryPriceUSDT,
+						startTime,
+						endTime,
+						pnl,
+						tradeLength,
+						stgName,
+						positionSide: shouldTrade,
+						status: "UNKNOWN",
+					});
+
+					break;
 				}
-				const startTime = profitStick[0].openTime;
-				const endTime = getDate(
-					getDate(startTime).dateMs + tradeLength * InitialParams.interval
-				).date;
-				closedPositions.push({
-					pair: symbol.pair,
-					entryPriceUSDT,
-					startTime,
-					endTime,
-					pnl,
-					tradeLength,
-					stgName,
-					positionSide: shouldTrade,
-					status: "UNKNOWN",
-				});
+			}
+			if (pnl === 0) {
+				const lastPrice = profitStick[profitStick.length - 1].close;
+				pnl =
+					(shouldTrade === "LONG"
+						? lastPrice - entryPriceUSDT
+						: entryPriceUSDT - lastPrice) / entryPriceUSDT;
 			}
 
-			candleIndex++;
-		} while (
-			candleIndex <
-			symbol.candlestick.length + InitialParams.lookBackLength
-		);
-	}
+			closedPositions.push({
+				pair: openedSymbol.pair,
+				entryPriceUSDT,
+				startTime,
+				endTime,
+				pnl,
+				tradeLength,
+				stgName,
+				positionSide: shouldTrade,
+				status: "UNKNOWN",
+			});
+		}
+		candleIndex++;
+	} while (
+		candleIndex <=
+		InitialParams.lookBackLengthBacktest + InitialParams.lookBackLength
+	);
 
 	const tradesQty = closedPositions.length;
 	const winningPositions = closedPositions.filter((p) => p.pnl > 0);

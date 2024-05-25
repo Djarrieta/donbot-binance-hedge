@@ -3,5 +3,5 @@ import { db } from "../../db";
 import { statsAccBT } from "../../schema";
 
 await db.delete(statsAccBT);
-const result = await accumulate();
+const result = await accumulate({ log: false });
 await db.insert(statsAccBT).values(result);

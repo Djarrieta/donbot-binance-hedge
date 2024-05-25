@@ -9,8 +9,15 @@ import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 
-export const accumulate = async () => {
+export const accumulate = async ({ log }: { log: boolean }) => {
 	const symbolsData = await db.select().from(symbolsBT);
+
+	log &&
+		console.table({
+			sl: formatPercent(InitialParams.defaultSL),
+			tp: formatPercent(InitialParams.defaultTP),
+			maxTradeLength: InitialParams.maxTradeLength,
+		});
 
 	const symbolList: Symbol[] = symbolsData.map((s) => {
 		const unformattedCandlestick = JSON.parse(s.candlestickBT as string);

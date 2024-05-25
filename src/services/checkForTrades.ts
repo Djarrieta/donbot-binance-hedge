@@ -38,11 +38,10 @@ export const checkForTrades = async ({
 
 	for (const strategy of strategies) {
 		for (const symbol of symbolList) {
-			const stgResponse =
-				strategy?.validate({
-					candlestick: symbol.candlestick,
-					pair: symbol.pair,
-				}) || undefined;
+			const stgResponse = strategy?.validate({
+				candlestick: symbol.candlestick,
+				pair: symbol.pair,
+			});
 			if (stgResponse && stgResponse.positionSide !== null) {
 				response.tradeArray.push({ symbol, stgResponse });
 			}

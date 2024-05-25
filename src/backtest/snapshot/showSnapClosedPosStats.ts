@@ -1,33 +1,37 @@
-import { db } from "../../db";
-import { statsSnapBT } from "../../schema";
 import { formatPercent } from "../../utils/formatPercent";
-import { getDate } from "../../utils/getDate";
+import { getDate, type DateString } from "../../utils/getDate";
+import { getSortedSnapResults } from "./sortSnapResults";
 
 export const showSnapClosedPosStats = async () => {
-	const results = await db.select().from(statsSnapBT);
-	const sortedResults = results
-		.sort((a, b) => Number(b.tradesQty) - Number(a.tradesQty))
-		.sort((a, b) => Number(b.winRate) - Number(a.winRate))
-		.sort((a, b) => Number(b.accPnl) - Number(a.accPnl))
-		.map((r) => ({
-			closedPositions: JSON.parse(r.closedPositions as string),
-		}));
-	const closedPositions = sortedResults[0].closedPositions
-		.sort(
-			(a: any, b: any) =>
-				getDate(b.startTime).dateMs - getDate(a.startTime).dateMs
-		)
-		.map((c: any) => {
-			return {
-				pair: c.pair,
-				startTime: getDate(c.startTime).dateString,
-				endTime: getDate(c.endTime).dateString,
-				positionSide: c.positionSide,
-				pnl: formatPercent(Number(c.pnl)),
-				entryPrice: Number(c.entryPriceUSDT).toFixed(2),
-				stgName: c.stgName,
-			};
-		});
+	const sortedResults = await getSortedSnapResults();
+	console.log("Snapshot data saved for " + sortedResults.length + " pairs.");
+
+	type ClosedPosition = {
+		pair: string;
+		startTime: DateString;
+		endTime: DateString;
+		positionSide: string;
+		pnl: string;
+		entryPrice: string;
+		stgName: string;
+	};
+
+	const closedPositions: ClosedPosition[] = JSON.parse(
+		sortedResults[0].closedPositions as string
+	).map((c: any) => {
+		return {
+			pair: c.pair,
+			startTime: getDate(c.startTime).dateString,
+			endTime: getDate(c.endTime).dateString,
+			positionSide: c.positionSide,
+			pnl: formatPercent(Number(c.pnl)),
+			entryPrice: Number(c.entryPriceUSDT).toFixed(2),
+			stgName: c.stgName,
+		};
+	});
+	closedPositions
+		.sort((a, b) => a.startTime.localeCompare(b.startTime))
+		.sort((a, b) => a.pair.localeCompare(b.pair));
 
 	console.table(closedPositions);
 };

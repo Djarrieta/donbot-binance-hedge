@@ -27,7 +27,7 @@ export const saveAccStats = async () => {
 				InitialParams.defaultSL = sl;
 				InitialParams.defaultTP = tp;
 				InitialParams.maxTradeLength = maxTradeLength;
-				const result = await accumulate();
+				const result = await accumulate({ log: false });
 
 				await db.insert(statsAccBT).values(result);
 				loop++;
