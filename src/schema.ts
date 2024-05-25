@@ -19,6 +19,7 @@ export const statsAccBT = sqliteTable("statsAccBT", {
 	winRate: integer("winRate"),
 	avPnl: integer("avPnl"),
 	avTradeLength: integer("avTradeLength"),
+	closedPositions: text("closedPositions", { mode: "json" }),
 });
 export type StatsAccBT = InferSelectModel<typeof statsAccBT>;
 
@@ -32,5 +33,6 @@ export const statsSnapBT = sqliteTable("statsSnapBT", {
 	avPnl: integer("avPnl"),
 	avTradeLength: integer("avTradeLength"),
 	winningPairs: text("winningPairs", { mode: "json" }),
+	closedPositions: text("closedPositions", { mode: "json" }),
 });
 export type StatsSnapBT = InferSelectModel<typeof statsSnapBT>;

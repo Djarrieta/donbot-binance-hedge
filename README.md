@@ -1,8 +1,8 @@
 Certainly! Here are the steps with corrected numbering:
 
-1. Run `bun DBRestart` to create the local database.
+1. Run `bun DBRestart` to create the local database or clear old data.
 2. Select the amount of time you want for backtest in `src/InitialParams.lookBackLengthBacktest` in milliseconds (e.g., `(7 * Interval["1d"]) / Interval["5m"]` for 7 days).
-3. Run `bun saveBacktestData` to get the data from the Binance API.
+3. Run `bun saveBacktestData` to get the candlestick data for every available symbol from the Binance API.
 4. You can check the data by running `bun showBacktestData`.
 5. Fill the `/src/strategies/index.ts/chosenStrategies` array with all available strategies.
 6. Check that every strategy in `/src/strategies` has `ALLOWED_PAIRS=[]`.
@@ -18,6 +18,7 @@ Certainly! Here are the steps with corrected numbering:
 16. Fill the `/src/strategies/index.ts/chosenStrategies` array with all available strategies.
 17. Run `bun saveFinalAccStats` to get the final stats.
 18. Run `bun showAccStats` to see the final results.
+19. Optionally you can run `bun saveSnapStats` again and them bun `showSnapClosedPosStats` and bun `showSnapClosedPosStats` in order to see all the positions calculated for the analysis.
 
 
 

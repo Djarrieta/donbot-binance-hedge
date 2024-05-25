@@ -10,10 +10,12 @@
 
     "saveSnapStats": "bun ./src/backtest/snapshot/saveSnapStats.ts",
     "showSnapStats": "bun ./src/backtest/snapshot/showSnapStats.ts",
+    "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
 
     "saveAccStats": "bun ./src/backtest/accumulate/saveAccStats.ts",
     "saveFinalAccStats": "bun ./src/backtest/accumulate/saveFinalAccStats.ts",
     "showAccStats": "bun ./src/backtest/accumulate/showAccStats.ts",
+    "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
 
     "DBDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
     "DBCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",

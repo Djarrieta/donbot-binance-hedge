@@ -215,22 +215,16 @@ export const accumulate = async () => {
 		winRate,
 		avPnl: accPnl / tradesQty,
 		avTradeLength,
+		closedPositions: JSON.stringify(
+			closedPositions.map((p) => {
+				return {
+					...p,
+					startTime: getDate(p.startTime).dateString,
+					endTime: p.endTime ? getDate(p.endTime).dateString : null,
+				};
+			})
+		),
 	};
 
 	return stats;
 };
-
-// const result = await accumulate();
-// console.table({
-// 	sl: formatPercent(Number(result.sl)),
-// 	tp: formatPercent(Number(result.tp)),
-// 	maxTradeLength: Number(result.maxTradeLength),
-// 	tradesQty: Number(result.tradesQty),
-// 	maxDrawdown: formatPercent(Number(result.maxDrawdown)),
-// 	maxAccPnl: formatPercent(Number(result.maxAccPnl)),
-// 	minAccPnl: formatPercent(Number(result.minAccPnl)),
-// 	accPnl: formatPercent(Number(result.accPnl)),
-// 	winRate: formatPercent(Number(result.winRate)),
-// 	avPnl: formatPercent(Number(result.avPnl)),
-// 	avTradeLength: formatPercent(Number(result.avTradeLength)),
-// });

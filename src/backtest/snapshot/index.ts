@@ -68,6 +68,9 @@ export const snapshot = async ({
 					endIndex + InitialParams.maxTradeLength
 				)
 			);
+			if (!profitStick.length) {
+				break;
+			}
 			const {
 				positionSide: shouldTrade,
 				sl,
@@ -187,6 +190,15 @@ export const snapshot = async ({
 		accPnl,
 		tradesQty,
 		winningPairs: JSON.stringify(winningPairs),
+		closedPositions: JSON.stringify(
+			closedPositions.map((p) => {
+				return {
+					...p,
+					startTime: getDate(p.startTime).dateString,
+					endTime: p.endTime ? getDate(p.endTime).dateString : null,
+				};
+			})
+		),
 	};
 
 	return stats;
