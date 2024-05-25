@@ -13,8 +13,9 @@ export const showAccStats = async () => {
 			maxAccPnl: formatPercent(Number(r.maxAccPnl)),
 			minAccPnl: formatPercent(Number(r.minAccPnl)),
 			accPnl: formatPercent(Number(r.accPnl)),
-			maxDrawdown: formatPercent(Number(r.maxDrawdown)),
+			minDrawdown: formatPercent(Number(r.minDrawdown)),
 			winRate: formatPercent(Number(r.winRate)),
+			avTradeLength: Number(r.avTradeLength).toFixed(2),
 		}))
 	);
 };

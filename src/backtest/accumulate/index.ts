@@ -52,7 +52,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	let maxAccPnl = 0;
 	let minAccPnl = 0;
 	let accPnl = 0;
-	let maxDrawdown = 0;
+	let minDrawdown = 0;
 
 	do {
 		const candlestickStartIndex = candleIndex - InitialParams.lookBackLength;
@@ -111,7 +111,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > maxDrawdown) maxDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
 				closedPositions.push({ ...openPosition, endTime: lastCandle.openTime });
 				candleIndex++;
 
@@ -133,7 +133,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > maxDrawdown) maxDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
 				closedPositions.push({ ...openPosition, endTime: lastCandle.openTime });
 
 				candleIndex++;
@@ -160,17 +160,13 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > maxDrawdown) maxDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
 				closedPositions.push({ ...openPosition, endTime: lastCandle.openTime });
-
 				candleIndex++;
-
 				openPosition = null;
-
 				continue;
 			}
 			openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
-
 			candleIndex++;
 			continue;
 		}
@@ -179,7 +175,10 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			const symbolOpened = readySymbols.find(
 				(s) => s.pair === tradeArray[0].symbol.pair
 			);
-			if (!symbolOpened) continue;
+			if (!symbolOpened) {
+				candleIndex++;
+				continue;
+			}
 			const startTime =
 				symbolOpened.candlestick[symbolOpened.candlestick.length - 1].openTime;
 			openPosition = {
@@ -192,6 +191,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				entryPriceUSDT:
 					symbolOpened.candlestick[symbolOpened.candlestick.length - 1].close,
 				stgName: tradeArray[0].stgResponse.stgName,
+				tradeLength: 0,
 			};
 
 			candleIndex++;
@@ -218,7 +218,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		maxAccPnl,
 		minAccPnl,
 		accPnl,
-		maxDrawdown: -maxDrawdown,
+		minDrawdown: -minDrawdown,
 		winRate,
 		avPnl: accPnl / tradesQty,
 		avTradeLength,

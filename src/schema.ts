@@ -15,7 +15,7 @@ export const statsAccBT = sqliteTable("statsAccBT", {
 	maxAccPnl: integer("maxAccPnl"),
 	minAccPnl: integer("minAccPnl"),
 	accPnl: integer("accPnl"),
-	maxDrawdown: integer("maxDrawdown"),
+	minDrawdown: integer("minDrawdown"),
 	winRate: integer("winRate"),
 	avPnl: integer("avPnl"),
 	avTradeLength: integer("avTradeLength"),
