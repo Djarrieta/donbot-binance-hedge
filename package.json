@@ -9,11 +9,12 @@
     "showBacktestData": "bun ./src/backtest/showBacktestData.ts",
 
     "saveSnapStats": "bun ./src/backtest/snapshot/saveSnapStats.ts",
+    "showFinalSnapStats": "bun ./src/backtest/snapshot/showFinalSnapStats.ts",
     "showSnapStats": "bun ./src/backtest/snapshot/showSnapStats.ts",
     "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
 
     "saveAccStats": "bun ./src/backtest/accumulate/saveAccStats.ts",
-    "saveFinalAccStats": "bun ./src/backtest/accumulate/saveFinalAccStats.ts",
+    "showFinalAccStats": "bun ./src/backtest/accumulate/showFinalAccStats.ts",
     "showAccStats": "bun ./src/backtest/accumulate/showAccStats.ts",
     "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
 
