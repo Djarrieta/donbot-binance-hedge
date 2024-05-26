@@ -17,4 +17,14 @@ console.table({
 	winRate: formatPercent(Number(r.winRate)),
 });
 
-console.log("Winning pairs for the first result:");
+// ┌────────────────┬────────┐
+// │                │ Values │
+// ├────────────────┼────────┤
+// │ maxTradeLength │ 300    │
+// │             sl │ 10.00% │
+// │             tp │ 10.00% │
+// │      tradesQty │ 71     │
+// │          avPnl │ 0.09%  │
+// │  avTradeLength │ 227.1  │
+// │        winRate │ 52.11% │
+// └────────────────┴────────┘

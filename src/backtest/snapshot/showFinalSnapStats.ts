@@ -19,3 +19,15 @@ console.table({
 
 console.log("Winning pairs for the first result:");
 console.log(JSON.parse(winningPairs as string));
+
+// ┌────────────────┬────────┐
+// │                │ Values │
+// ├────────────────┼────────┤
+// │ maxTradeLength │ 300    │
+// │             sl │ 10.00% │
+// │             tp │ 10.00% │
+// │      tradesQty │ 4788   │
+// │          avPnl │ 2.88%  │
+// │  avTradeLength │ 216.0  │
+// │        winRate │ 66.75% │
+// └────────────────┴────────┘
