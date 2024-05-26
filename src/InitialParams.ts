@@ -5,10 +5,10 @@ export const InitialParams = {
 
 	maxTradeLength: 300,
 	defaultSL: 10 / 100,
-	defaultTP: 5 / 100,
+	defaultTP: 7 / 100,
 
 	backtestSLArray: [5 / 100, 7 / 100, 10 / 100],
-	backtestTPArray: [7 / 100, 10 / 100, 12 / 100],
+	backtestTPArray: [3 / 100, 7 / 100, 10 / 100],
 	backtestMaxTradeLengthArray: [150, 300, 450],
 	lookBackLengthBacktest: (7 * Interval["1d"]) / Interval["5m"],
 
