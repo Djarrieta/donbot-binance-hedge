@@ -1,8 +1,8 @@
 import cliProgress from "cli-progress";
 import { InitialParams } from "../../InitialParams";
-import { db } from "../../db";
+import { db } from "../../db/db";
 import { accumulate } from ".";
-import { statsAccBT } from "../../schema";
+import { statsAccBT } from "../../db/schema";
 
 export const saveAccStats = async () => {
 	await db.delete(statsAccBT);

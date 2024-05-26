@@ -1,5 +1,5 @@
-import { db } from "../../db";
-import { statsAccBT } from "../../schema";
+import { db } from "../../db/db";
+import { statsAccBT } from "../../db/schema";
 
 export const getSortedAccResults = async () => {
 	const results = await db.select().from(statsAccBT);

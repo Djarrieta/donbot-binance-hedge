@@ -1,5 +1,5 @@
-import { db } from "../../db";
-import { statsSnapBT } from "../../schema";
+import { db } from "../../db/db";
+import { statsSnapBT } from "../../db/schema";
 
 export const getSortedSnapResults = async () => {
 	const results = await db.select().from(statsSnapBT);

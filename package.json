@@ -20,7 +20,7 @@
 
     "DBDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
     "DBCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",
-    "DBMigrate": "bun ./src/migrate.ts",
+    "DBMigrate": "bun ./src/db/migrate.ts",
     "DBRestart": "bun DBDelete && bun i && bun DBCreate && bun DBMigrate ",
     "lint": "bunx oxlint && tsc "
   },

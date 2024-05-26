@@ -1,7 +1,7 @@
-import { db } from "../db";
+import { db } from "../db/db";
 import type { Candle } from "../models/Candle";
 import { Interval } from "../models/Interval";
-import { symbolsBT } from "../schema";
+import { symbolsBT } from "../db/schema";
 import { getDate } from "../utils/getDate";
 
 export const showBacktestData = async () => {

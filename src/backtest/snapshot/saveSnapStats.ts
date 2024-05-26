@@ -1,8 +1,8 @@
 import cliProgress from "cli-progress";
 import { InitialParams } from "../../InitialParams";
-import { db } from "../../db";
+import { db } from "../../db/db";
 import type { Strategy } from "../../models/Strategy";
-import { statsSnapBT, type StatsSnapBT } from "../../schema";
+import { statsSnapBT, type StatsSnapBT } from "../../db/schema";
 import { snapshot } from ".";
 import { chosenStrategies } from "../../strategies";
 

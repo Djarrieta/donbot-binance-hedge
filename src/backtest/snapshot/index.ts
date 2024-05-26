@@ -1,9 +1,9 @@
 import { InitialParams } from "../../InitialParams";
-import { db } from "../../db";
+import { db } from "../../db/db";
 import type { Candle } from "../../models/Candle";
 import { type Position } from "../../models/Position";
 import { type Symbol } from "../../models/Symbol";
-import { symbolsBT, type StatsSnapBT } from "../../schema";
+import { symbolsBT, type StatsSnapBT } from "../../db/schema";
 import { checkForTrades } from "../../services/checkForTrades";
 import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
