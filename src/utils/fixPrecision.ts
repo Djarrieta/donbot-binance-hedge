@@ -1,9 +1,9 @@
 import Big from "big.js";
 
-export interface FixPrecisionProps {
+export type FixPrecisionProps = {
 	value: number;
 	precision: number;
-}
+};
 
 export const fixPrecision = ({ value, precision }: FixPrecisionProps) => {
 	let result = "0";

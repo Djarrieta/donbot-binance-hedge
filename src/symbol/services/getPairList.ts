@@ -1,5 +1,5 @@
 import Binance from "binance-api-node";
-import { InitialParams } from "../InitialParams";
+import { InitialParams } from "../../InitialParams";
 
 export const getPairList = async () => {
 	const pairList: string[] = [];

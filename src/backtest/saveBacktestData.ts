@@ -1,10 +1,10 @@
 import cliProgress from "cli-progress";
 import { InitialParams } from "../InitialParams";
 import { db } from "../db/db";
-import { getCandlestick } from "../services/getCandlestick";
+import { getCandlestick } from "../symbol/services/getCandlestick";
 import { getDate } from "../utils/getDate";
 import { symbolsBT } from "../db/schema";
-import { getPairList } from "../services/getPairList";
+import { getPairList } from "../symbol/services/getPairList";
 
 type SaveBacktestDataProps = { pairList: string[] };
 

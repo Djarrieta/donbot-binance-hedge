@@ -1,14 +1,14 @@
 import Binance, { type CandleChartInterval_LT } from "binance-api-node";
-import { getDate } from "../utils/getDate";
-import { Interval } from "../models/Interval";
-import type { Candle } from "../models/Candle";
+import { getDate } from "../../utils/getDate";
+import { Interval } from "../../models/Interval";
+import type { Candle } from "../../models/Candle";
 
-interface GetCandlestickProps {
+type GetCandlestickProps = {
 	pair: string;
 	interval: Interval;
 	lookBackLength: number;
 	apiLimit: number;
-}
+};
 
 export const getCandlestick = async ({
 	pair,

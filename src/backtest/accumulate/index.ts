@@ -2,7 +2,7 @@ import { InitialParams } from "../../InitialParams";
 import { db } from "../../db/db";
 import type { Candle } from "../../models/Candle";
 import type { Position } from "../../models/Position";
-import { type Symbol } from "../../models/Symbol";
+import { type Symbol } from "../../symbol/Symbol";
 import { symbolsBT, type StatsAccBT } from "../../db/schema";
 import { checkForTrades } from "../../services/checkForTrades";
 import { chosenStrategies } from "../../strategies";
