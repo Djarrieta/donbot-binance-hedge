@@ -1,5 +1,5 @@
 import Binance from "binance-api-node";
-import { InitialParams } from "../../InitialParams";
+import { params } from "../../Params";
 
 export const getPairList = async () => {
 	const pairList: string[] = [];
@@ -31,8 +31,8 @@ export const getPairList = async () => {
 			quoteAsset !== "USDT" ||
 			baseAsset === "USDT" ||
 			contractType !== "PERPETUAL" ||
-			minQuantityUSD > InitialParams.minAmountToTrade ||
-			minNotional > InitialParams.minAmountToTrade
+			minQuantityUSD > params.minAmountToTrade ||
+			minNotional > params.minAmountToTrade
 		) {
 			continue;
 		}

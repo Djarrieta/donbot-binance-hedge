@@ -1,6 +1,6 @@
 import { Interval } from "./models/Interval";
 
-export const InitialParams = {
+export const params = {
 	branch: "main" as "main" | "dev",
 
 	maxTradeLength: 300,
@@ -16,5 +16,7 @@ export const InitialParams = {
 	lookBackLength: 200,
 	fee: 0.0005,
 	minAmountToTrade: 6,
+	amountToTradePt: 50 / 100,
 	candlestickAPILimit: 500,
 };
+export type Params = typeof params;

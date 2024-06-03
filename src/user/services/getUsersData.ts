@@ -1,12 +1,12 @@
+import Binance from "binance-api-node";
+import { params } from "../../Params";
+import { Interval } from "../../models/Interval";
 import { ORDER_ID_DIV, OrderType, type Order } from "../../models/Order";
 import type { Position, PositionSide } from "../../models/Position";
-import type { User } from "../User";
 import { userSeedList } from "../../userSeed";
-import Binance from "binance-api-node";
-import { getDate } from "../../utils/getDate";
-import { InitialParams } from "../../InitialParams";
-import { Interval } from "../../models/Interval";
 import { formatPercent } from "../../utils/formatPercent";
+import { getDate } from "../../utils/getDate";
+import type { User } from "../User";
 import { getHistoricalPnl } from "./getHistoricalPnl";
 
 export const getUsersData = async () => {
@@ -90,7 +90,7 @@ export const getUsersData = async () => {
 			);
 
 			openPositions[posIndex].tradeLength =
-				(getDate().dateMs - startTimeMM) / InitialParams.interval;
+				(getDate().dateMs - startTimeMM) / params.interval;
 
 			if (
 				samePairPositions.length === 1 &&
@@ -204,7 +204,8 @@ export const getUsersData = async () => {
 			openPositions,
 			openOrders,
 			balanceUSDT,
-			totalPnlPt: 0,
+			totalPnlPt,
+			openPosPnlPt,
 			isAddingPosition: false,
 			text,
 		});

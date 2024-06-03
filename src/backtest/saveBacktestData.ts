@@ -1,5 +1,5 @@
 import cliProgress from "cli-progress";
-import { InitialParams } from "../InitialParams";
+import { Params } from "../Params";
 import { db } from "../db/db";
 import { getCandlestick } from "../symbol/services/getCandlestick";
 import { getDate } from "../utils/getDate";

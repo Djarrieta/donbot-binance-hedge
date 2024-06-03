@@ -1,10 +1,10 @@
-import { InitialParams } from "../../InitialParams";
+import { Params } from "../../Params";
 import { db } from "../../db/db";
 import type { Candle } from "../../models/Candle";
 import { type Position } from "../../models/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { symbolsBT, type StatsSnapBT } from "../../db/schema";
-import { checkForTrades } from "../../services/checkForTrades";
+import { checkForTrades } from "../../symbol/checkForTrades";
 import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";

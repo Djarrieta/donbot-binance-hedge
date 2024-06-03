@@ -2,7 +2,7 @@ import Binance from "binance-api-node";
 import type { Symbol } from "../Symbol";
 import { getPairList } from "./getPairList";
 import { getCandlestick } from "./getCandlestick";
-import { InitialParams } from "../../InitialParams";
+import { params } from "../../Params";
 
 export const getSymbolsData = async () => {
 	const exchange = Binance();
@@ -27,9 +27,9 @@ export const getSymbolsData = async () => {
 		);
 		const candlestick = await getCandlestick({
 			pair,
-			lookBackLength: InitialParams.lookBackLength,
-			interval: InitialParams.interval,
-			apiLimit: InitialParams.candlestickAPILimit,
+			lookBackLength: params.lookBackLength,
+			interval: params.interval,
+			apiLimit: params.candlestickAPILimit,
 		});
 		const currentPrice =
 			Number(candlestick[candlestick.length - 1]?.close) || 0;
@@ -39,8 +39,8 @@ export const getSymbolsData = async () => {
 			symbolInfo.quoteAsset !== "USDT" ||
 			symbolInfo.baseAsset === "USDT" ||
 			symbolInfo.contractType !== "PERPETUAL" ||
-			minQuantityUSD > InitialParams.minAmountToTrade ||
-			minNotional > InitialParams.minAmountToTrade
+			minQuantityUSD > params.minAmountToTrade ||
+			minNotional > params.minAmountToTrade
 		) {
 			continue;
 		}

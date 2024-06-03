@@ -9,6 +9,7 @@ export type User = {
 
 	openPositions: Position[];
 	openOrders: Order[];
+	openPosPnlPt: number;
 
 	balanceUSDT: number;
 	totalPnlPt: number;
