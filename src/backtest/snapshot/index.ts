@@ -1,4 +1,4 @@
-import { Params } from "../../Params";
+import { params } from "../../Params";
 import { db } from "../../db/db";
 import type { Candle } from "../../models/Candle";
 import { type Position } from "../../models/Position";
@@ -14,9 +14,9 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 
 	log &&
 		console.table({
-			sl: formatPercent(InitialParams.defaultSL),
-			tp: formatPercent(InitialParams.defaultTP),
-			maxTradeLength: InitialParams.maxTradeLength,
+			sl: formatPercent(params.defaultSL),
+			tp: formatPercent(params.defaultTP),
+			maxTradeLength: params.maxTradeLength,
 		});
 
 	const symbolList: Symbol[] = symbolsData.map((s) => {
@@ -47,13 +47,13 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 		throw new Error("No symbols found trying to backtest snapshot");
 	}
 
-	let candleIndex = InitialParams.lookBackLength;
+	let candleIndex = params.lookBackLength;
 	const closedPositions: Position[] = [];
 
 	do {
-		const candlestickStartIndex = candleIndex - InitialParams.lookBackLength;
+		const candlestickStartIndex = candleIndex - params.lookBackLength;
 		const candlestickEndIndex = candleIndex;
-		const profitStickEndIndex = candleIndex + InitialParams.maxTradeLength;
+		const profitStickEndIndex = candleIndex + params.maxTradeLength;
 
 		const readySymbols = symbolList.map((s) => {
 			return {
@@ -73,7 +73,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 			symbolList: readySymbols,
 			strategies: chosenStrategies,
 			logs: false,
-			interval: InitialParams.interval,
+			interval: params.interval,
 		});
 
 		for (const tradeCommand of tradeArray) {
@@ -104,7 +104,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 
 			const startTime = profitStick[0].openTime;
 			const endTime = getDate(
-				getDate(startTime).dateMs + tradeLength * InitialParams.interval
+				getDate(startTime).dateMs + tradeLength * params.interval
 			).date;
 
 			for (
@@ -120,7 +120,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 					(shouldTrade === "SHORT" &&
 						(candle.high >= stopLoss || candle.close >= stopLoss))
 				) {
-					pnl = -sl - InitialParams.fee;
+					pnl = -sl - params.fee;
 
 					closedPositions.push({
 						pair: openedSymbol.pair,
@@ -143,7 +143,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 					(shouldTrade === "SHORT" &&
 						(candle.low <= takeProfit || candle.close <= takeProfit))
 				) {
-					pnl = tp - InitialParams.fee;
+					pnl = tp - params.fee;
 
 					closedPositions.push({
 						pair: openedSymbol.pair,
@@ -183,7 +183,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 		candleIndex++;
 	} while (
 		candleIndex <=
-		InitialParams.lookBackLengthBacktest + InitialParams.lookBackLength
+		params.lookBackLengthBacktest + params.lookBackLength
 	);
 
 	const tradesQty = closedPositions.length;
@@ -212,9 +212,9 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 	}
 
 	const stats: StatsSnapBT = {
-		maxTradeLength: InitialParams.maxTradeLength,
-		sl: InitialParams.defaultSL,
-		tp: InitialParams.defaultTP,
+		maxTradeLength: params.maxTradeLength,
+		sl: params.defaultSL,
+		tp: params.defaultTP,
 		avPnl,
 		avTradeLength,
 		winRate,

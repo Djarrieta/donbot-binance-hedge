@@ -1,5 +1,5 @@
 import cliProgress from "cli-progress";
-import { Params } from "../../Params";
+import { params } from "../../Params";
 import { db } from "../../db/db";
 import { accumulate } from ".";
 import { statsAccBT } from "../../db/schema";
@@ -11,7 +11,7 @@ export const saveAccStats = async () => {
 		backtestSLArray: slArray,
 		backtestTPArray: tpArray,
 		backtestMaxTradeLengthArray: maxTradeLengthArray,
-	} = InitialParams;
+	} = params;
 
 	const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 	const progressBar = new cliProgress.SingleBar(
@@ -24,9 +24,9 @@ export const saveAccStats = async () => {
 	for (const maxTradeLength of maxTradeLengthArray) {
 		for (const tp of slArray) {
 			for (const sl of tpArray) {
-				InitialParams.defaultSL = sl;
-				InitialParams.defaultTP = tp;
-				InitialParams.maxTradeLength = maxTradeLength;
+				params.defaultSL = sl;
+				params.defaultTP = tp;
+				params.maxTradeLength = maxTradeLength;
 				const result = await accumulate({ log: false });
 
 				await db.insert(statsAccBT).values(result);

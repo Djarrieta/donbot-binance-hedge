@@ -4,20 +4,16 @@
   "type": "module",
   "scripts": {
     "start": "bun ./src/main.ts",
-
     "saveBacktestData": "bun ./src/backtest/saveBacktestData.ts",
     "showBacktestData": "bun ./src/backtest/showBacktestData.ts",
-
     "saveSnapStats": "bun ./src/backtest/snapshot/saveSnapStats.ts",
     "showFinalSnapStats": "bun ./src/backtest/snapshot/showFinalSnapStats.ts",
     "showSnapStats": "bun ./src/backtest/snapshot/showSnapStats.ts",
     "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
-
     "saveAccStats": "bun ./src/backtest/accumulate/saveAccStats.ts",
     "showFinalAccStats": "bun ./src/backtest/accumulate/showFinalAccStats.ts",
     "showAccStats": "bun ./src/backtest/accumulate/showAccStats.ts",
     "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
-
     "DBDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
     "DBCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",
     "DBMigrate": "bun ./src/db/migrate.ts",
@@ -34,11 +30,14 @@
   "dependencies": {
     "@types/big.js": "^6.2.2",
     "@types/cli-progress": "^3.11.5",
+    "@types/node-cron": "^3.0.11",
     "axios": "^1.6.8",
     "big.js": "^6.2.1",
     "binance-api-node": "^0.12.7",
     "cli-progress": "^3.12.0",
     "drizzle-orm": "^0.30.4",
+    "node-binance-api": "^0.13.1",
+    "node-cron": "^3.0.3",
     "technicalindicators": "^3.1.0"
   }
 }

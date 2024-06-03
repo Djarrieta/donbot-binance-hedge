@@ -1,4 +1,4 @@
-import { Params } from "../../Params";
+import { params } from "../../Params";
 import { db } from "../../db/db";
 import type { Candle } from "../../models/Candle";
 import type { Position } from "../../models/Position";
@@ -14,9 +14,9 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 	log &&
 		console.table({
-			sl: formatPercent(InitialParams.defaultSL),
-			tp: formatPercent(InitialParams.defaultTP),
-			maxTradeLength: InitialParams.maxTradeLength,
+			sl: formatPercent(params.defaultSL),
+			tp: formatPercent(params.defaultTP),
+			maxTradeLength: params.maxTradeLength,
 		});
 
 	const symbolList: Symbol[] = symbolsData.map((s) => {
@@ -46,7 +46,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		throw new Error("No symbols found");
 	}
 
-	let candleIndex = InitialParams.lookBackLength;
+	let candleIndex = params.lookBackLength;
 	let openPosition: Position | null = null;
 	const closedPositions: Position[] = [];
 	let maxAccPnl = 0;
@@ -55,7 +55,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	let minDrawdown = 0;
 
 	do {
-		const candlestickStartIndex = candleIndex - InitialParams.lookBackLength;
+		const candlestickStartIndex = candleIndex - params.lookBackLength;
 		const candlestickEndIndex = candleIndex;
 
 		const readySymbols = symbolList.map((s) => {
@@ -72,7 +72,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			symbolList: readySymbols,
 			strategies: chosenStrategies,
 			logs: false,
-			interval: InitialParams.interval,
+			interval: params.interval,
 		});
 
 		if (openPosition !== null) {
@@ -93,12 +93,12 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 			const stopLoss =
 				openPosition.positionSide === "LONG"
-					? openPosition.entryPriceUSDT * (1 - InitialParams.defaultSL)
-					: openPosition.entryPriceUSDT * (1 + InitialParams.defaultSL);
+					? openPosition.entryPriceUSDT * (1 - params.defaultSL)
+					: openPosition.entryPriceUSDT * (1 + params.defaultSL);
 			const takeProfit =
 				openPosition.positionSide === "LONG"
-					? openPosition.entryPriceUSDT * (1 + InitialParams.defaultTP)
-					: openPosition.entryPriceUSDT * (1 - InitialParams.defaultTP);
+					? openPosition.entryPriceUSDT * (1 + params.defaultTP)
+					: openPosition.entryPriceUSDT * (1 - params.defaultTP);
 
 			if (
 				(openPosition.positionSide === "LONG" &&
@@ -106,7 +106,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				(openPosition.positionSide === "SHORT" &&
 					(lastCandle.high >= stopLoss || lastCandle.close >= stopLoss))
 			) {
-				openPosition.pnl = -InitialParams.defaultSL - InitialParams.fee;
+				openPosition.pnl = -params.defaultSL - params.fee;
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
@@ -126,7 +126,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				(openPosition.positionSide === "SHORT" &&
 					(lastCandle.low <= takeProfit || lastCandle.close <= takeProfit))
 			) {
-				openPosition.pnl = InitialParams.defaultTP - InitialParams.fee;
+				openPosition.pnl = params.defaultTP - params.fee;
 
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 
@@ -142,10 +142,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 				continue;
 			}
-			if (
-				Number(openPosition.tradeLength) + 1 >=
-				InitialParams.maxTradeLength
-			) {
+			if (Number(openPosition.tradeLength) + 1 >= params.maxTradeLength) {
 				const pnlWithoutFee =
 					openPosition.positionSide === "LONG"
 						? (lastCandle.close - openPosition.entryPriceUSDT) /
@@ -153,7 +150,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 						: (openPosition.entryPriceUSDT - lastCandle.close) /
 						  openPosition.entryPriceUSDT;
 
-				openPosition.pnl = pnlWithoutFee - InitialParams.fee;
+				openPosition.pnl = pnlWithoutFee - params.fee;
 
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 
@@ -200,7 +197,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		candleIndex++;
 	} while (
 		candleIndex <=
-		InitialParams.lookBackLengthBacktest + InitialParams.lookBackLength
+		params.lookBackLengthBacktest + params.lookBackLength
 	);
 
 	const tradesQty = closedPositions.length;
@@ -211,9 +208,9 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
 			tradesQty || 0;
 	const stats: StatsAccBT = {
-		maxTradeLength: InitialParams.maxTradeLength,
-		sl: InitialParams.defaultSL,
-		tp: InitialParams.defaultTP,
+		maxTradeLength: params.maxTradeLength,
+		sl: params.defaultSL,
+		tp: params.defaultTP,
 		tradesQty,
 		maxAccPnl,
 		minAccPnl,

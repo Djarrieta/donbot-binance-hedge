@@ -1,5 +1,5 @@
 import cliProgress from "cli-progress";
-import { Params } from "../Params";
+import { params } from "../Params";
 import { db } from "../db/db";
 import { getCandlestick } from "../symbol/services/getCandlestick";
 import { getDate } from "../utils/getDate";
@@ -22,10 +22,9 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 
 		const candlestick = await getCandlestick({
 			pair,
-			interval: InitialParams.interval,
-			lookBackLength:
-				InitialParams.lookBackLengthBacktest + InitialParams.lookBackLength,
-			apiLimit: InitialParams.candlestickAPILimit,
+			interval: params.interval,
+			lookBackLength: params.lookBackLengthBacktest + params.lookBackLength,
+			apiLimit: params.candlestickAPILimit,
 		});
 		const fixedDateCandlestick = candlestick.map((c) => {
 			return {

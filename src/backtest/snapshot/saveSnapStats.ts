@@ -1,5 +1,5 @@
 import cliProgress from "cli-progress";
-import { Params } from "../../Params";
+import { params } from "../../Params";
 import { db } from "../../db/db";
 import type { Strategy } from "../../models/Strategy";
 import { statsSnapBT, type StatsSnapBT } from "../../db/schema";
@@ -34,9 +34,9 @@ export const saveSnapStats = async ({
 	for (const maxTradeLength of maxTradeLengthArray) {
 		for (const tp of slArray) {
 			for (const sl of tpArray) {
-				InitialParams.defaultSL = sl;
-				InitialParams.defaultTP = tp;
-				InitialParams.maxTradeLength = maxTradeLength;
+				params.defaultSL = sl;
+				params.defaultTP = tp;
+				params.maxTradeLength = maxTradeLength;
 				let results: StatsSnapBT[] = [];
 				const result = await snapshot({ log: false });
 				results.push(result);
@@ -51,8 +51,8 @@ export const saveSnapStats = async ({
 };
 
 await saveSnapStats({
-	slArray: InitialParams.backtestSLArray,
-	tpArray: InitialParams.backtestTPArray,
-	maxTradeLengthArray: InitialParams.backtestMaxTradeLengthArray,
+	slArray: params.backtestSLArray,
+	tpArray: params.backtestTPArray,
+	maxTradeLengthArray: params.backtestMaxTradeLengthArray,
 	strategies: chosenStrategies,
 });

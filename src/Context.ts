@@ -6,6 +6,8 @@ import type { PositionSide, Position } from "./models/Position";
 import { protectPositionService } from "./user/services/protectPositionService";
 import { openPositionService } from "./user/services/openPositionService";
 import { quitPositionService } from "./user/services/quitPositionService";
+import type { Candle } from "./models/Candle";
+import { getDate } from "./utils/getDate";
 
 type constructorProps = {
 	userList: User[];
@@ -214,5 +216,74 @@ export class Context {
 		});
 
 		this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
+	}
+	updateSymbol({
+		pair,
+		candlestick,
+		currentPrice,
+	}: {
+		pair: string;
+		candlestick?: Candle[];
+		currentPrice?: number;
+	}) {
+		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
+		if (symbolIndex === -1) {
+			return;
+		}
+		const prevOpenTime = getDate(
+			this.symbolList[symbolIndex].candlestick[
+				this.symbolList[symbolIndex].candlestick.length - 1
+			].openTime
+		).dateString;
+		const newOpenTime = getDate(
+			candlestick?.[candlestick?.length - 1]?.openTime
+		).dateString;
+		if (
+			candlestick?.length === this.symbolList[symbolIndex].candlestick.length &&
+			newOpenTime !== prevOpenTime
+		) {
+			this.symbolList[symbolIndex].candlestick = candlestick;
+			this.symbolList[symbolIndex].currentPrice =
+				candlestick[candlestick.length - 1].close;
+		}
+		if (!candlestick?.length && currentPrice) {
+			this.symbolList[symbolIndex].currentPrice = currentPrice;
+		}
+
+		if (!this.symbolList[symbolIndex].candlestick.length) {
+			this.symbolList[symbolIndex].isReady = false;
+			return;
+		}
+
+		const lastOpenTime =
+			this.symbolList[symbolIndex].candlestick[
+				this.symbolList[symbolIndex].candlestick.length - 1
+			].openTime;
+		const lastDiff =
+			(getDate().dateMs - getDate(lastOpenTime).dateMs) / params.interval;
+
+		if (lastDiff > 2) {
+			this.symbolList[symbolIndex].isReady = false;
+			return;
+		}
+
+		for (
+			let index = 0;
+			index < this.symbolList[symbolIndex].candlestick.length - 1;
+			index++
+		) {
+			const currentCandle = this.symbolList[symbolIndex].candlestick[index];
+			const nextCandle = this.symbolList[symbolIndex].candlestick[index + 1];
+
+			const candlesDifference =
+				(getDate(nextCandle.openTime).dateMs -
+					getDate(currentCandle.openTime).dateMs) /
+				params.interval;
+
+			if (candlesDifference !== 1) {
+				this.symbolList[symbolIndex].isReady = false;
+				return;
+			}
+		}
 	}
 }
