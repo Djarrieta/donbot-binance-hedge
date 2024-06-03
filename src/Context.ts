@@ -8,6 +8,7 @@ import { openPositionService } from "./user/services/openPositionService";
 import { quitPositionService } from "./user/services/quitPositionService";
 import type { Candle } from "./models/Candle";
 import { getDate } from "./utils/getDate";
+import type { Order } from "./models/Order";
 
 type constructorProps = {
 	userList: User[];
@@ -284,6 +285,26 @@ export class Context {
 				this.symbolList[symbolIndex].isReady = false;
 				return;
 			}
+		}
+	}
+	updateUser({
+		userName,
+		newOpenPositions,
+		newOpenOrders,
+	}: {
+		userName: string;
+		newOpenPositions?: Position[];
+		newOpenOrders?: Order[];
+	}) {
+		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		if (userIndex === -1) return;
+
+		if (newOpenPositions) {
+			this.userList[userIndex].openPositions = newOpenPositions;
+		}
+
+		if (newOpenOrders) {
+			this.userList[userIndex].openOrders = newOpenOrders;
 		}
 	}
 }
