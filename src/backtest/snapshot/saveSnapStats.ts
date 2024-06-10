@@ -1,7 +1,7 @@
 import cliProgress from "cli-progress";
 import { params } from "../../Params";
 import { db } from "../../db/db";
-import type { Strategy } from "../../models/Strategy";
+import type { Strategy } from "../../strategies/Strategy";
 import { statsSnapBT, type StatsSnapBT } from "../../db/schema";
 import { snapshot } from ".";
 import { chosenStrategies } from "../../strategies";

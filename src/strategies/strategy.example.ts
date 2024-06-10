@@ -1,5 +1,5 @@
 import { rsi } from "technicalindicators";
-import type { Strategy, StrategyResponse } from "../models/Strategy";
+import type { Strategy, StrategyResponse } from "./Strategy";
 import { params } from "../Params";
 import { getVolatility } from "../utils/getVolatility";
 

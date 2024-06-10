@@ -15,6 +15,9 @@ type constructorProps = {
 	symbolList: Symbol[];
 };
 export class Context {
+	symbolList: Symbol[] = [];
+	userList: User[] = [];
+
 	private constructor({ userList, symbolList }: constructorProps) {
 		this.userList = userList;
 		this.symbolList = symbolList;
@@ -32,100 +35,6 @@ export class Context {
 		Context.instance = null;
 	}
 
-	symbolList: Symbol[] = [];
-	userList: User[] = [];
-
-	async manageExistingPositions({ userName }: { userName: string }) {
-		const userIndex = this.userList.findIndex((x) => x.name === userName);
-		if (userIndex === -1) return;
-
-		const openOrdersUniquePairs = Array.from(
-			new Set(this.userList[userIndex].openOrders.map((x) => x.pair))
-		);
-		const openPosUniquePairs = Array.from(
-			new Set(this.userList[userIndex].openPositions.map((x) => x.pair))
-		);
-		const hedgePosUniquePairs = Array.from(
-			new Set(
-				this.userList[userIndex].openPositions
-					.filter((p) => p.status === "HEDGED")
-					.map((x) => x.pair)
-			)
-		);
-		const unprotectedPosUniquePairs = Array.from(
-			new Set(
-				this.userList[userIndex].openPositions
-					.filter((p) => p.status === "UNPROTECTED")
-					.map((x) => x.pair)
-			)
-		);
-
-		//Cancel orders when no open positions
-		for (const pair of openOrdersUniquePairs) {
-			if (openPosUniquePairs.includes(pair)) continue;
-
-			console.log(
-				"Canceling orders for " + this.userList[userIndex].name + " in " + pair
-			);
-			await this.cancelOrders({ userName, pair });
-		}
-
-		//Cancel orders for Hedge positions
-		for (const pair of hedgePosUniquePairs) {
-			const openOrders = this.userList[userIndex].openOrders.filter(
-				(o) => o.pair === pair
-			);
-
-			if (openOrders.length >= 1) {
-				console.log(
-					"Canceling orders for " +
-						this.userList[userIndex].name +
-						" in " +
-						pair
-				);
-				await this.cancelOrders({ userName, pair });
-			}
-		}
-
-		//Protect unprotected positions
-		for (const pair of unprotectedPosUniquePairs) {
-			console.log(
-				"Protecting position for " +
-					this.userList[userIndex].name +
-					" in " +
-					pair
-			);
-			const symbol = this.symbolList.find((s) => s.pair === pair);
-			if (!symbol) continue;
-			await this.protectPosition({ userName, symbol, positionSide: "LONG" });
-		}
-
-		//Quit if total Pnl > hedge open PosPnl
-		for (const pair of hedgePosUniquePairs) {
-			const openPosSamePair = this.userList[userIndex].openPositions.filter(
-				(p) => p.pair === pair
-			);
-			const samePairOpenPosPnlPt = openPosSamePair.reduce((acc, pos) => {
-				return acc + pos.pnl;
-			}, 0);
-			const symbol = this.symbolList.find((s) => s.pair === pair);
-			if (!symbol) continue;
-
-			if (this.userList[userIndex].totalPnlPt + samePairOpenPosPnlPt > 0) {
-				for (const pos of openPosSamePair) {
-					if (!pos.coinQuantity) continue;
-					console.log("Quit Hedged position for " + pos.pair);
-					await this.quitPosition({
-						user: this.userList[userIndex],
-						positionSide: pos.positionSide,
-						symbol,
-						coinQuantity: pos.coinQuantity,
-					});
-				}
-				return;
-			}
-		}
-	}
 	async quitPosition(props: {
 		user: User;
 		symbol: Symbol;
@@ -134,7 +43,6 @@ export class Context {
 	}) {
 		await quitPositionService(props);
 	}
-
 	async cancelOrders({ userName, pair }: { userName: string; pair: string }) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;

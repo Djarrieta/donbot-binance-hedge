@@ -7,17 +7,55 @@ import { subscribeToSymbolUpdates } from "./symbol/services/subscribeToSymbolUpd
 import { getUsersData } from "./user/services/getUsersData";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
+import { handleExistingPositions } from "./handlers/handleExistingPositions";
+import { checkForTrades } from "./symbol/checkForTrades";
+import { chosenStrategies } from "./strategies";
+import { handleNewPosition } from "./handlers/handleNewPositions";
 
 const trade = async () => {
+	//Restart model every 8 hours
 	cron.schedule(CronInterval["8h"], async () => {
 		await startModel();
 	});
+
+	//Check for new trades
 	cron.schedule(CronInterval["5m"], async () => {
 		const context = await Context.getInstance();
+		if (!context) return;
 		await delay(1000);
 		console.log("");
 		console.log(getDate().dateString, "Checking for trades!");
+
+		const readySymbols = [...context.symbolList]
+			.filter((s) => s.isReady)
+			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
+
+		const { text: tradeArrayText, tradeArray } = await checkForTrades({
+			symbolList: readySymbols,
+			interval: params.interval,
+			strategies: chosenStrategies,
+			logs: false,
+		});
+
+		if (tradeArray.length) {
+			console.log(tradeArrayText);
+
+			for (const user of context.userList) {
+				for (const trade of tradeArray) {
+					trade.stgResponse.positionSide &&
+						handleNewPosition({
+							user,
+							pair: trade.symbol.pair,
+							positionSide: trade.stgResponse.positionSide,
+						});
+				}
+			}
+		} else {
+			console.log("No trades found");
+		}
 	});
+
+	//Subscribe to symbol and user updates
 	{
 		const context = await Context.getInstance();
 		if (!context) return;
@@ -51,7 +89,7 @@ const startModel = async () => {
 	for (const user of context.userList) {
 		try {
 			const func = async () => {
-				await context.manageExistingPositions({ userName: user.name });
+				await handleExistingPositions({ user });
 			};
 			func();
 		} catch (e) {
