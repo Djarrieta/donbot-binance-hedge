@@ -6,6 +6,7 @@ export const getPairList = async () => {
 	const exchange = Binance();
 	const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
 	const prices = await exchange.futuresMarkPrice();
+	//TBD: Remove slice
 	for (const symbol of unformattedList) {
 		const {
 			symbol: pair,

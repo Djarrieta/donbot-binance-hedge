@@ -15,7 +15,6 @@ export const getSymbolsData = async () => {
 		const symbolInfo = symbolListInfo.symbols.find(
 			(p) => p.symbol === pair
 		) as any;
-		console.log(symbolInfo);
 		if (!symbolInfo) continue;
 
 		const minQty = Number(

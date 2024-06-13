@@ -31,9 +31,6 @@ export class Context {
 			return Context.instance;
 		}
 	}
-	public static async resetInstance() {
-		Context.instance = null;
-	}
 
 	async quitPosition(props: {
 		user: User;
