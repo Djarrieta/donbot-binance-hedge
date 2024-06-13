@@ -51,6 +51,8 @@ const handleOrderUpdate = async ({
 			const context = await Context.getInstance();
 			if (!context) return;
 
+			context.cancelOrders({ userName: user.name, pair });
+
 			await authExchange.futuresCancelAllOpenOrders({
 				symbol: pair,
 			});
@@ -59,6 +61,7 @@ const handleOrderUpdate = async ({
 			context.updateUser({
 				userName: user.name,
 				newOpenPositions: user.openPositions.filter((p) => p.pair !== pair),
+				newOpenOrders: user.openOrders.filter((o) => o.pair !== pair),
 			});
 
 			if (orderType === OrderType.PROFIT || orderType === OrderType.BREAK) {

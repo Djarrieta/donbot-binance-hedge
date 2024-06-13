@@ -11,6 +11,7 @@ import { handleExistingPositions } from "./handlers/handleExistingPositions";
 import { checkForTrades } from "./symbol/checkForTrades";
 import { chosenStrategies } from "./strategies";
 import { handleNewPosition } from "./handlers/handleNewPositions";
+import { subscribeToUserUpdates } from "./user/services/subscribeToUserUpdates";
 
 const trade = async () => {
 	//Restart model every 8 hours
@@ -19,53 +20,57 @@ const trade = async () => {
 	});
 
 	//Check for new trades
-	cron.schedule(CronInterval["5m"], async () => {
-		const context = await Context.getInstance();
-		if (!context) return;
-		await delay(1000);
-		console.log("");
-		console.log(getDate().dateString, "Checking for trades!");
+	// cron.schedule(CronInterval["5m"], async () => {
+	// 	const context = await Context.getInstance();
+	// 	if (!context) return;
+	// 	await delay(1000);
+	// 	console.log("");
+	// 	console.log(getDate().dateString, "Checking for trades!");
 
-		const readySymbols = [...context.symbolList]
-			.filter((s) => s.isReady)
-			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
+	// 	const readySymbols = [...context.symbolList]
+	// 		.filter((s) => s.isReady)
+	// 		.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 
-		const { text: tradeArrayText, tradeArray } = await checkForTrades({
-			symbolList: readySymbols,
-			interval: params.interval,
-			strategies: chosenStrategies,
-			logs: false,
-		});
+	// 	const { text: tradeArrayText, tradeArray } = await checkForTrades({
+	// 		symbolList: readySymbols,
+	// 		interval: params.interval,
+	// 		strategies: chosenStrategies,
+	// 		logs: false,
+	// 	});
 
-		if (tradeArray.length) {
-			console.log(tradeArrayText);
+	// 	if (tradeArray.length) {
+	// 		console.log(tradeArrayText);
 
-			for (const user of context.userList) {
-				for (const trade of tradeArray) {
-					trade.stgResponse.positionSide &&
-						handleNewPosition({
-							user,
-							pair: trade.symbol.pair,
-							positionSide: trade.stgResponse.positionSide,
-						});
-				}
-			}
-		} else {
-			console.log("No trades found");
-		}
-	});
+	// 		for (const user of context.userList) {
+	// 			for (const trade of tradeArray) {
+	// 				trade.stgResponse.positionSide &&
+	// 					handleNewPosition({
+	// 						user,
+	// 						pair: trade.symbol.pair,
+	// 						positionSide: trade.stgResponse.positionSide,
+	// 					});
+	// 			}
+	// 		}
+	// 	} else {
+	// 		console.log("No trades found");
+	// 	}
+	// });
 
 	//Subscribe to symbol and user updates
-	{
-		const context = await Context.getInstance();
-		if (!context) return;
-		for (const symbol of context.symbolList) {
-			subscribeToSymbolUpdates({
-				pair: symbol.pair,
-				interval: params.interval,
-			});
-		}
-	}
+	// {
+	// 	const context = await Context.getInstance();
+	// 	if (!context) return;
+	// 	for (const symbol of context.symbolList) {
+	// 		subscribeToSymbolUpdates({
+	// 			pair: symbol.pair,
+	// 			interval: params.interval,
+	// 		});
+	// 	}
+
+	// 	for (const user of context.userList) {
+	// 		subscribeToUserUpdates({ user });
+	// 	}
+	// }
 };
 trade();
 
@@ -87,13 +92,6 @@ const startModel = async () => {
 	if (!context) return;
 
 	for (const user of context.userList) {
-		try {
-			const func = async () => {
-				await handleExistingPositions({ user });
-			};
-			func();
-		} catch (e) {
-			console.error(e);
-		}
+		await handleExistingPositions({ user });
 	}
 };
