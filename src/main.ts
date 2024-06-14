@@ -7,29 +7,27 @@ import { subscribeToSymbolUpdates } from "./symbol/services/subscribeToSymbolUpd
 import { getUsersData } from "./user/services/getUsersData";
 import { delay } from "./utils/delay";
 import { getDate } from "./utils/getDate";
-import { handleExistingPositions } from "./handlers/handleExistingPositions";
-import { checkForTrades } from "./symbol/checkForTrades";
 import { chosenStrategies } from "./strategies";
-import { handleNewPosition } from "./handlers/handleNewPositions";
 import { subscribeToUserUpdates } from "./user/services/subscribeToUserUpdates";
 
 const trade = async () => {
-	//Start model every 8 hours
-	const symbolList = await getSymbolsData();
-	const userList = await getUsersData();
-	const context = await Context.getInstance({
-		symbolList,
-		userList,
-	});
-	console.log(getDate().dateString);
+	//Start model
+	{
+		const symbolList = await getSymbolsData();
+		const userList = await getUsersData();
+		const context = await Context.getInstance({
+			symbolList,
+			userList,
+			strategies: chosenStrategies,
+		});
+		console.log(getDate().dateString);
 
-	console.log(
-		"Users: " + context?.userList.map((u) => u.name?.split(" ")[0]).join(", ")
-	);
+		if (!context) return;
 
-	if (!context) return;
-	for (const user of context.userList) {
-		await handleExistingPositions({ user });
+		console.log(context.text);
+		for (const user of context.userList) {
+			await context.handleExistingPositions({ userName: user.name });
+		}
 	}
 
 	//Check for new trades
@@ -40,33 +38,37 @@ const trade = async () => {
 		console.log("");
 		console.log(getDate().dateString, "Checking for trades!");
 
-		const readySymbols = [...context.symbolList]
-			.filter((s) => s.isReady)
-			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
-
-		const { text: tradeArrayText, tradeArray } = await checkForTrades({
-			symbolList: readySymbols,
-			interval: params.interval,
-			strategies: chosenStrategies,
+		const { text, tradeArray } = context.checkForTrades({
 			logs: false,
 		});
 
 		if (tradeArray.length) {
-			console.log(tradeArrayText);
-
+			console.log(text);
 			for (const user of context.userList) {
 				for (const trade of tradeArray) {
-					trade.stgResponse.positionSide &&
-						handleNewPosition({
-							user,
+					if (trade.stgResponse.positionSide) {
+						const props = {
+							userName: user.name,
 							pair: trade.symbol.pair,
 							positionSide: trade.stgResponse.positionSide,
-						});
+						};
+						try {
+							context.handleNewPosition(props);
+						} catch (_) {
+							console.log("Failed to open position", props);
+						}
+					}
 				}
 			}
 		} else {
 			console.log("No trades found");
 		}
+		await delay(5000);
+		context.updateUsers({ userList: await getUsersData() });
+		for (const user of context.userList) {
+			await context.handleExistingPositions({ userName: user.name });
+		}
+		context.updateUsers({ userList: await getUsersData() });
 	});
 
 	//Subscribe to symbol and user updates
