@@ -1,10 +1,10 @@
-import Binance, { type Binance as IBinance } from "binance-api-node";
+import Binance from "binance-api-node";
+import { params } from "../../Params";
 import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
 import type { User } from "../User";
-import { params } from "../../Params";
 
 interface OpenPositionServiceProps {
 	user: User;

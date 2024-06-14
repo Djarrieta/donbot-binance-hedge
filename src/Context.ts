@@ -48,7 +48,6 @@ export class Context {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
 		if (this.userList[userIndex].isAddingPosition) return;
-		this.userList[userIndex].isAddingPosition = true;
 
 		const hedgedPosUniquePairs = Array.from(
 			new Set(
@@ -89,22 +88,18 @@ export class Context {
 			this.userList[userIndex].isAddingPosition ||
 			openPosUniquePairs.includes(pair)
 		) {
-			this.userList[userIndex].isAddingPosition = false;
 			return;
 		}
 		const symbol = this.symbolList.find((s) => s.pair === pair);
 
 		if (!symbol) {
-			this.userList[userIndex].isAddingPosition = false;
 			return;
 		}
-
 		await this.openPosition({
 			userName,
 			pair,
 			positionSide,
 		});
-		this.userList[userIndex].isAddingPosition = false;
 	}
 
 	async handleExistingPositions({ userName }: { userName: string }) {
@@ -325,6 +320,7 @@ export class Context {
 			(p) => p.pair === pair
 		);
 		if (symbolIndex === -1) return;
+		this.userList[userIndex].isAddingPosition = true;
 
 		await this.cancelOrders({ userName, pair });
 		const sl =

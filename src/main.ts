@@ -35,6 +35,7 @@ const trade = async () => {
 		const context = await Context.getInstance();
 		if (!context) return;
 		await delay(1000);
+		console.log("");
 		console.log(getDate().dateString, "Checking for trades!");
 		console.log(context.text());
 
@@ -72,7 +73,7 @@ const trade = async () => {
 	});
 
 	//Subscribe to symbol and user updates
-	{
+	cron.schedule(CronInterval["15m"], async () => {
 		const context = await Context.getInstance();
 		if (!context) return;
 		for (const symbol of context.symbolList) {
@@ -85,6 +86,6 @@ const trade = async () => {
 		for (const user of context.userList) {
 			subscribeToUserUpdates({ user });
 		}
-	}
+	});
 };
 trade();
