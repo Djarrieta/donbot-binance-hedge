@@ -274,7 +274,6 @@ export class Context {
 
 		return response;
 	}
-
 	async quitPosition({
 		userName,
 		pair,
@@ -499,8 +498,13 @@ export class Context {
 		this.userList = userList;
 	}
 	text() {
-		return `Users: ${this.userList
+		const userText = `Users: ${this.userList
 			.map((u) => u.name?.split(" ")[0])
 			.join(", ")}`;
+		const symbolText = `Symbols: ${
+			this.symbolList.filter((s) => s.isReady).length
+		} ready of ${this.symbolList.length}.`;
+
+		return `${userText}\n${symbolText}`;
 	}
 }
