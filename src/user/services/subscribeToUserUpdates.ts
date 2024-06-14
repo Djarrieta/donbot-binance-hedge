@@ -55,11 +55,11 @@ const handleOrderUpdate = async ({
 
 			if (!context.userList.length) return;
 
-			context.updateUser({
+			context.clearPositions({
 				userName: user.name,
-				newOpenPositions: user.openPositions.filter((p) => p.pair !== pair),
-				newOpenOrders: user.openOrders.filter((o) => o.pair !== pair),
+				pair,
 			});
+			context.clearOrders({ userName: user.name, pair });
 
 			return;
 		}
@@ -74,6 +74,7 @@ const handleOrderUpdate = async ({
 			const context = await Context.getInstance();
 			if (!context) return;
 			context.cancelOrders({ userName: user.name, pair });
+
 			return;
 		}
 	}

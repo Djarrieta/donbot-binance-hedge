@@ -10,25 +10,30 @@ import { getDate } from "./utils/getDate";
 import { chosenStrategies } from "./strategies";
 import { subscribeToUserUpdates } from "./user/services/subscribeToUserUpdates";
 
+const startModel = async () => {
+	const symbolList = await getSymbolsData();
+	const userList = await getUsersData();
+	const context = await Context.getInstance({
+		symbolList,
+		userList,
+		strategies: chosenStrategies,
+	});
+	console.log(getDate().dateString);
+
+	if (!context) return;
+
+	console.log(context.text());
+	for (const user of context.userList) {
+		await context.handleExistingPositions({ userName: user.name });
+	}
+};
+
 const trade = async () => {
 	//Start model
-	{
-		const symbolList = await getSymbolsData();
-		const userList = await getUsersData();
-		const context = await Context.getInstance({
-			symbolList,
-			userList,
-			strategies: chosenStrategies,
-		});
-		console.log(getDate().dateString);
-
-		if (!context) return;
-
-		console.log(context.text());
-		for (const user of context.userList) {
-			await context.handleExistingPositions({ userName: user.name });
-		}
-	}
+	await startModel();
+	cron.schedule(CronInterval["5m"], async () => {
+		startModel();
+	});
 
 	//Check for new trades
 	cron.schedule(CronInterval["5m"], async () => {
@@ -53,11 +58,7 @@ const trade = async () => {
 							pair: trade.symbol.pair,
 							positionSide: trade.stgResponse.positionSide,
 						};
-						try {
-							context.handleNewPosition(props);
-						} catch (_) {
-							console.log("Failed to open position", props);
-						}
+						context.handleNewPosition(props);
 					}
 				}
 			}

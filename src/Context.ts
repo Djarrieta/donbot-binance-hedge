@@ -294,15 +294,15 @@ export class Context {
 			positionSide,
 			coinQuantity,
 		});
+
+		this.clearPositions({ userName, pair });
 	}
 	async cancelOrders({ userName, pair }: { userName: string; pair: string }) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
 
 		await cancelOrdersService({ user: this.userList[userIndex], pair });
-		this.userList[userIndex].openOrders = this.userList[
-			userIndex
-		].openOrders.filter((o) => o.pair !== pair);
+		this.clearOrders({ userName, pair });
 	}
 	async openPosition({
 		userName,
@@ -323,6 +323,7 @@ export class Context {
 		this.userList[userIndex].isAddingPosition = true;
 
 		await this.cancelOrders({ userName, pair });
+
 		const sl =
 			positionSide === "LONG"
 				? this.symbolList[symbolIndex].currentPrice * (1 - params.defaultSL)
@@ -343,6 +344,15 @@ export class Context {
 			price: this.symbolList[symbolIndex].currentPrice,
 			sl,
 			tp,
+		});
+		this.userList[userIndex].openPositions.push({
+			pair,
+			positionSide,
+			coinQuantity,
+			startTime: getDate().date,
+			status: "PROTECTED",
+			pnl: 0,
+			entryPriceUSDT: this.symbolList[symbolIndex].currentPrice,
 		});
 	}
 	async protectPosition({
@@ -469,26 +479,30 @@ export class Context {
 			this.symbolList[symbolIndex].isReady = true;
 		}
 	}
-	updateUser({
-		userName,
-		newOpenPositions,
-		newOpenOrders,
-	}: {
-		userName: string;
-		newOpenPositions?: Position[];
-		newOpenOrders?: Order[];
-	}) {
+
+	clearPositions({ userName, pair }: { userName: string; pair?: string }) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
-
-		if (newOpenPositions) {
-			this.userList[userIndex].openPositions = newOpenPositions;
+		if (pair) {
+			this.userList[userIndex].openPositions = this.userList[
+				userIndex
+			].openPositions.filter((p) => p.pair !== pair);
+			return;
 		}
-
-		if (newOpenOrders) {
-			this.userList[userIndex].openOrders = newOpenOrders;
-		}
+		this.userList[userIndex].openPositions = [];
 	}
+	clearOrders({ userName, pair }: { userName: string; pair?: string }) {
+		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		if (userIndex === -1) return;
+		if (pair) {
+			this.userList[userIndex].openOrders = this.userList[
+				userIndex
+			].openOrders.filter((p) => p.pair !== pair);
+			return;
+		}
+		this.userList[userIndex].openOrders = [];
+	}
+
 	updateUsers({ userList }: { userList?: User[] }) {
 		if (!userList) return;
 		this.userList = userList;
