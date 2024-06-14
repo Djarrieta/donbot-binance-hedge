@@ -1,6 +1,6 @@
 import { type CandleChartInterval_LT } from "binance-api-node";
 import OldBinance from "node-binance-api";
-import { Interval } from "../../models/Interval";
+import { Interval } from "../../sharedModels/Interval";
 import { Context } from "../../Context";
 import { getDate } from "../../utils/getDate";
 

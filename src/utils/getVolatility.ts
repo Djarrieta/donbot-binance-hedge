@@ -1,4 +1,4 @@
-import type { Candle } from "../models/Candle";
+import type { Candle } from "../sharedModels/Candle";
 
 export const getVolatility = ({ candlestick }: { candlestick: Candle[] }) => {
 	const { close: lastPrice } = candlestick[candlestick.length - 1];

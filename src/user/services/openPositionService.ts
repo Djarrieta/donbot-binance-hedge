@@ -1,6 +1,6 @@
 import Binance, { type Binance as IBinance } from "binance-api-node";
-import { ORDER_ID_DIV, OrderType } from "../../models/Order";
-import type { PositionSide } from "../../models/Position";
+import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
+import type { PositionSide } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
 import type { User } from "../User";

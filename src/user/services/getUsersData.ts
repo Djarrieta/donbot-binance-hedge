@@ -1,8 +1,8 @@
 import Binance from "binance-api-node";
 import { params } from "../../Params";
-import { Interval } from "../../models/Interval";
-import { ORDER_ID_DIV, OrderType, type Order } from "../../models/Order";
-import type { Position, PositionSide } from "../../models/Position";
+import { Interval } from "../../sharedModels/Interval";
+import { ORDER_ID_DIV, OrderType, type Order } from "../../sharedModels/Order";
+import type { Position, PositionSide } from "../../sharedModels/Position";
 import { userSeedList } from "../../userSeed";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";

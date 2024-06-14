@@ -1,6 +1,6 @@
-import type { Candle } from "../models/Candle";
-import type { Interval } from "../models/Interval";
-import type { PositionSide } from "../models/Position";
+import type { Candle } from "../sharedModels/Candle";
+import type { Interval } from "../sharedModels/Interval";
+import type { PositionSide } from "../sharedModels/Position";
 
 export type StrategyResponse = {
 	stgName: string;

@@ -39,7 +39,7 @@ export const saveSnapStats = async ({
 				params.maxTradeLength = maxTradeLength;
 				let results: StatsSnapBT[] = [];
 				const result = await snapshot({ log: false });
-				results.push(result);
+				result && results.push(result);
 				await db.insert(statsSnapBT).values(results);
 				loop++;
 				progressBar.update(loop);

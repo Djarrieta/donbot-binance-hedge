@@ -1,6 +1,6 @@
 import Binance, { type FuturesUserTradeResult } from "binance-api-node";
 import { getDate } from "../../utils/getDate";
-import { Interval } from "../../models/Interval";
+import { Interval } from "../../sharedModels/Interval";
 import type { UserSeed } from "../User";
 
 type GetHistoricalPnlProps = {

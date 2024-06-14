@@ -29,6 +29,8 @@ export const saveAccStats = async () => {
 				params.maxTradeLength = maxTradeLength;
 				const result = await accumulate({ log: false });
 
+				if (!result) continue;
+
 				await db.insert(statsAccBT).values(result);
 				loop++;
 				progressBar.update(loop);

@@ -1,4 +1,4 @@
-import { Interval } from "./models/Interval";
+import { Interval } from "./sharedModels/Interval";
 
 export const params = {
 	branch: "main" as "main" | "dev",
@@ -10,9 +10,9 @@ export const params = {
 	maxHedgePositions: 3,
 
 	lookBackLengthBacktest: (1 * Interval["1d"]) / Interval["5m"],
-	backtestSLArray: [5 / 100, 7 / 100, 10 / 100],
-	backtestTPArray: [3 / 100, 7 / 100, 10 / 100],
-	backtestMaxTradeLengthArray: [150, 300, 450],
+	backtestSLArray: [7 / 100, 10 / 100],
+	backtestTPArray: [7 / 100, 10 / 100],
+	backtestMaxTradeLengthArray: [300, 450],
 
 	interval: Interval["5m"],
 	lookBackLength: 200,

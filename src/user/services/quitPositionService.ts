@@ -1,5 +1,5 @@
 import type { User } from "../User";
-import type { Position, PositionSide } from "../../models/Position";
+import type { Position, PositionSide } from "../../sharedModels/Position";
 import type { Symbol } from "../../symbol/Symbol";
 import Binance from "binance-api-node";
 import { fixPrecision } from "../../utils/fixPrecision";

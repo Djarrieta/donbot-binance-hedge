@@ -1,5 +1,5 @@
-import type { Order } from "../models/Order";
-import type { Position } from "../models/Position";
+import type { Order } from "../sharedModels/Order";
+import type { Position } from "../sharedModels/Position";
 
 export type User = {
 	name: string;

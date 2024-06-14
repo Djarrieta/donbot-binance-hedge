@@ -1,6 +1,6 @@
 import { db } from "../db/db";
-import type { Candle } from "../models/Candle";
-import { Interval } from "../models/Interval";
+import type { Candle } from "../sharedModels/Candle";
+import { Interval } from "../sharedModels/Interval";
 import { symbolsBT } from "../db/schema";
 import { getDate } from "../utils/getDate";
 

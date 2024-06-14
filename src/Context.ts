@@ -2,13 +2,13 @@ import type { User } from "./user/User";
 import type { Symbol } from "./symbol/Symbol";
 import { params } from "./Params";
 import { cancelOrdersService } from "./user/services/cancelOrdersService";
-import type { PositionSide, Position } from "./models/Position";
+import type { PositionSide, Position } from "./sharedModels/Position";
 import { protectPositionService } from "./user/services/protectPositionService";
 import { openPositionService } from "./user/services/openPositionService";
 import { quitPositionService } from "./user/services/quitPositionService";
-import type { Candle } from "./models/Candle";
+import type { Candle } from "./sharedModels/Candle";
 import { getDate } from "./utils/getDate";
-import type { Order } from "./models/Order";
+import type { Order } from "./sharedModels/Order";
 import type { Strategy, StrategyResponse } from "./strategies/Strategy";
 
 type constructorProps = {
@@ -209,6 +209,7 @@ export class Context {
 			text: string;
 			tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
 		} = { text: "", tradeArray: [] };
+		this.checkSymbols();
 
 		const readySymbols = this.symbolList
 			.filter((s) => s.isReady)

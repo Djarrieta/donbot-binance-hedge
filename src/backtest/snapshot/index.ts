@@ -1,13 +1,13 @@
 import { params } from "../../Params";
 import { db } from "../../db/db";
-import type { Candle } from "../../models/Candle";
-import { type Position } from "../../models/Position";
+import type { Candle } from "../../sharedModels/Candle";
+import { type Position } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { symbolsBT, type StatsSnapBT } from "../../db/schema";
-import { checkForTrades } from "../../symbol/checkForTrades";
 import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
+import { Context } from "../../Context";
 
 export const snapshot = async ({ log }: { log: boolean }) => {
 	const symbolsData = await db.select().from(symbolsBT);
@@ -68,12 +68,16 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 				),
 			};
 		});
-
-		const { tradeArray } = await checkForTrades({
+		const context = await Context.getInstance({
 			symbolList: readySymbols,
+			userList: [],
 			strategies: chosenStrategies,
+		});
+
+		if (!context) return;
+
+		const { tradeArray } = context.checkForTrades({
 			logs: false,
-			interval: params.interval,
 		});
 
 		for (const tradeCommand of tradeArray) {

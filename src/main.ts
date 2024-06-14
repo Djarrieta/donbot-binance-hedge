@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { Context } from "./Context";
 import { params } from "./Params";
-import { CronInterval } from "./models/Interval";
+import { CronInterval } from "./sharedModels/Interval";
 import { getSymbolsData } from "./symbol/services/getSymbolsData";
 import { subscribeToSymbolUpdates } from "./symbol/services/subscribeToSymbolUpdates";
 import { getUsersData } from "./user/services/getUsersData";

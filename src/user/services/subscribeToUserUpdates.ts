@@ -1,7 +1,7 @@
 import Binance, { type Binance as IBinance } from "binance-api-node";
 import OldBinance from "node-binance-api";
 import type { User } from "../User";
-import { ORDER_ID_DIV, OrderType } from "../../models/Order";
+import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
 import { Context } from "../../Context";
 
 export const subscribeToUserUpdates = async ({ user }: { user: User }) => {
