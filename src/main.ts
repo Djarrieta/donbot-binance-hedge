@@ -37,13 +37,12 @@ const trade = async () => {
 		const context = await Context.getInstance();
 		if (!context) return;
 		await delay(1000);
-		console.log("");
-		console.log(getDate().dateString, "Checking for trades!");
-		console.log(context.text());
 
 		const { text, tradeArray } = context.checkForTrades({
-			logs: false,
+			logs: true,
 		});
+
+		console.log(context.text());
 
 		if (tradeArray.length) {
 			console.log(text);
