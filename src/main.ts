@@ -71,12 +71,7 @@ const trade = async () => {
 			await context.handleExistingPositions({ userName: user.name });
 		}
 		context.updateUsers({ userList: await getUsersData() });
-	});
 
-	//Subscribe to symbol and user updates
-	cron.schedule(CronInterval["15m"], async () => {
-		const context = await Context.getInstance();
-		if (!context) return;
 		for (const symbol of context.symbolList) {
 			subscribeToSymbolUpdates({
 				pair: symbol.pair,
