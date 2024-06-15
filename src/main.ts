@@ -31,9 +31,6 @@ const startModel = async () => {
 const trade = async () => {
 	//Start model
 	await startModel();
-	cron.schedule(CronInterval["5m"], async () => {
-		startModel();
-	});
 
 	//Check for new trades
 	cron.schedule(CronInterval["5m"], async () => {
