@@ -4,8 +4,8 @@ export const params = {
 	branch: "main" as "main" | "dev",
 
 	maxTradeLength: 300,
-	defaultSL: 10 / 100,
-	defaultTP: 10 / 100,
+	defaultSL: 1 / 100,
+	defaultTP: 1 / 100,
 	maxProtectedPositions: 1,
 	maxHedgePositions: 3,
 
@@ -14,7 +14,7 @@ export const params = {
 	backtestTPArray: [7 / 100, 10 / 100],
 	backtestMaxTradeLengthArray: [300, 450],
 
-	interval: Interval["5m"],
+	interval: Interval["1m"],
 	lookBackLength: 200,
 	fee: 0.0005,
 	minAmountToTrade: 6,

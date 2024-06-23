@@ -82,7 +82,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 
 		for (const tradeCommand of tradeArray) {
 			const {
-				symbol: { pair },
+				pair,
 				stgResponse: { positionSide: shouldTrade, sl, tp, stgName },
 			} = tradeCommand;
 			if (shouldTrade === null) continue;

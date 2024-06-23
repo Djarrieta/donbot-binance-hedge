@@ -9,7 +9,6 @@ import type { User } from "../User";
 interface ProtectPositionServiceProps {
 	user: User;
 	symbol: Symbol;
-	price: number;
 	sl: number;
 	tp: number;
 	positionSide: PositionSide;
@@ -20,7 +19,6 @@ export const protectPositionService = async ({
 	user,
 	positionSide,
 	coinQuantity,
-	price,
 	sl,
 	tp,
 }: ProtectPositionServiceProps) => {
@@ -29,20 +27,13 @@ export const protectPositionService = async ({
 		apiSecret: user.binanceApiSecret || "",
 	});
 
-	const HEPriceNumber =
-		positionSide === "LONG" ? price * (1 - sl) : price * (1 + sl);
-
 	const HEPrice = fixPrecision({
-		value: HEPriceNumber,
+		value: sl,
 		precision: symbol.pricePrecision,
 	});
 
-	const quantityUSDT = Math.max(
-		HEPriceNumber * coinQuantity,
-		params.minAmountToTrade
-	);
 	const quantity = fixPrecision({
-		value: quantityUSDT / symbol.currentPrice,
+		value: coinQuantity,
 		precision: symbol.quantityPrecision,
 	});
 
@@ -58,11 +49,8 @@ export const protectPositionService = async ({
 		timeInForce: "GTC",
 	});
 
-	const TPPriceNumber =
-		positionSide === "LONG" ? price * (1 + tp) : price * (1 - tp);
-
 	const TPPrice = fixPrecision({
-		value: TPPriceNumber,
+		value: tp,
 		precision: symbol.pricePrecision,
 	});
 

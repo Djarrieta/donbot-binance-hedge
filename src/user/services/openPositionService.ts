@@ -9,7 +9,6 @@ import type { User } from "../User";
 interface OpenPositionServiceProps {
 	user: User;
 	symbol: Symbol;
-	price: number;
 	sl: number;
 	tp: number;
 	positionSide: PositionSide;
@@ -21,7 +20,6 @@ export const openPositionService = async ({
 	user,
 	positionSide,
 	coinQuantity,
-	price,
 	sl,
 	tp,
 }: OpenPositionServiceProps) => {
@@ -30,20 +28,13 @@ export const openPositionService = async ({
 		apiSecret: user.binanceApiSecret || "",
 	});
 
-	const HEPriceNumber =
-		positionSide === "LONG" ? price * (1 - sl) : price * (1 + sl);
-
 	const HEPrice = fixPrecision({
-		value: HEPriceNumber,
+		value: sl,
 		precision: symbol.pricePrecision,
 	});
 
-	const quantityUSDT = Math.max(
-		HEPriceNumber * coinQuantity,
-		params.minAmountToTrade
-	);
 	const quantity = fixPrecision({
-		value: quantityUSDT / symbol.currentPrice,
+		value: coinQuantity,
 		precision: symbol.quantityPrecision,
 	});
 
@@ -59,11 +50,8 @@ export const openPositionService = async ({
 		timeInForce: "GTC",
 	});
 
-	const TPPriceNumber =
-		positionSide === "LONG" ? price * (1 + tp) : price * (1 - tp);
-
 	const TPPrice = fixPrecision({
-		value: TPPriceNumber,
+		value: tp,
 		precision: symbol.pricePrecision,
 	});
 

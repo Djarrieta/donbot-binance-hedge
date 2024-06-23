@@ -174,7 +174,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 		if (tradeArray.length && !openPosition) {
 			const symbolOpened = readySymbols.find(
-				(s) => s.pair === tradeArray[0].symbol.pair
+				(s) => s.pair === tradeArray[0].pair
 			);
 			if (!symbolOpened) {
 				candleIndex++;

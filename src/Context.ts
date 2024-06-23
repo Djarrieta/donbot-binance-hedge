@@ -202,7 +202,7 @@ export class Context {
 	checkForTrades({ logs = true }: { logs?: boolean }) {
 		const response: {
 			text: string;
-			tradeArray: { symbol: Symbol; stgResponse: StrategyResponse }[];
+			tradeArray: { pair: string; stgResponse: StrategyResponse }[];
 		} = { text: "", tradeArray: [] };
 		this.checkSymbols();
 
@@ -239,7 +239,7 @@ export class Context {
 					pair: symbol.pair,
 				});
 				if (stgResponse && stgResponse.positionSide !== null) {
-					response.tradeArray.push({ symbol, stgResponse });
+					response.tradeArray.push({ pair: symbol.pair, stgResponse });
 				}
 			}
 		}
@@ -247,9 +247,9 @@ export class Context {
 		if (response.tradeArray.length > 4) {
 			response.text =
 				"+ Should trade " +
-				response.tradeArray[0].symbol.pair +
+				response.tradeArray[0].pair +
 				", " +
-				response.tradeArray[1].symbol.pair +
+				response.tradeArray[1].pair +
 				", ...(" +
 				(response.tradeArray.length - 2) +
 				" more) ";
@@ -261,7 +261,7 @@ export class Context {
 					(t) =>
 						t.stgResponse.positionSide +
 						" in " +
-						t.symbol.pair +
+						t.pair +
 						" with " +
 						t.stgResponse.stgName
 				);
@@ -314,12 +314,14 @@ export class Context {
 		positionSide: PositionSide;
 	}) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
+		if (userIndex === -1) {
+			return;
+		}
 
-		const symbolIndex = this.userList[userIndex].openPositions.findIndex(
-			(p) => p.pair === pair
-		);
-		if (symbolIndex === -1) return;
+		const symbolIndex = this.symbolList.findIndex((p) => p.pair === pair);
+		if (symbolIndex === -1) {
+			return;
+		}
 		this.userList[userIndex].isAddingPosition = true;
 
 		await this.cancelOrders({ userName, pair });
@@ -334,14 +336,17 @@ export class Context {
 				? this.symbolList[symbolIndex].currentPrice * (1 + params.defaultTP)
 				: this.symbolList[symbolIndex].currentPrice * (1 - params.defaultTP);
 
-		const coinQuantity =
-			params.minAmountToTrade / this.symbolList[symbolIndex].currentPrice;
+		const coinQuantity = Math.max(
+			params.minAmountToTrade / this.symbolList[symbolIndex].currentPrice,
+			params.minAmountToTrade / tp,
+			params.minAmountToTrade / sl
+		);
+
 		await openPositionService({
 			symbol: this.symbolList[symbolIndex],
 			user: this.userList[userIndex],
 			positionSide,
 			coinQuantity,
-			price: this.symbolList[symbolIndex].currentPrice,
 			sl,
 			tp,
 		});
@@ -394,7 +399,6 @@ export class Context {
 			user: this.userList[userIndex],
 			positionSide,
 			coinQuantity: Number(openPos.coinQuantity),
-			price: this.symbolList[symbolIndex].currentPrice,
 			sl,
 			tp,
 		});
