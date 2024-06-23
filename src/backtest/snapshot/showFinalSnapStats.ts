@@ -26,11 +26,11 @@ if (results) {
 // ┌────────────────┬────────┐
 // │                │ Values │
 // ├────────────────┼────────┤
-// │ maxTradeLength │ 300    │
+// │ maxTradeLength │ 450    │
 // │             sl │ 10.00% │
-// │             tp │ 10.00% │
-// │      tradesQty │ 4788   │
-// │          avPnl │ 2.88%  │
-// │  avTradeLength │ 216.0  │
-// │        winRate │ 66.75% │
+// │             tp │ 7.00%  │
+// │      tradesQty │ 37087  │
+// │          avPnl │ 1.07%  │
+// │  avTradeLength │ 320.0  │
+// │        winRate │ 62.00% │
 // └────────────────┴────────┘

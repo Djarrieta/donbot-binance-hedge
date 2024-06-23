@@ -52,6 +52,8 @@ const trade = async () => {
 		console.log(context.text());
 
 		if (tradeArray.length) {
+			console.log("");
+			console.log(getDate().dateString);
 			console.log(text);
 			for (const user of context.userList) {
 				for (const trade of tradeArray) {

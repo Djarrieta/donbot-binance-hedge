@@ -3,9 +3,9 @@ import { Interval } from "./sharedModels/Interval";
 export const params = {
 	branch: "main" as "main" | "dev",
 
-	maxTradeLength: 300,
-	defaultSL: 1 / 100,
-	defaultTP: 1 / 100,
+	maxTradeLength: 450,
+	defaultSL: 10 / 100,
+	defaultTP: 7 / 100,
 	maxProtectedPositions: 1,
 	maxHedgePositions: 3,
 

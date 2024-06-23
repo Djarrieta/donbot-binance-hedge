@@ -86,13 +86,17 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 				pair,
 				stgResponse: { positionSide: shouldTrade, sl, tp, stgName },
 			} = tradeCommand;
-			if (shouldTrade === null) continue;
 			const openedSymbol = readySymbols.find((s) => s.pair === pair);
-			if (!openedSymbol) continue;
-			const profitStick = openedSymbol.profitStick;
-			if (!profitStick.length) continue;
 
-			const entryPriceUSDT = profitStick[0].open;
+			if (
+				shouldTrade === null ||
+				!openedSymbol ||
+				!openedSymbol.profitStick.length
+			) {
+				continue;
+			}
+
+			const entryPriceUSDT = openedSymbol.profitStick[0].open;
 
 			const stopLoss =
 				shouldTrade === "LONG"
@@ -107,17 +111,17 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 			let pnl = 0;
 			let tradeLength = 0;
 
-			const startTime = profitStick[0].openTime;
+			const startTime = openedSymbol.profitStick[0].openTime;
 			const endTime = getDate(
 				getDate(startTime).dateMs + tradeLength * params.interval
 			).date;
 
 			for (
 				let stickIndex = 0;
-				stickIndex <= profitStick.length - 1;
+				stickIndex <= openedSymbol.profitStick.length - 1;
 				stickIndex++
 			) {
-				const candle = profitStick[stickIndex];
+				const candle = openedSymbol.profitStick[stickIndex];
 				tradeLength++;
 				if (
 					(shouldTrade === "LONG" &&
@@ -166,7 +170,8 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 				}
 			}
 			if (pnl === 0) {
-				const lastPrice = profitStick[profitStick.length - 1].close;
+				const lastPrice =
+					openedSymbol.profitStick[openedSymbol.profitStick.length - 1].close;
 				pnl =
 					(shouldTrade === "LONG"
 						? lastPrice - entryPriceUSDT
