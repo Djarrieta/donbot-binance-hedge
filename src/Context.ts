@@ -205,12 +205,18 @@ export class Context {
 		}
 	}
 
-	checkForTrades({ logs = true }: { logs?: boolean }) {
+	checkForTrades({
+		logs = true,
+		checkSymbols = true,
+	}: {
+		logs?: boolean;
+		checkSymbols?: boolean;
+	}) {
 		const response: {
 			text: string;
 			tradeArray: { pair: string; stgResponse: StrategyResponse }[];
 		} = { text: "", tradeArray: [] };
-		this.checkSymbols();
+		checkSymbols && this.checkSymbols();
 
 		const readySymbols = this.symbolList
 			.filter((s) => s.isReady)

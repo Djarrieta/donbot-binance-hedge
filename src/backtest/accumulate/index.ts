@@ -33,7 +33,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			pair: s.pair,
 			candlestick,
 			currentPrice: 0,
-			isReady: false,
+			isReady: true,
 			isLoading: false,
 			volatility: 0,
 			pricePrecision: 0,
@@ -77,6 +77,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 		const { tradeArray } = context.checkForTrades({
 			logs: false,
+			checkSymbols: false,
 		});
 
 		if (openPosition !== null) {
