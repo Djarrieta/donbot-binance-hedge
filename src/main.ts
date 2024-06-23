@@ -38,11 +38,9 @@ const startModel = async () => {
 };
 
 const trade = async () => {
-	//Start model
 	await startModel();
 
-	//Check for new trades
-	cron.schedule(CronInterval["1m"], async () => {
+	cron.schedule(CronInterval["5m"], async () => {
 		const context = await Context.getInstance();
 		if (!context) return;
 		await delay(1000);
@@ -58,12 +56,13 @@ const trade = async () => {
 			for (const user of context.userList) {
 				for (const trade of tradeArray) {
 					if (trade.stgResponse.positionSide) {
-						const props = {
+						context.handleNewPosition({
 							userName: user.name,
 							pair: trade.pair,
 							positionSide: trade.stgResponse.positionSide,
-						};
-						context.handleNewPosition(props);
+							sl: trade.stgResponse.sl,
+							tp: trade.stgResponse.tp,
+						});
 					}
 				}
 			}

@@ -40,10 +40,14 @@ export class Context {
 		userName,
 		pair,
 		positionSide,
+		sl,
+		tp,
 	}: {
 		userName: string;
 		pair: string;
 		positionSide: PositionSide;
+		sl: number;
+		tp: number;
 	}) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
@@ -99,6 +103,8 @@ export class Context {
 			userName,
 			pair,
 			positionSide,
+			sl,
+			tp,
 		});
 	}
 
@@ -308,10 +314,14 @@ export class Context {
 		userName,
 		pair,
 		positionSide,
+		sl,
+		tp,
 	}: {
 		userName: string;
 		pair: string;
 		positionSide: PositionSide;
+		sl: number;
+		tp: number;
 	}) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) {
@@ -326,20 +336,20 @@ export class Context {
 
 		await this.cancelOrders({ userName, pair });
 
-		const sl =
+		const slPrice =
 			positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 - params.defaultSL)
-				: this.symbolList[symbolIndex].currentPrice * (1 + params.defaultSL);
+				? this.symbolList[symbolIndex].currentPrice * (1 - sl)
+				: this.symbolList[symbolIndex].currentPrice * (1 + sl);
 
-		const tp =
+		const tpPrice =
 			positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 + params.defaultTP)
-				: this.symbolList[symbolIndex].currentPrice * (1 - params.defaultTP);
+				? this.symbolList[symbolIndex].currentPrice * (1 + tp)
+				: this.symbolList[symbolIndex].currentPrice * (1 - tp);
 
 		const coinQuantity = Math.max(
 			params.minAmountToTrade / this.symbolList[symbolIndex].currentPrice,
-			params.minAmountToTrade / tp,
-			params.minAmountToTrade / sl
+			params.minAmountToTrade / tpPrice,
+			params.minAmountToTrade / slPrice
 		);
 
 		await openPositionService({
@@ -347,8 +357,8 @@ export class Context {
 			user: this.userList[userIndex],
 			positionSide,
 			coinQuantity,
-			sl,
-			tp,
+			slPrice,
+			tpPrice,
 		});
 		this.userList[userIndex].openPositions.push({
 			pair,
@@ -384,12 +394,12 @@ export class Context {
 		const openPos = this.userList[userIndex].openPositions[openPosIndex];
 
 		await this.cancelOrders({ userName, pair });
-		const sl =
+		const slPrice =
 			openPos.positionSide === "LONG"
 				? this.symbolList[symbolIndex].currentPrice * (1 - params.defaultSL)
 				: this.symbolList[symbolIndex].currentPrice * (1 + params.defaultSL);
 
-		const tp =
+		const tpPrice =
 			openPos.positionSide === "LONG"
 				? this.symbolList[symbolIndex].currentPrice * (1 + params.defaultTP)
 				: this.symbolList[symbolIndex].currentPrice * (1 - params.defaultTP);
@@ -399,8 +409,8 @@ export class Context {
 			user: this.userList[userIndex],
 			positionSide,
 			coinQuantity: Number(openPos.coinQuantity),
-			sl,
-			tp,
+			slPrice,
+			tpPrice,
 		});
 
 		this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";

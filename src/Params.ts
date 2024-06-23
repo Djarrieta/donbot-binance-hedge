@@ -14,7 +14,7 @@ export const params = {
 	backtestTPArray: [7 / 100, 10 / 100],
 	backtestMaxTradeLengthArray: [300, 450],
 
-	interval: Interval["1m"],
+	interval: Interval["5m"],
 	lookBackLength: 200,
 	fee: 0.0005,
 	minAmountToTrade: 6,

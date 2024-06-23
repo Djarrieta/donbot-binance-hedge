@@ -9,8 +9,8 @@ import type { User } from "../User";
 interface ProtectPositionServiceProps {
 	user: User;
 	symbol: Symbol;
-	sl: number;
-	tp: number;
+	slPrice: number;
+	tpPrice: number;
 	positionSide: PositionSide;
 	coinQuantity: number;
 }
@@ -19,8 +19,8 @@ export const protectPositionService = async ({
 	user,
 	positionSide,
 	coinQuantity,
-	sl,
-	tp,
+	slPrice,
+	tpPrice,
 }: ProtectPositionServiceProps) => {
 	const authExchange = Binance({
 		apiKey: user.binanceApiKey,
@@ -28,7 +28,7 @@ export const protectPositionService = async ({
 	});
 
 	const HEPrice = fixPrecision({
-		value: sl,
+		value: slPrice,
 		precision: symbol.pricePrecision,
 	});
 
@@ -50,7 +50,7 @@ export const protectPositionService = async ({
 	});
 
 	const TPPrice = fixPrecision({
-		value: tp,
+		value: tpPrice,
 		precision: symbol.pricePrecision,
 	});
 
