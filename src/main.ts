@@ -77,6 +77,7 @@ const trade = async () => {
 			await context.handleExistingPositions({ userName: user.name });
 		}
 		context.updateUsers({ userList: await getUsersData() });
+		context.securePositions();
 
 		for (const symbol of context.symbolList) {
 			subscribeToSymbolUpdates({

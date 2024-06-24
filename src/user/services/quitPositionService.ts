@@ -15,6 +15,8 @@ export const quitPositionService = async ({
 	positionSide: PositionSide;
 	coinQuantity: number;
 }) => {
+	console.log("Quit position for user: " + user.name + "in " + symbol.pair);
+
 	const quantity = fixPrecision({
 		value: Number(coinQuantity) * symbol.currentPrice,
 		precision: symbol.quantityPrecision,

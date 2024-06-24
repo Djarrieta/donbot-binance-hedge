@@ -6,31 +6,28 @@ import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
 import type { User } from "../User";
 
-interface ProtectPositionServiceProps {
+interface SecurePositionServiceProps {
 	user: User;
 	symbol: Symbol;
-	slPrice: number;
-	tpPrice: number;
+	bePrice: number;
 	positionSide: PositionSide;
 	coinQuantity: number;
 }
-export const protectPositionService = async ({
+export const securePositionService = async ({
 	symbol,
 	user,
 	positionSide,
 	coinQuantity,
-	slPrice,
-	tpPrice,
-}: ProtectPositionServiceProps) => {
-	console.log("Protect position for user: " + user.name + "in " + symbol.pair);
-
+	bePrice,
+}: SecurePositionServiceProps) => {
+	console.log("Secure position for user: " + user.name + "in " + symbol.pair);
 	const authExchange = Binance({
 		apiKey: user.binanceApiKey,
 		apiSecret: user.binanceApiSecret || "",
 	});
 
-	const HEPrice = fixPrecision({
-		value: slPrice,
+	const BEPrice = fixPrecision({
+		value: bePrice,
 		precision: symbol.pricePrecision,
 	});
 
@@ -42,29 +39,12 @@ export const protectPositionService = async ({
 	await authExchange.futuresOrder({
 		type: "STOP_MARKET",
 		side: positionSide === "LONG" ? "SELL" : "BUY",
-		positionSide: positionSide === "LONG" ? "SHORT" : "LONG",
+		positionSide,
 		symbol: symbol.pair,
 		quantity,
-		stopPrice: HEPrice,
+		stopPrice: BEPrice,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + HEPrice,
-		timeInForce: "GTC",
-	});
-
-	const TPPrice = fixPrecision({
-		value: tpPrice,
-		precision: symbol.pricePrecision,
-	});
-
-	await authExchange.futuresOrder({
-		type: "STOP_MARKET",
-		side: positionSide === "LONG" ? "BUY" : "SELL",
-		positionSide: positionSide === "LONG" ? "SHORT" : "LONG",
-		symbol: symbol.pair,
-		quantity,
-		stopPrice: TPPrice,
-		recvWindow: 59999,
-		newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + TPPrice,
+		newClientOrderId: OrderType.BREAK + ORDER_ID_DIV + BEPrice,
 		timeInForce: "GTC",
 	});
 };

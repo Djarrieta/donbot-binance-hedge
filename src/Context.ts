@@ -1,15 +1,15 @@
-import type { User } from "./user/User";
-import type { Symbol } from "./symbol/Symbol";
 import { params } from "./Params";
-import { cancelOrdersService } from "./user/services/cancelOrdersService";
-import type { PositionSide, Position } from "./sharedModels/Position";
-import { protectPositionService } from "./user/services/protectPositionService";
-import { openPositionService } from "./user/services/openPositionService";
-import { quitPositionService } from "./user/services/quitPositionService";
 import type { Candle } from "./sharedModels/Candle";
-import { getDate } from "./utils/getDate";
-import type { Order } from "./sharedModels/Order";
+import type { PositionSide } from "./sharedModels/Position";
 import type { Strategy, StrategyResponse } from "./strategies/Strategy";
+import type { Symbol } from "./symbol/Symbol";
+import type { User } from "./user/User";
+import { cancelOrdersService } from "./user/services/cancelOrdersService";
+import { openPositionService } from "./user/services/openPositionService";
+import { protectPositionService } from "./user/services/protectPositionService";
+import { quitPositionService } from "./user/services/quitPositionService";
+import { securePositionService } from "./user/services/securePositionService";
+import { getDate } from "./utils/getDate";
 
 type constructorProps = {
 	userList: User[];
@@ -421,6 +421,47 @@ export class Context {
 
 		this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
 	}
+	async securePositions() {
+		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
+			for (
+				let posIndex = 0;
+				posIndex < this.userList[userIndex].openPositions.length;
+				posIndex++
+			) {
+				const pos = this.userList[userIndex].openPositions[posIndex];
+
+				if (pos.status !== "PROTECTED") continue;
+
+				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
+
+				if (!symbol || !symbol.currentPrice) continue;
+
+				const pnlGraph =
+					pos.positionSide === "LONG"
+						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
+						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
+
+				if (pnlGraph < params.breakevenAlert) continue;
+				const bePrice =
+					pos.positionSide === "LONG"
+						? pos.entryPriceUSDT * (1 + params.defaultBE)
+						: pos.entryPriceUSDT * (1 - params.defaultBE);
+
+				await securePositionService({
+					symbol,
+					user: this.userList[userIndex],
+					positionSide:
+						this.userList[userIndex].openPositions[posIndex].positionSide,
+					coinQuantity: Number(
+						this.userList[userIndex].openPositions[posIndex].coinQuantity
+					),
+					bePrice,
+				});
+
+				this.userList[userIndex].openPositions[posIndex].status = "SECURED";
+			}
+		}
+	}
 	updateSymbol({
 		pair,
 		candlestick,
@@ -499,7 +540,6 @@ export class Context {
 			this.symbolList[symbolIndex].isReady = true;
 		}
 	}
-
 	clearPositions({ userName, pair }: { userName: string; pair?: string }) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
@@ -522,7 +562,6 @@ export class Context {
 		}
 		this.userList[userIndex].openOrders = [];
 	}
-
 	updateUsers({ userList }: { userList?: User[] }) {
 		if (!userList) return;
 		this.userList = userList;
