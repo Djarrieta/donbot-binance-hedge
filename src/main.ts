@@ -15,9 +15,13 @@ const startModel = async () => {
 	console.log(getDate().dateString);
 	console.table({
 		"Interval (m)": params.interval / Interval["1m"],
+		"Lookback Length": params.lookBackLength,
 		"Default SL (%)": formatPercent(params.defaultSL),
 		"Default TP (%)": formatPercent(params.defaultTP),
-		"Max Trade Length (m)": params.maxTradeLength,
+		"Default Breakeven (%)": formatPercent(params.defaultBE),
+		"Max Trade Length": params.maxTradeLength,
+		"Max Protected Positions": params.maxProtectedPositions,
+		"Max Hedge Positions": params.maxHedgePositions,
 	});
 
 	const symbolList = await getSymbolsData();
