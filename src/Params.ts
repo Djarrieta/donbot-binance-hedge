@@ -7,7 +7,7 @@ export const params = {
 	defaultSL: 9 / 100,
 	defaultTP: 7 / 100,
 	defaultBE: 1 / 100,
-	breakevenAlert: 0.5 / 100,
+	breakevenAlert: 2 / 100,
 	maxProtectedPositions: 1,
 	maxHedgePositions: 3,
 
