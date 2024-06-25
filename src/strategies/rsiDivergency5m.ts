@@ -15,6 +15,7 @@ const stg: Strategy = {
 			sl: params.defaultSL,
 			tp: params.defaultTP,
 			stgName: STG_NAME,
+			pair,
 		};
 
 		if (candlestick.length < params.lookBackLength) return response;

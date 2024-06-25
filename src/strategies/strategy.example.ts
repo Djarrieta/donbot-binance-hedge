@@ -15,6 +15,7 @@ const stg: Strategy = {
 			sl: params.defaultSL,
 			tp: params.defaultTP,
 			stgName: STG_NAME,
+			pair,
 		};
 
 		if (candlestick.length < params.lookBackLength) return response;
@@ -28,6 +29,10 @@ const stg: Strategy = {
 
 		if (volatility >= MIN_VOL && condition) {
 			response.positionSide = "LONG";
+			const newSl = 1;
+			const newTp = 1;
+			response.sl = newSl; // set your sl here if needed
+			response.tp = newTp; // set your tp here if needed
 		}
 		if (volatility >= MIN_VOL && condition) {
 			response.positionSide = "SHORT";

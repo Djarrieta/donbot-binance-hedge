@@ -49,25 +49,25 @@ const trade = async () => {
 		if (!context) return;
 		await delay(1000);
 
-		const { text, tradeArray } = context.checkForTrades({
+		const { text, trades } = context.checkForTrades({
 			logs: true,
 		});
 
 		console.log(context.text());
 
-		if (tradeArray.length) {
+		if (trades.length) {
 			console.log("");
 			console.log(getDate().dateString);
 			console.log(text);
 			for (const user of context.userList) {
-				for (const trade of tradeArray) {
-					if (trade.stgResponse.positionSide) {
+				for (const trade of trades) {
+					if (trade.positionSide) {
 						context.handleNewPosition({
 							userName: user.name,
 							pair: trade.pair,
-							positionSide: trade.stgResponse.positionSide,
-							sl: trade.stgResponse.sl,
-							tp: trade.stgResponse.tp,
+							positionSide: trade.positionSide,
+							sl: trade.sl,
+							tp: trade.tp,
 						});
 					}
 				}

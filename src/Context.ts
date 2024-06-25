@@ -10,6 +10,7 @@ import { protectPositionService } from "./user/services/protectPositionService";
 import { quitPositionService } from "./user/services/quitPositionService";
 import { securePositionService } from "./user/services/securePositionService";
 import { getDate } from "./utils/getDate";
+import { getVolatility } from "./utils/getVolatility";
 
 type constructorProps = {
 	userList: User[];
@@ -211,11 +212,23 @@ export class Context {
 	}) {
 		const response: {
 			text: string;
-			tradeArray: { pair: string; stgResponse: StrategyResponse }[];
-		} = { text: "", tradeArray: [] };
-		checkSymbols && this.checkSymbols();
+			trades: StrategyResponse[];
+		} = { text: "", trades: [] };
+		if (checkSymbols) {
+			this.checkSymbols();
+		}
+		for (
+			let symbolIndex = 0;
+			symbolIndex < this.symbolList.length;
+			symbolIndex++
+		) {
+			const symbol = this.symbolList[symbolIndex];
+			this.symbolList[symbolIndex].volatility = getVolatility({
+				candlestick: symbol.candlestick,
+			});
+		}
 
-		const readySymbols = this.symbolList
+		const readySymbols = [...this.symbolList]
 			.filter((s) => s.isReady)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 
@@ -247,32 +260,27 @@ export class Context {
 					candlestick: symbol.candlestick,
 					pair: symbol.pair,
 				});
-				if (stgResponse && stgResponse.positionSide !== null) {
-					response.tradeArray.push({ pair: symbol.pair, stgResponse });
+				if (stgResponse.positionSide) {
+					response.trades.push(stgResponse);
 				}
 			}
 		}
 
-		if (response.tradeArray.length > 4) {
+		if (response.trades.length > 4) {
 			response.text =
 				"+ Should trade " +
-				response.tradeArray[0].pair +
+				response.trades[0].pair +
 				", " +
-				response.tradeArray[1].pair +
+				response.trades[1].pair +
 				", ...(" +
-				(response.tradeArray.length - 2) +
+				(response.trades.length - 2) +
 				" more) ";
 		}
-		if (response.tradeArray.length && response.tradeArray.length <= 4) {
+		if (response.trades.length && response.trades.length <= 4) {
 			response.text =
 				"+ Should trade " +
-				response.tradeArray.map(
-					(t) =>
-						t.stgResponse.positionSide +
-						" in " +
-						t.pair +
-						" with " +
-						t.stgResponse.stgName
+				response.trades.map(
+					(t) => " " + t.positionSide + " in " + t.pair + " with " + t.stgName
 				);
 		}
 

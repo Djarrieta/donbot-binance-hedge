@@ -75,7 +75,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 		if (!context) return;
 
-		const { tradeArray } = context.checkForTrades({
+		const { trades } = context.checkForTrades({
 			logs: false,
 			checkSymbols: false,
 		});
@@ -173,10 +173,8 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			continue;
 		}
 
-		if (tradeArray.length && !openPosition) {
-			const symbolOpened = readySymbols.find(
-				(s) => s.pair === tradeArray[0].pair
-			);
+		if (trades.length && !openPosition) {
+			const symbolOpened = readySymbols.find((s) => s.pair === trades[0].pair);
 			if (!symbolOpened) {
 				candleIndex++;
 				continue;
@@ -187,12 +185,12 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				pair: symbolOpened.pair,
 				status: "UNKNOWN",
 				startTime,
-				positionSide: tradeArray[0].stgResponse.positionSide || "LONG",
+				positionSide: trades[0].positionSide || "LONG",
 				pnl: 0,
 				isHedgeUnbalance: false,
 				entryPriceUSDT:
 					symbolOpened.candlestick[symbolOpened.candlestick.length - 1].close,
-				stgName: tradeArray[0].stgResponse.stgName,
+				stgName: trades[0].stgName,
 				tradeLength: 0,
 			};
 

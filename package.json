@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "bun ./src/main.ts",
-    "DBRestart": "bun DBDelete && bun i && bun DBCreate && bun DBMigrate ",
+    "dbRestart": "bun dbDelete && bun i && bun dbCreate && bun dbMigrate ",
     "lint": "bunx oxlint && tsc ",
 
     "saveBacktestData": "bun ./src/backtest/saveBacktestData.ts",
@@ -14,15 +14,12 @@
     "showBacktestData": "bun ./src/backtest/showBacktestData.ts",
     "showSnapStats": "bun ./src/backtest/snapshot/showSnapStats.ts",
     "showAccStats": "bun ./src/backtest/accumulate/showAccStats.ts",
-    
-    "showFinalSnapStats": "bun ./src/backtest/snapshot/showFinalSnapStats.ts",
     "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
-    "showFinalAccStats": "bun ./src/backtest/accumulate/showFinalAccStats.ts",
     "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
 
-    "DBDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
-    "DBCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",
-    "DBMigrate": "bun ./src/db/migrate.ts"
+    "dbDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
+    "dbCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",
+    "dbMigrate": "bun ./src/db/migrate.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

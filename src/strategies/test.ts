@@ -1,10 +1,10 @@
-import { mfi } from "technicalindicators";
+import { EMA, rsi } from "technicalindicators";
 import type { Strategy, StrategyResponse } from "./Strategy";
 import { params } from "../Params";
 import { getVolatility } from "../utils/getVolatility";
 
-const STG_NAME = "mfiDivergency5m";
-const ALLOWED_PAIRS: string[] = [];
+const STG_NAME = "test";
+const ALLOWED_PAIRS: string[] = []; // Optionally add allowed pairs, if not set all pairs will be allowed
 const stg: Strategy = {
 	stgName: STG_NAME,
 	lookBackLength: params.lookBackLength,
@@ -21,42 +21,34 @@ const stg: Strategy = {
 		if (candlestick.length < params.lookBackLength) return response;
 		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
 
-		const MIN_MFI = 20;
+		const MIN_RSI = 30;
 		const CANDLESTICK_SIZE = 50;
 		const MIN_VOL = 10 / 100;
 		const MAX_VOL = 25 / 100;
-
-		const mfiArray = mfi({
-			high: candlestick.map((item) => item.high),
-			low: candlestick.map((item) => item.low),
-			close: candlestick.map((item) => item.close),
-			volume: candlestick.map((item) => item.volume),
-			period: 14,
-		});
+		const closePrices = candlestick.map((candle) => candle.close);
+		const rsiArray = rsi({ period: 14, values: closePrices });
 
 		let candlestickValues: number[] = [];
 
 		candlestick.forEach(({ close, high, low, open }) => {
 			candlestickValues.push(close, high, low, open);
 		});
-
 		const volatility = getVolatility({ candlestick });
 
 		if (
 			volatility > MIN_VOL &&
 			volatility < MAX_VOL &&
-			mfiArray[mfiArray.length - 1] <= MIN_MFI &&
-			mfiArray[mfiArray.length - 2] <= MIN_MFI &&
-			mfiArray[mfiArray.length - 1] > mfiArray[mfiArray.length - 2]
+			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
+			rsiArray[rsiArray.length - 2] <= MIN_RSI
 		) {
-			const firstZeroCrossingIndex = [...mfiArray]
+			const firstZeroCrossingIndex = [...rsiArray]
 				.reverse()
-				.findIndex((arrayVal) => arrayVal > MIN_MFI);
+				.findIndex((arrayVal) => arrayVal > MIN_RSI);
 
-			const firstRange = mfiArray.slice(-firstZeroCrossingIndex);
-			const secondRange = mfiArray.slice(
-				mfiArray.length - CANDLESTICK_SIZE,
-				mfiArray.length - firstZeroCrossingIndex
+			const firstRange = rsiArray.slice(-firstZeroCrossingIndex);
+			const secondRange = rsiArray.slice(
+				rsiArray.length - CANDLESTICK_SIZE,
+				rsiArray.length - firstZeroCrossingIndex
 			);
 
 			const firstMin = Math.min(
@@ -74,18 +66,17 @@ const stg: Strategy = {
 		if (
 			volatility > MIN_VOL &&
 			volatility < MAX_VOL &&
-			mfiArray[mfiArray.length - 1] >= 100 - MIN_MFI &&
-			mfiArray[mfiArray.length - 2] >= 100 - MIN_MFI &&
-			mfiArray[mfiArray.length - 1] < mfiArray[mfiArray.length - 2]
+			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
+			rsiArray[rsiArray.length - 2] >= 100 - MIN_RSI
 		) {
-			const firstZeroCrossingIndex = [...mfiArray]
+			const firstZeroCrossingIndex = [...rsiArray]
 				.reverse()
-				.findIndex((arrayVal) => arrayVal < 100 - MIN_MFI);
+				.findIndex((arrayVal) => arrayVal < 100 - MIN_RSI);
 
-			const firstRange = mfiArray.slice(-firstZeroCrossingIndex);
-			const secondRange = mfiArray.slice(
-				mfiArray.length - CANDLESTICK_SIZE,
-				mfiArray.length - firstZeroCrossingIndex
+			const firstRange = rsiArray.slice(-firstZeroCrossingIndex);
+			const secondRange = rsiArray.slice(
+				rsiArray.length - CANDLESTICK_SIZE,
+				rsiArray.length - firstZeroCrossingIndex
 			);
 
 			const firstMax = Math.max(
