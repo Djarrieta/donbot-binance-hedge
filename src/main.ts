@@ -95,4 +95,5 @@ const trade = async () => {
 		}
 	});
 };
+
 trade();

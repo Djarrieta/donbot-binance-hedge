@@ -2,6 +2,7 @@
 
 data
 drizzle
+backup
 src/userSeed.ts
 
 # Logs

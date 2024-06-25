@@ -35,7 +35,6 @@ export class Context {
 			return Context.instance;
 		}
 	}
-
 	async handleNewPosition({
 		userName,
 		pair,
@@ -107,7 +106,6 @@ export class Context {
 			tp,
 		});
 	}
-
 	async handleExistingPositions({ userName }: { userName: string }) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
@@ -204,7 +202,6 @@ export class Context {
 			}
 		}
 	}
-
 	checkForTrades({
 		logs = true,
 		checkSymbols = true,
@@ -422,6 +419,7 @@ export class Context {
 		this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
 	}
 	async securePositions() {
+		if (!params.defaultBE || !params.breakevenAlert) return;
 		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
 			for (
 				let posIndex = 0;
