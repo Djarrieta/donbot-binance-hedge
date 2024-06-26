@@ -35,60 +35,12 @@ const stg: Strategy = {
 		});
 		const volatility = getVolatility({ candlestick });
 
-		if (
-			volatility > MIN_VOL &&
-			volatility < MAX_VOL &&
-			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
-			rsiArray[rsiArray.length - 2] <= MIN_RSI
-		) {
-			const firstZeroCrossingIndex = [...rsiArray]
-				.reverse()
-				.findIndex((arrayVal) => arrayVal > MIN_RSI);
-
-			const firstRange = rsiArray.slice(-firstZeroCrossingIndex);
-			const secondRange = rsiArray.slice(
-				rsiArray.length - CANDLESTICK_SIZE,
-				rsiArray.length - firstZeroCrossingIndex
-			);
-
-			const firstMin = Math.min(
-				...firstRange.map((value) => Number(value) || 0)
-			);
-			const secondMin = Math.min(
-				...secondRange.map((value) => Number(value) || 0)
-			);
-
-			if (firstMin !== 0 && secondMin !== 0 && firstMin > secondMin) {
-				response.positionSide = "LONG";
-			}
+		if (volatility > MIN_VOL && volatility < MAX_VOL) {
+			response.positionSide = "LONG";
 		}
 
-		if (
-			volatility > MIN_VOL &&
-			volatility < MAX_VOL &&
-			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
-			rsiArray[rsiArray.length - 2] >= 100 - MIN_RSI
-		) {
-			const firstZeroCrossingIndex = [...rsiArray]
-				.reverse()
-				.findIndex((arrayVal) => arrayVal < 100 - MIN_RSI);
-
-			const firstRange = rsiArray.slice(-firstZeroCrossingIndex);
-			const secondRange = rsiArray.slice(
-				rsiArray.length - CANDLESTICK_SIZE,
-				rsiArray.length - firstZeroCrossingIndex
-			);
-
-			const firstMax = Math.max(
-				...firstRange.map((value) => Number(value) || 0)
-			);
-			const secondMax = Math.max(
-				...secondRange.map((value) => Number(value) || 0)
-			);
-
-			if (firstMax !== 0 && secondMax !== 0 && firstMax < secondMax) {
-				response.positionSide = "SHORT";
-			}
+		if (volatility > MIN_VOL && volatility < MAX_VOL) {
+			response.positionSide = "SHORT";
 		}
 
 		return response;

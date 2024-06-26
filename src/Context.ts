@@ -254,6 +254,15 @@ export class Context {
 				"Strategies: " + this.strategies.map((s) => s?.stgName).join(", ")
 			);
 
+		logs &&
+			console.log(
+				"Date: " +
+					getDate(
+						readySymbols[0].candlestick[readySymbols[0].candlestick.length - 1]
+							.openTime
+					).dateString
+			);
+
 		for (const strategy of this.strategies) {
 			for (const symbol of readySymbols) {
 				const stgResponse = strategy?.validate({

@@ -75,12 +75,11 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 		});
 
 		if (!context) return;
-
+		context.symbolList = readySymbols;
 		const { trades } = context.checkForTrades({
 			logs: false,
 			checkSymbols: false,
 		});
-
 		for (const tradeCommand of trades) {
 			const { positionSide: shouldTrade, sl, tp, stgName, pair } = tradeCommand;
 			const openedSymbol = readySymbols.find((s) => s.pair === pair);

@@ -34,7 +34,6 @@ export const getCandlestick = async ({
 		const formattedCandlestick = unformattedCandlestick.map(
 			({ close, open, high, low, openTime, volume }) => {
 				return {
-					pair,
 					close: Number(close),
 					open: Number(open),
 					high: Number(high),
