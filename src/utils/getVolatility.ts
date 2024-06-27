@@ -1,6 +1,9 @@
 import type { Candle } from "../sharedModels/Candle";
 
 export const getVolatility = ({ candlestick }: { candlestick: Candle[] }) => {
+	if (!candlestick?.length || !candlestick[candlestick.length - 1].close)
+		return 0;
+
 	const { close: lastPrice } = candlestick[candlestick.length - 1];
 
 	const array = [

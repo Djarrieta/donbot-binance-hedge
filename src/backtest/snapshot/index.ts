@@ -80,7 +80,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 			logs: false,
 			checkSymbols: false,
 		});
-		for (const tradeCommand of trades) {
+		tradeLoop: for (const tradeCommand of trades) {
 			const { positionSide: shouldTrade, sl, tp, stgName, pair } = tradeCommand;
 			const openedSymbol = readySymbols.find((s) => s.pair === pair);
 
@@ -89,7 +89,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 				!openedSymbol ||
 				!openedSymbol.profitStick.length
 			) {
-				continue;
+				continue tradeLoop;
 			}
 
 			const entryPriceUSDT = openedSymbol.profitStick[0].open;
@@ -139,7 +139,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 						status: "UNKNOWN",
 					});
 
-					break;
+					continue tradeLoop;
 				}
 
 				if (
@@ -162,7 +162,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 						status: "UNKNOWN",
 					});
 
-					break;
+					continue tradeLoop;
 				}
 			}
 			if (pnl === 0) {
