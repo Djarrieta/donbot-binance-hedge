@@ -74,6 +74,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		});
 
 		if (!context) return;
+		context.symbolList = readySymbols;
 
 		const { trades } = context.checkForTrades({
 			logs: false,
