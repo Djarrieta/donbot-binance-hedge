@@ -19,4 +19,6 @@ export type Position = {
 	status: PositionStatus;
 	isHedgeUnbalance?: boolean;
 	stgName?: string;
+	sl?: number;
+	tp?: number;
 };

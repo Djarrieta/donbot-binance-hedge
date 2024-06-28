@@ -96,15 +96,17 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				candleIndex++;
 				continue;
 			}
+			const sl = openPosition.sl || params.defaultSL;
+			const tp = openPosition.tp || params.defaultTP;
 
 			const stopLoss =
 				openPosition.positionSide === "LONG"
-					? openPosition.entryPriceUSDT * (1 - params.defaultSL)
-					: openPosition.entryPriceUSDT * (1 + params.defaultSL);
+					? openPosition.entryPriceUSDT * (1 - sl)
+					: openPosition.entryPriceUSDT * (1 + sl);
 			const takeProfit =
 				openPosition.positionSide === "LONG"
-					? openPosition.entryPriceUSDT * (1 + params.defaultTP)
-					: openPosition.entryPriceUSDT * (1 - params.defaultTP);
+					? openPosition.entryPriceUSDT * (1 + tp)
+					: openPosition.entryPriceUSDT * (1 - tp);
 
 			if (
 				(openPosition.positionSide === "LONG" &&
@@ -193,6 +195,8 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 					symbolOpened.candlestick[symbolOpened.candlestick.length - 1].close,
 				stgName: trades[0].stgName,
 				tradeLength: 0,
+				sl: trades[0].sl,
+				tp: trades[0].tp,
 			};
 
 			candleIndex++;

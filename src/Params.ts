@@ -12,9 +12,9 @@ export const params = {
 	maxHedgePositions: 3,
 
 	lookBackLengthBacktest: (120 * Interval["1d"]) / Interval["5m"],
-	backtestSLArray: [10 / 100],
-	backtestTPArray: [1 / 100],
-	backtestMaxTradeLengthArray: [50],
+	backtestSLArray: [1 / 100, 5 / 100, 10 / 100],
+	backtestTPArray: [1 / 100, 5 / 100, 10 / 100],
+	backtestMaxTradeLengthArray: [30, 50, 100],
 
 	interval: Interval["5m"],
 	lookBackLength: 200,
