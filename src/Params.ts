@@ -3,18 +3,18 @@ import { Interval } from "./sharedModels/Interval";
 export const params = {
 	branch: "main" as "main" | "dev",
 
-	maxTradeLength: 450,
-	defaultSL: 9 / 100,
-	defaultTP: 7 / 100,
-	defaultBE: 1 / 100,
-	breakevenAlert: 2 / 100,
+	maxTradeLength: 50,
+	defaultSL: 10 / 100,
+	defaultTP: 1 / 100,
+	defaultBE: 0 / 100, // it is not considered in backtest
+	breakevenAlert: 0 / 100, // it is not considered in backtest
 	maxProtectedPositions: 1,
 	maxHedgePositions: 3,
 
-	lookBackLengthBacktest: (90 * Interval["1d"]) / Interval["5m"] / 12,
-	backtestSLArray: [1 / 100],
-	backtestTPArray: [1 / 100],
-	backtestMaxTradeLengthArray: [100],
+	lookBackLengthBacktest: (180 * Interval["1d"]) / Interval["5m"],
+	backtestSLArray: [1 / 100, 2 / 100, 3 / 100],
+	backtestTPArray: [8 / 100, 10 / 100, 12 / 100],
+	backtestMaxTradeLengthArray: [50, 100, 150],
 
 	interval: Interval["5m"],
 	lookBackLength: 200,
