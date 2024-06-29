@@ -12,6 +12,7 @@ export const showAccClosedPosStats = async () => {
 		endTime: DateString;
 		positionSide: string;
 		pnl: string;
+		accPnl: string;
 		entryPrice: string;
 		stgName: string;
 	};
@@ -25,6 +26,7 @@ export const showAccClosedPosStats = async () => {
 			endTime: getDate(c.endTime).dateString,
 			positionSide: c.positionSide,
 			pnl: formatPercent(Number(c.pnl)),
+			accPnl: formatPercent(Number(c.accPnl)),
 			entryPrice: Number(c.entryPriceUSDT).toFixed(2),
 			stgName: c.stgName,
 		};

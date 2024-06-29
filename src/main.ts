@@ -2,14 +2,14 @@ import cron from "node-cron";
 import { Context } from "./Context";
 import { params } from "./Params";
 import { CronInterval, Interval } from "./sharedModels/Interval";
+import { chosenStrategies } from "./strategies";
 import { getSymbolsData } from "./symbol/services/getSymbolsData";
 import { subscribeToSymbolUpdates } from "./symbol/services/subscribeToSymbolUpdates";
 import { getUsersData } from "./user/services/getUsersData";
-import { delay } from "./utils/delay";
-import { getDate } from "./utils/getDate";
-import { chosenStrategies } from "./strategies";
 import { subscribeToUserUpdates } from "./user/services/subscribeToUserUpdates";
+import { delay } from "./utils/delay";
 import { formatPercent } from "./utils/formatPercent";
+import { getDate } from "./utils/getDate";
 
 const startModel = async () => {
 	console.log(getDate().dateString);
@@ -48,17 +48,16 @@ const trade = async () => {
 		const context = await Context.getInstance();
 		if (!context) return;
 		await delay(1000);
+		console.log("");
+		console.log(getDate().dateString);
+		console.log(context.text());
 
-		const { text, trades } = context.checkForTrades({
+		const { text: tradesText, trades } = context.checkForTrades({
 			logs: true,
 		});
 
-		console.log(context.text());
-
 		if (trades.length) {
-			console.log("");
-			console.log(getDate().dateString);
-			console.log(text);
+			console.log(tradesText);
 			for (const user of context.userList) {
 				for (const trade of trades) {
 					if (trade.positionSide) {

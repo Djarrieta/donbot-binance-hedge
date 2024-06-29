@@ -108,6 +108,7 @@ export class Context {
 		});
 	}
 	async handleExistingPositions({ userName }: { userName: string }) {
+		console.log("Handling existing positions for " + userName);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
 
@@ -232,7 +233,7 @@ export class Context {
 			.filter((s) => s.isReady)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 
-		if (logs) {
+		if (logs && readySymbols.length) {
 			readySymbols.length > 4
 				? console.log(
 						"Checking for trades in  " +
@@ -248,11 +249,6 @@ export class Context {
 							readySymbols.map((s) => s.pair).join(", ")
 				  );
 		}
-
-		logs &&
-			console.log(
-				"Strategies: " + this.strategies.map((s) => s?.stgName).join(", ")
-			);
 
 		logs &&
 			console.log(
@@ -582,13 +578,15 @@ export class Context {
 		this.userList = userList;
 	}
 	text() {
-		const userText = `Users: ${this.userList
-			.map((u) => u.name?.split(" ")[0])
-			.join(", ")}`;
+		const userText = `${this.userList.map((u) => u.text).join(`\n`)}`;
 		const symbolText = `Symbols: ${
 			this.symbolList.filter((s) => s.isReady).length
 		} ready of ${this.symbolList.length}.`;
 
-		return `${userText}\n${symbolText}`;
+		const strategiesText = `Strategies: ${this.strategies
+			.map((s) => s.stgName)
+			.join(", ")}`;
+
+		return `${userText}\n${symbolText}\n${strategiesText}`;
 	}
 }

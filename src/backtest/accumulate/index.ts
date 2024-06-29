@@ -120,7 +120,11 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
 				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
-				closedPositions.push({ ...openPosition, endTime: lastCandle.openTime });
+				closedPositions.push({
+					...openPosition,
+					endTime: lastCandle.openTime,
+					accPnl,
+				});
 				candleIndex++;
 
 				openPosition = null;
@@ -142,7 +146,11 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
 				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
-				closedPositions.push({ ...openPosition, endTime: lastCandle.openTime });
+				closedPositions.push({
+					...openPosition,
+					endTime: lastCandle.openTime,
+					accPnl,
+				});
 
 				candleIndex++;
 
@@ -166,7 +174,11 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
 				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
-				closedPositions.push({ ...openPosition, endTime: lastCandle.openTime });
+				closedPositions.push({
+					...openPosition,
+					endTime: lastCandle.openTime,
+					accPnl,
+				});
 				candleIndex++;
 				openPosition = null;
 				continue;

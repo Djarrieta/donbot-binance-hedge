@@ -14,6 +14,7 @@ export type Position = {
 	endTime?: Date;
 	entryPriceUSDT: number;
 	pnl: number;
+	accPnl?: number;
 	tradeLength?: number;
 	coinQuantity?: number;
 	status: PositionStatus;

@@ -1,5 +1,5 @@
 # Start Script
-To run the script using Docker, execute `./start.sh`. Alternatively, you can run it using `bun start`.
+To run the script using Docker, execute `./start.sh`. Alternatively, you can run it using `bun start`. Add the credentials to your users creating userSeed.ts according userSeed.example.ts
 
 # Back Testing
 There are two types of back-testing: Snapshot and Accumulate.
@@ -22,6 +22,16 @@ Accumulate back-testing is oriented toward a more realistic situation where the 
 9. Run `bun saveSnapStats` to save stats for this strategy and define winning symbols.
 10. Run `bun showSnapStats` to see the winning symbols list.
 
+## Recommended steps for back-testing a new strategy.
+1. Add a new file in  `/src/strategies` according `strategy.example.ts` with `sl: params.defaultSL` , `tp: params.defaultTP` and `ALLOWED_PAIRS=[]` 
+3. Fill the `/src/strategies/index.ts/chosenStrategies` only with the new strategy.
+4. Go to `src/Params` and set values for `backtestSLArray`, `backtestTPArray`, `backtestMaxTradeLengthArray` with options to test.
+5. Run `bun saveSnapStats`  and  `bun saveAccStats` and analyze results using `bun showSnapStats` `bun showAccStats` .
+6. Go to `src/Params` and set values for `backtestSLArray`, `backtestTPArray`, `backtestMaxTradeLengthArray` only with the chosen options.
+7. Go to the new strategy file and set values for `sl`, `tp` with the chosen options.
+8. Run `bun saveSnapStats` 
+9. In the new strategy file set values for  `ALLOWED_PAIRS` with the winning symbols result.
+10. Optionally run `bun saveAccStats` again to see the final stats.
 
 
 
