@@ -104,8 +104,8 @@ const stg: Strategy = {
 	validate: ({ candlestick, pair }) => {
 		const response: StrategyResponse = {
 			positionSide: null,
-			sl: 1 / 100,
-			tp: 10 / 100,
+			sl: params.defaultSL,
+			tp: params.defaultTP,
 			stgName: STG_NAME,
 			pair,
 		};
