@@ -5,11 +5,19 @@ import { getCandlestick } from "../symbol/services/getCandlestick";
 import { getDate } from "../utils/getDate";
 import { symbolsBT } from "../db/schema";
 import { getPairList } from "../symbol/services/getPairList";
+import { Interval } from "../sharedModels/Interval";
 
 type SaveBacktestDataProps = { pairList: string[] };
 
 export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
-	console.log("Saving backtest data...");
+	console.log(
+		"Saving backtest data for " +
+			(
+				(params.lookBackLengthBacktest * params.interval) /
+				Interval["1d"]
+			).toFixed(1) +
+			" days"
+	);
 	const progressBar = new cliProgress.SingleBar(
 		{},
 		cliProgress.Presets.shades_classic
