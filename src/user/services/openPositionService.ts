@@ -23,7 +23,6 @@ export const openPositionService = async ({
 	slPrice,
 	tpPrice,
 }: OpenPositionServiceProps) => {
-	console.log("Open position for user: " + user.name + "in " + symbol.pair);
 	const authExchange = Binance({
 		apiKey: user.binanceApiKey,
 		apiSecret: user.binanceApiSecret || "",
