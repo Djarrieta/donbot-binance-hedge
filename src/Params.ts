@@ -6,15 +6,15 @@ export const params = {
 	maxTradeLength: 100,
 	defaultSL: 1 / 100,
 	defaultTP: 10 / 100,
-	defaultBE: 0 / 100, // it is not considered in backtest
-	breakevenAlert: 0 / 100, // it is not considered in backtest
+	defaultBE: 1 / 100, // it is not considered in backtest
+	breakevenAlert: 5 / 100, // it is not considered in backtest
 	maxProtectedPositions: 1,
 	maxHedgePositions: 3,
 
 	lookBackLengthBacktest: (60 * Interval["1d"]) / Interval["5m"],
-	backtestSLArray: [1 / 100],
-	backtestTPArray: [10 / 100],
-	backtestMaxTradeLengthArray: [100],
+	backtestSLArray: [1 / 100, 2 / 100],
+	backtestTPArray: [8 / 100, 10 / 100, 12 / 100],
+	backtestMaxTradeLengthArray: [50, 100],
 
 	interval: Interval["5m"],
 	lookBackLength: 200,

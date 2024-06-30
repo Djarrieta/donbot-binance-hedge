@@ -30,11 +30,14 @@ const runSubscribers = async () => {
 const startModel = async () => {
 	console.log(getDate().dateString);
 	console.table({
-		"Interval (m)": params.interval / Interval["1m"],
+		Interval: params.interval / Interval["1m"] + "m",
 		"Lookback Length": params.lookBackLength,
-		"Default SL (%)": formatPercent(params.defaultSL),
-		"Default TP (%)": formatPercent(params.defaultTP),
-		"Default Breakeven (%)": formatPercent(params.defaultBE),
+		"Default SL": formatPercent(params.defaultSL),
+		"Default TP": formatPercent(params.defaultTP),
+		Breakeven:
+			formatPercent(params.defaultBE) +
+			" @ " +
+			formatPercent(params.breakevenAlert),
 		"Max Trade Length": params.maxTradeLength,
 		"Max Protected Positions": params.maxProtectedPositions,
 		"Max Hedge Positions": params.maxHedgePositions,
