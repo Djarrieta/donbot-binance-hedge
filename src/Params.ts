@@ -4,8 +4,8 @@ export const params = {
 	branch: "main" as "main" | "dev",
 
 	maxTradeLength: 100,
-	defaultSL: 1 / 100,
-	defaultTP: 1 / 100,
+	defaultSL: 7 / 100,
+	defaultTP: 7 / 100,
 	defaultBE: 0 / 100, // it is not considered in backtest
 	breakevenAlert: 0 / 100, // it is not considered in backtest
 	maxProtectedPositions: 1,
