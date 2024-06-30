@@ -32,8 +32,8 @@ export const saveSnapStats = async ({
 
 	let loop = 1;
 	for (const maxTradeLength of maxTradeLengthArray) {
-		for (const tp of slArray) {
-			for (const sl of tpArray) {
+		for (const tp of tpArray) {
+			for (const sl of slArray) {
 				params.defaultSL = sl;
 				params.defaultTP = tp;
 				params.maxTradeLength = maxTradeLength;

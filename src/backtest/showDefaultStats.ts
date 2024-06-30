@@ -32,20 +32,22 @@ export const showDefaultStats = async () => {
 		stgName: string;
 	};
 
-	const closedPositions: ClosedPosition[] = JSON.parse(
-		filteredAccResults[0].closedPositions as string
-	).map((c: any) => {
-		return {
-			pair: c.pair,
-			startTime: getDate(c.startTime).dateString,
-			endTime: getDate(c.endTime).dateString,
-			positionSide: c.positionSide,
-			pnl: formatPercent(Number(c.pnl)),
-			accPnl: formatPercent(Number(c.accPnl)),
-			entryPrice: Number(c.entryPriceUSDT).toFixed(2),
-			stgName: c.stgName,
-		};
-	});
+	const closedPositions: ClosedPosition[] = filteredAccResults.length
+		? JSON.parse(filteredAccResults[0].closedPositions as string).map(
+				(c: any) => {
+					return {
+						pair: c.pair,
+						startTime: getDate(c.startTime).dateString,
+						endTime: getDate(c.endTime).dateString,
+						positionSide: c.positionSide,
+						pnl: formatPercent(Number(c.pnl)),
+						accPnl: formatPercent(Number(c.accPnl)),
+						entryPrice: Number(c.entryPriceUSDT).toFixed(2),
+						stgName: c.stgName,
+					};
+				}
+		  )
+		: [];
 	closedPositions
 		.sort((a, b) => a.pair.localeCompare(b.pair))
 		.sort((a, b) => a.startTime.localeCompare(b.startTime));

@@ -339,6 +339,9 @@ export class Context {
 		sl: number;
 		tp: number;
 	}) {
+		console.log(
+			"Opening position for " + userName + " " + pair + " " + positionSide
+		);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) {
 			return;
