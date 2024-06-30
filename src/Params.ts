@@ -4,7 +4,7 @@ export const params = {
 	branch: "main" as "main" | "dev",
 
 	maxTradeLength: 100,
-	defaultSL: 10 / 100,
+	defaultSL: 1 / 100,
 	defaultTP: 1 / 100,
 	defaultBE: 0 / 100, // it is not considered in backtest
 	breakevenAlert: 0 / 100, // it is not considered in backtest
@@ -12,8 +12,8 @@ export const params = {
 	maxHedgePositions: 3,
 
 	lookBackLengthBacktest: (120 * Interval["1d"]) / Interval["5m"],
-	backtestSLArray: [5 / 100],
-	backtestTPArray: [10 / 100],
+	backtestSLArray: [7 / 100],
+	backtestTPArray: [7 / 100],
 	backtestMaxTradeLengthArray: [100],
 
 	interval: Interval["5m"],

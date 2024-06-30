@@ -1,13 +1,13 @@
+import { Context } from "../../Context";
 import { params } from "../../Params";
 import { db } from "../../db/db";
+import { symbolsBT, type StatsAccBT } from "../../db/schema";
 import type { Candle } from "../../sharedModels/Candle";
 import type { Position } from "../../sharedModels/Position";
-import { type Symbol } from "../../symbol/Symbol";
-import { symbolsBT, type StatsAccBT } from "../../db/schema";
 import { chosenStrategies } from "../../strategies";
+import { type Symbol } from "../../symbol/Symbol";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
-import { Context } from "../../Context";
 
 export const accumulate = async ({ log }: { log: boolean }) => {
 	const symbolsData = await db.select().from(symbolsBT);
