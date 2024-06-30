@@ -11,6 +11,22 @@ import { delay } from "./utils/delay";
 import { formatPercent } from "./utils/formatPercent";
 import { getDate } from "./utils/getDate";
 
+const runSubscribers = async () => {
+	console.log("Running subscribers");
+	const context = await Context.getInstance();
+	if (!context) return;
+	for (const symbol of context.symbolList) {
+		subscribeToSymbolUpdates({
+			pair: symbol.pair,
+			interval: params.interval,
+		});
+	}
+
+	for (const user of context.userList) {
+		subscribeToUserUpdates({ user });
+	}
+};
+
 const startModel = async () => {
 	console.log(getDate().dateString);
 	console.table({
@@ -39,6 +55,7 @@ const startModel = async () => {
 	for (const user of context.userList) {
 		await context.handleExistingPositions({ userName: user.name });
 	}
+	runSubscribers();
 };
 
 const trade = async () => {
@@ -81,18 +98,11 @@ const trade = async () => {
 		}
 		context.updateUsers({ userList: await getUsersData() });
 		context.securePositions();
-
-		for (const symbol of context.symbolList) {
-			subscribeToSymbolUpdates({
-				pair: symbol.pair,
-				interval: params.interval,
-			});
-		}
-
-		for (const user of context.userList) {
-			subscribeToUserUpdates({ user });
-		}
 	});
+	do {
+		await delay(Interval["15m"]);
+		runSubscribers();
+	} while (true);
 };
 
 trade();
