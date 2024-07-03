@@ -42,7 +42,7 @@ const startModel = async () => {
 		"Max Protected Positions": params.maxProtectedPositions,
 		"Max Hedge Positions": params.maxHedgePositions,
 	});
-
+	Context.resetInstance();
 	const symbolList = await getSymbolsData();
 	const userList = await getUsersData();
 	const context = await Context.getInstance({
@@ -106,6 +106,10 @@ const trade = async () => {
 		await delay(Interval["15m"]);
 		runSubscribers();
 	} while (true);
+
+	cron.schedule(CronInterval["4h"], async () => {
+		startModel();
+	});
 };
 
 trade();

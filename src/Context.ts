@@ -36,6 +36,9 @@ export class Context {
 			return Context.instance;
 		}
 	}
+	public static async resetInstance() {
+		Context.instance = null;
+	}
 	async handleNewPosition({
 		userName,
 		pair,
@@ -422,7 +425,9 @@ export class Context {
 			openPos.positionSide === "LONG"
 				? this.symbolList[symbolIndex].currentPrice * (1 + params.defaultTP)
 				: this.symbolList[symbolIndex].currentPrice * (1 - params.defaultTP);
-
+		console.log(
+			"Protecting position for " + userName + " " + pair + " " + positionSide
+		);
 		await protectPositionService({
 			symbol: this.symbolList[symbolIndex],
 			user: this.userList[userIndex],
@@ -460,7 +465,14 @@ export class Context {
 					pos.positionSide === "LONG"
 						? pos.entryPriceUSDT * (1 + params.defaultBE)
 						: pos.entryPriceUSDT * (1 - params.defaultBE);
-
+				console.log(
+					"Securing position for " +
+						this.userList[userIndex].name +
+						" " +
+						pos.pair +
+						" " +
+						pos.positionSide
+				);
 				await securePositionService({
 					symbol,
 					user: this.userList[userIndex],
