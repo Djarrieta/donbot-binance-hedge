@@ -15,8 +15,10 @@ export const quitPositionService = async ({
 	positionSide: PositionSide;
 	coinQuantity: number;
 }) => {
-	console.log("Quit position for user: " + user.name + "in " + symbol.pair);
-
+	console.log("Quit position for user: " + user.name + " in " + symbol.pair);
+	if (!coinQuantity) {
+		throw new Error("No coin quantity");
+	}
 	const quantity = fixPrecision({
 		value: Number(coinQuantity) * symbol.currentPrice,
 		precision: symbol.quantityPrecision,
@@ -28,7 +30,7 @@ export const quitPositionService = async ({
 	});
 	await authExchange.futuresOrder({
 		type: "MARKET",
-		side: positionSide === "LONG" ? "BUY" : "SELL",
+		side: positionSide === "LONG" ? "SELL" : "BUY",
 		positionSide: positionSide === "LONG" ? "SHORT" : "LONG",
 		symbol: symbol.pair,
 		quantity,

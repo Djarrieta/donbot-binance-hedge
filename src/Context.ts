@@ -206,6 +206,29 @@ export class Context {
 				return;
 			}
 		}
+
+		// Quit position if protected position is taking too long
+		const protectedPositionsTakingTooLong = this.userList[
+			userIndex
+		].openPositions.filter(
+			(p) =>
+				p.status === "PROTECTED" &&
+				Number(p.tradeLength) >= params.maxTradeLength
+		);
+		for (const {
+			positionSide,
+			coinQuantity = 0,
+			pair,
+		} of protectedPositionsTakingTooLong) {
+			const symbol = this.symbolList.find((s) => s.pair === pair);
+			if (!symbol) continue;
+			this.quitPosition({
+				userName,
+				positionSide,
+				pair,
+				coinQuantity,
+			});
+		}
 	}
 	checkForTrades({
 		logs = true,
