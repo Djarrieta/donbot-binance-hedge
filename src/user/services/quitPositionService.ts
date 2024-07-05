@@ -15,7 +15,6 @@ export const quitPositionService = async ({
 	positionSide: PositionSide;
 	coinQuantity: number;
 }) => {
-	console.log("Quit position for user: " + user.name + " in " + symbol.pair);
 	if (!coinQuantity) {
 		throw new Error("No coin quantity");
 	}

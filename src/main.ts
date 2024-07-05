@@ -15,15 +15,24 @@ const runSubscribers = async () => {
 	console.log("Running subscribers");
 	const context = await Context.getInstance();
 	if (!context) return;
+
 	for (const symbol of context.symbolList) {
-		subscribeToSymbolUpdates({
-			pair: symbol.pair,
-			interval: params.interval,
-		});
+		try {
+			subscribeToSymbolUpdates({
+				pair: symbol.pair,
+				interval: params.interval,
+			});
+		} catch (e) {
+			console.error(e);
+		}
 	}
 
 	for (const user of context.userList) {
-		subscribeToUserUpdates({ user });
+		try {
+			subscribeToUserUpdates({ user });
+		} catch (e) {
+			console.error(e);
+		}
 	}
 };
 
@@ -102,14 +111,15 @@ const trade = async () => {
 		context.updateUsers({ userList: await getUsersData() });
 		context.securePositions();
 	});
-	do {
-		await delay(Interval["15m"]);
-		runSubscribers();
-	} while (true);
 
 	cron.schedule(CronInterval["4h"], async () => {
 		startModel();
 	});
+
+	do {
+		await delay(Interval["15m"]);
+		runSubscribers();
+	} while (true);
 };
 
 trade();

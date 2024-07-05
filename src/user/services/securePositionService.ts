@@ -20,7 +20,6 @@ export const securePositionService = async ({
 	coinQuantity,
 	bePrice,
 }: SecurePositionServiceProps) => {
-	console.log("Secure position for user: " + user.name + "in " + symbol.pair);
 	const authExchange = Binance({
 		apiKey: user.binanceApiKey,
 		apiSecret: user.binanceApiSecret || "",

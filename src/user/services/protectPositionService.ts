@@ -22,8 +22,6 @@ export const protectPositionService = async ({
 	slPrice,
 	tpPrice,
 }: ProtectPositionServiceProps) => {
-	console.log("Protect position for user: " + user.name + "in " + symbol.pair);
-
 	const authExchange = Binance({
 		apiKey: user.binanceApiKey,
 		apiSecret: user.binanceApiSecret || "",

@@ -128,21 +128,10 @@ export class Context {
 					.map((x) => x.pair)
 			)
 		);
-		const unprotectedPosUniquePairs = Array.from(
-			new Set(
-				this.userList[userIndex].openPositions
-					.filter((p) => p.status === "UNPROTECTED")
-					.map((x) => x.pair)
-			)
-		);
 
 		//Cancel orders when no open positions
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
-
-			console.log(
-				"Canceling orders for " + this.userList[userIndex].name + " in " + pair
-			);
 			await this.cancelOrders({ userName, pair });
 		}
 
@@ -153,12 +142,6 @@ export class Context {
 			);
 
 			if (openOrders.length >= 1) {
-				console.log(
-					"Canceling orders for " +
-						this.userList[userIndex].name +
-						" in " +
-						pair
-				);
 				await this.cancelOrders({
 					userName: this.userList[userIndex].name,
 					pair,
@@ -167,17 +150,14 @@ export class Context {
 		}
 
 		//Protect unprotected positions
-		for (const pair of unprotectedPosUniquePairs) {
-			console.log(
-				"Protecting position for " +
-					this.userList[userIndex].name +
-					" in " +
-					pair
-			);
+		const unprotectedPos = this.userList[userIndex].openPositions.filter(
+			(p) => p.status === "UNPROTECTED"
+		);
+		for (const { pair, positionSide } of unprotectedPos) {
 			await this.protectPosition({
 				userName,
 				pair,
-				positionSide: "LONG",
+				positionSide,
 			});
 		}
 
@@ -195,7 +175,6 @@ export class Context {
 			if (this.userList[userIndex].totalPnlPt + samePairOpenPosPnlPt > 0) {
 				for (const pos of openPosSamePair) {
 					if (!pos.coinQuantity) continue;
-					console.log("Quit Hedged position for " + pos.pair);
 					await this.quitPosition({
 						userName,
 						positionSide: pos.positionSide,
@@ -335,22 +314,37 @@ export class Context {
 			(p) => p.pair === pair
 		);
 		if (symbolIndex === -1) return;
+		console.log(
+			"Quitting position for " +
+				this.userList[userIndex].name +
+				" in " +
+				this.symbolList[symbolIndex].pair
+		);
+		try {
+			await quitPositionService({
+				user: this.userList[userIndex],
+				symbol: this.symbolList[symbolIndex],
+				positionSide,
+				coinQuantity,
+			});
 
-		await quitPositionService({
-			user: this.userList[userIndex],
-			symbol: this.symbolList[symbolIndex],
-			positionSide,
-			coinQuantity,
-		});
-
-		this.clearPositions({ userName, pair });
+			this.clearPositions({ userName, pair });
+		} catch (e) {
+			console.error(e);
+		}
 	}
 	async cancelOrders({ userName, pair }: { userName: string; pair: string }) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
-
-		await cancelOrdersService({ user: this.userList[userIndex], pair });
-		this.clearOrders({ userName, pair });
+		console.log(
+			"Canceling orders for " + this.userList[userIndex].name + " in " + pair
+		);
+		try {
+			await cancelOrdersService({ user: this.userList[userIndex], pair });
+			this.clearOrders({ userName, pair });
+		} catch (e) {
+			console.error(e);
+		}
 	}
 	async openPosition({
 		userName,
@@ -365,9 +359,6 @@ export class Context {
 		sl: number;
 		tp: number;
 	}) {
-		console.log(
-			"Opening position for " + userName + " " + pair + " " + positionSide
-		);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) {
 			return;
@@ -396,24 +387,30 @@ export class Context {
 			params.minAmountToTrade / tpPrice,
 			params.minAmountToTrade / slPrice
 		);
-
-		await openPositionService({
-			symbol: this.symbolList[symbolIndex],
-			user: this.userList[userIndex],
-			positionSide,
-			coinQuantity,
-			slPrice,
-			tpPrice,
-		});
-		this.userList[userIndex].openPositions.push({
-			pair,
-			positionSide,
-			coinQuantity,
-			startTime: getDate().date,
-			status: "PROTECTED",
-			pnl: 0,
-			entryPriceUSDT: this.symbolList[symbolIndex].currentPrice,
-		});
+		console.log(
+			"Opening position for " + userName + " " + pair + " " + positionSide
+		);
+		try {
+			await openPositionService({
+				symbol: this.symbolList[symbolIndex],
+				user: this.userList[userIndex],
+				positionSide,
+				coinQuantity,
+				slPrice,
+				tpPrice,
+			});
+			this.userList[userIndex].openPositions.push({
+				pair,
+				positionSide,
+				coinQuantity,
+				startTime: getDate().date,
+				status: "PROTECTED",
+				pnl: 0,
+				entryPriceUSDT: this.symbolList[symbolIndex].currentPrice,
+			});
+		} catch (e) {
+			console.error(e);
+		}
 	}
 	async protectPosition({
 		userName,
@@ -451,16 +448,20 @@ export class Context {
 		console.log(
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
-		await protectPositionService({
-			symbol: this.symbolList[symbolIndex],
-			user: this.userList[userIndex],
-			positionSide,
-			coinQuantity: Number(openPos.coinQuantity),
-			slPrice,
-			tpPrice,
-		});
+		try {
+			await protectPositionService({
+				symbol: this.symbolList[symbolIndex],
+				user: this.userList[userIndex],
+				positionSide,
+				coinQuantity: Number(openPos.coinQuantity),
+				slPrice,
+				tpPrice,
+			});
 
-		this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
+			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
+		} catch (e) {
+			console.error(e);
+		}
 	}
 	async securePositions() {
 		if (!params.defaultBE || !params.breakevenAlert) return;
@@ -496,18 +497,22 @@ export class Context {
 						" " +
 						pos.positionSide
 				);
-				await securePositionService({
-					symbol,
-					user: this.userList[userIndex],
-					positionSide:
-						this.userList[userIndex].openPositions[posIndex].positionSide,
-					coinQuantity: Number(
-						this.userList[userIndex].openPositions[posIndex].coinQuantity
-					),
-					bePrice,
-				});
+				try {
+					await securePositionService({
+						symbol,
+						user: this.userList[userIndex],
+						positionSide:
+							this.userList[userIndex].openPositions[posIndex].positionSide,
+						coinQuantity: Number(
+							this.userList[userIndex].openPositions[posIndex].coinQuantity
+						),
+						bePrice,
+					});
 
-				this.userList[userIndex].openPositions[posIndex].status = "SECURED";
+					this.userList[userIndex].openPositions[posIndex].status = "SECURED";
+				} catch (e) {
+					console.error(e);
+				}
 			}
 		}
 	}
