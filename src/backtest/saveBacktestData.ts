@@ -6,6 +6,7 @@ import { getDate } from "../utils/getDate";
 import { symbolsBT } from "../db/schema";
 import { getPairList } from "../symbol/services/getPairList";
 import { Interval } from "../sharedModels/Interval";
+import { withRetry } from "../utils/withRetry";
 
 type SaveBacktestDataProps = { pairList: string[] };
 
@@ -23,7 +24,7 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 		cliProgress.Presets.shades_classic
 	);
 	progressBar.start(pairList.length, 0);
-	await db.delete(symbolsBT);
+	await withRetry(async () => await db.delete(symbolsBT));
 
 	for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 		const pair = pairList[pairIndex];
@@ -41,9 +42,13 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 			};
 		});
 		if (!fixedDateCandlestick.length) continue;
-		await db
-			.insert(symbolsBT)
-			.values({ pair, candlestickBT: JSON.stringify(fixedDateCandlestick) });
+		await withRetry(
+			async () =>
+				await db
+					.insert(symbolsBT)
+					.values({ pair, candlestickBT: JSON.stringify(fixedDateCandlestick) })
+		);
+
 		progressBar.update(pairIndex + 1);
 	}
 	progressBar.stop();

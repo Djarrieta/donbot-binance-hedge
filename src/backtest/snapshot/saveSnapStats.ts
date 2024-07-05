@@ -5,6 +5,7 @@ import type { Strategy } from "../../strategies/Strategy";
 import { statsSnapBT, type StatsSnapBT } from "../../db/schema";
 import { snapshot } from ".";
 import { chosenStrategies } from "../../strategies";
+import { withRetry } from "../../utils/withRetry";
 
 type SaveStatsResultsProps = {
 	slArray: number[];
@@ -20,7 +21,7 @@ export const saveSnapStats = async ({
 	strategies,
 }: SaveStatsResultsProps) => {
 	console.log(strategies.map((s) => s.stgName).join(", "));
-	await db.delete(statsSnapBT);
+	await withRetry(async () => await db.delete(statsSnapBT));
 
 	const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 
@@ -40,7 +41,9 @@ export const saveSnapStats = async ({
 				let results: StatsSnapBT[] = [];
 				const result = await snapshot({ log: false });
 				result && results.push(result);
-				await db.insert(statsSnapBT).values(results);
+				await withRetry(
+					async () => await db.insert(statsSnapBT).values(results)
+				);
 				loop++;
 				progressBar.update(loop);
 			}

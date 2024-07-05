@@ -3,9 +3,10 @@ import { params } from "../../Params";
 import { db } from "../../db/db";
 import { accumulate } from ".";
 import { statsAccBT } from "../../db/schema";
+import { withRetry } from "../../utils/withRetry";
 
 export const saveAccStats = async () => {
-	await db.delete(statsAccBT);
+	await withRetry(async () => await db.delete(statsAccBT));
 
 	const {
 		backtestSLArray: slArray,
@@ -30,8 +31,8 @@ export const saveAccStats = async () => {
 				const result = await accumulate({ log: false });
 
 				if (!result) continue;
+				await withRetry(async () => await db.insert(statsAccBT).values(result));
 
-				await db.insert(statsAccBT).values(result);
 				loop++;
 				progressBar.update(loop);
 			}
