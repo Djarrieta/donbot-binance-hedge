@@ -52,6 +52,10 @@ const startModel = async () => {
 		"Max Protected Positions": params.maxProtectedPositions,
 		"Max Hedge Positions": params.maxHedgePositions,
 	});
+	console.log(
+		"Strategies: ",
+		chosenStrategies.map((s) => s.stgName).join(", ")
+	);
 	Context.resetInstance();
 	const symbolList = await getSymbolsData();
 	const userList = await getUsersData();

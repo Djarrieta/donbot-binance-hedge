@@ -382,11 +382,15 @@ export class Context {
 				? this.symbolList[symbolIndex].currentPrice * (1 + tp)
 				: this.symbolList[symbolIndex].currentPrice * (1 - tp);
 
-		const coinQuantity = Math.max(
+		const quantityUSDT = Math.max(
 			this.userList[userIndex].balanceUSDT * params.amountToTradePt,
-			params.minAmountToTrade / this.symbolList[symbolIndex].currentPrice,
-			params.minAmountToTrade / tpPrice,
-			params.minAmountToTrade / slPrice
+			params.minAmountToTrade
+		);
+
+		const coinQuantity = Math.max(
+			quantityUSDT / this.symbolList[symbolIndex].currentPrice,
+			quantityUSDT / tpPrice,
+			quantityUSDT / slPrice
 		);
 		console.log(
 			"Opening position for " + userName + " " + pair + " " + positionSide
@@ -625,6 +629,7 @@ export class Context {
 		if (!userList) return;
 		this.userList = userList;
 	}
+
 	text() {
 		const userText = `${this.userList.map((u) => u.text).join(`\n`)}`;
 		const symbolText = `Symbols: ${
