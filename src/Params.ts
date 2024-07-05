@@ -20,7 +20,7 @@ export const params = {
 	lookBackLength: 200,
 	fee: 0.0005,
 	minAmountToTrade: 6,
-	amountToTradePt: 50 / 100,
+	amountToTradePt: 25 / 100,
 	candlestickAPILimit: 500,
 };
 export type Params = typeof params;

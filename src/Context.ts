@@ -383,6 +383,7 @@ export class Context {
 				: this.symbolList[symbolIndex].currentPrice * (1 - tp);
 
 		const coinQuantity = Math.max(
+			this.userList[userIndex].balanceUSDT * params.amountToTradePt,
 			params.minAmountToTrade / this.symbolList[symbolIndex].currentPrice,
 			params.minAmountToTrade / tpPrice,
 			params.minAmountToTrade / slPrice
