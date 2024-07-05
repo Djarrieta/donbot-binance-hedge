@@ -186,12 +186,12 @@ export class Context {
 			}
 		}
 
-		// Quit position if protected position is taking too long
+		// Quit position if protected or secured position is taking too long
 		const protectedPositionsTakingTooLong = this.userList[
 			userIndex
 		].openPositions.filter(
 			(p) =>
-				p.status === "PROTECTED" &&
+				(p.status === "PROTECTED" || p.status === "SECURED") &&
 				Number(p.tradeLength) >= params.maxTradeLength
 		);
 		for (const {
