@@ -1,8 +1,8 @@
-import type { User } from "../User";
-import type { Position, PositionSide } from "../../sharedModels/Position";
-import type { Symbol } from "../../symbol/Symbol";
 import Binance from "binance-api-node";
+import type { PositionSide } from "../../sharedModels/Position";
+import type { Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
+import type { User } from "../User";
 
 export const quitPositionService = async ({
 	user,
@@ -19,7 +19,7 @@ export const quitPositionService = async ({
 		throw new Error("No coin quantity");
 	}
 	const quantity = fixPrecision({
-		value: Number(coinQuantity) * symbol.currentPrice,
+		value: Number(coinQuantity),
 		precision: symbol.quantityPrecision,
 	});
 

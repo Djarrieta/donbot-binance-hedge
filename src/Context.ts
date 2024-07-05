@@ -175,6 +175,7 @@ export class Context {
 			if (this.userList[userIndex].totalPnlPt + samePairOpenPosPnlPt > 0) {
 				for (const pos of openPosSamePair) {
 					if (!pos.coinQuantity) continue;
+					console.log("Quitting " + pos.pair + " PNL Balance");
 					await this.quitPosition({
 						userName,
 						positionSide: pos.positionSide,
@@ -186,8 +187,8 @@ export class Context {
 			}
 		}
 
-		// Quit position if protected or secured position is taking too long
-		const protectedPositionsTakingTooLong = this.userList[
+		// Quit position if it is taking too long
+		const positionsTakingTooLong = this.userList[
 			userIndex
 		].openPositions.filter(
 			(p) =>
@@ -198,9 +199,10 @@ export class Context {
 			positionSide,
 			coinQuantity = 0,
 			pair,
-		} of protectedPositionsTakingTooLong) {
+		} of positionsTakingTooLong) {
 			const symbol = this.symbolList.find((s) => s.pair === pair);
 			if (!symbol) continue;
+			console.log("Quitting " + pair + " Position taking too long");
 			this.quitPosition({
 				userName,
 				positionSide,
@@ -310,9 +312,7 @@ export class Context {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
 
-		const symbolIndex = this.userList[userIndex].openPositions.findIndex(
-			(p) => p.pair === pair
-		);
+		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
 		if (symbolIndex === -1) return;
 		console.log(
 			"Quitting position for " +
@@ -424,9 +424,7 @@ export class Context {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
 
-		const symbolIndex = this.userList[userIndex].openPositions.findIndex(
-			(p) => p.pair === pair
-		);
+		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
 		if (symbolIndex === -1) return;
 
 		const openPosIndex = this.userList[userIndex].openPositions.findIndex(
@@ -461,6 +459,12 @@ export class Context {
 			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
 		} catch (e) {
 			console.error(e);
+			await this.quitPosition({
+				userName,
+				pair,
+				positionSide,
+				coinQuantity: Number(openPos.coinQuantity),
+			});
 		}
 	}
 	async securePositions() {
