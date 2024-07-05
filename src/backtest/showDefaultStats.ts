@@ -52,7 +52,12 @@ export const showDefaultStats = async () => {
 		.sort((a, b) => a.pair.localeCompare(b.pair))
 		.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-	console.log("Closed positions for the first result:");
+	console.table({
+		tp: formatPercent(params.defaultTP),
+		sl: formatPercent(params.defaultSL),
+		maxTradeLength: params.maxTradeLength,
+		amountToTradePt: formatPercent(params.amountToTradePt),
+	});
 	console.table(closedPositions);
 
 	console.log("Winning pairs for the first result:");

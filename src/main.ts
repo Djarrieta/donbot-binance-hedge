@@ -47,6 +47,7 @@ const startModel = async () => {
 			formatPercent(params.defaultBE) +
 			" @ " +
 			formatPercent(params.breakevenAlert),
+		"Amount to trade": formatPercent(params.amountToTradePt),
 		"Max Trade Length": params.maxTradeLength,
 		"Max Protected Positions": params.maxProtectedPositions,
 		"Max Hedge Positions": params.maxHedgePositions,

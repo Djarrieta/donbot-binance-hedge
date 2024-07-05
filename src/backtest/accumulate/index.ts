@@ -114,7 +114,8 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				(openPosition.positionSide === "SHORT" &&
 					(lastCandle.high >= stopLoss || lastCandle.close >= stopLoss))
 			) {
-				openPosition.pnl = -params.defaultSL - params.fee;
+				openPosition.pnl =
+					params.amountToTradePt * (-params.defaultSL - params.fee);
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
@@ -138,7 +139,8 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				(openPosition.positionSide === "SHORT" &&
 					(lastCandle.low <= takeProfit || lastCandle.close <= takeProfit))
 			) {
-				openPosition.pnl = params.defaultTP - params.fee;
+				openPosition.pnl =
+					params.amountToTradePt * (params.defaultTP - params.fee);
 
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 
@@ -166,7 +168,8 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 						: (openPosition.entryPriceUSDT - lastCandle.close) /
 						  openPosition.entryPriceUSDT;
 
-				openPosition.pnl = pnlWithoutFee - params.fee;
+				openPosition.pnl =
+					params.amountToTradePt * (pnlWithoutFee - params.fee);
 
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 
