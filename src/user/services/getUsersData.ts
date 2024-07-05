@@ -178,7 +178,12 @@ export const getUsersData = async () => {
 			"; Total $" +
 			(Number(totalPnlPt || 0) * balanceUSDT).toFixed(2) +
 			" " +
-			formatPercent(Number(totalPnlPt || 0));
+			formatPercent(Number(totalPnlPt || 0)) +
+			"; Amount to trade $" +
+			Math.max(
+				params.amountToTradePt * balanceUSDT,
+				params.minAmountToTrade
+			).toFixed(2);
 
 		if (openPositions.length) {
 			const loggedPos: string[] = [];
