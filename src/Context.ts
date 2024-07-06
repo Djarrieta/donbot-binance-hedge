@@ -136,17 +136,14 @@ export class Context {
 		}
 
 		//Cancel orders for Hedge positions
-		for (const pair of hedgePosUniquePairs) {
-			const openOrders = this.userList[userIndex].openOrders.filter(
-				(o) => o.pair === pair
-			);
-
-			if (openOrders.length >= 1) {
-				await this.cancelOrders({
-					userName: this.userList[userIndex].name,
-					pair,
-				});
-			}
+		const pairWithOpenOrderForHedgePos = this.userList[userIndex].openOrders
+			.filter((o) => hedgePosUniquePairs.includes(o.pair))
+			.map((o) => o.pair);
+		for (const pair of pairWithOpenOrderForHedgePos) {
+			await this.cancelOrders({
+				userName: this.userList[userIndex].name,
+				pair,
+			});
 		}
 
 		//Protect unprotected positions

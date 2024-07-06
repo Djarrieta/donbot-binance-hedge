@@ -117,10 +117,6 @@ const trade = async () => {
 		context.securePositions();
 	});
 
-	cron.schedule(CronInterval["4h"], async () => {
-		startModel();
-	});
-
 	do {
 		await delay(Interval["15m"]);
 		runSubscribers();
