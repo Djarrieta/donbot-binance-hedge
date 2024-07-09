@@ -16,7 +16,7 @@
     "showAccStats": "bun ./src/backtest/accumulate/showAccStats.ts",
     "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
     "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
-    "showDefaultStats": "bun ./src/backtest/showDefaultStats",
+    "showDefaultStats": "bun ./src/backtest/showDefaultStats.ts",
 
     "dbDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
     "dbCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",

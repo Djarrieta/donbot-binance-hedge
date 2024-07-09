@@ -1,7 +1,10 @@
 import { params } from "../Params";
+import type { StatClosedPosition } from "../sharedModels/Position";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate, type DateString } from "../utils/getDate";
+
 import { getSortedAccResults } from "./accumulate/sortAccResults";
+import { monteCarloDrawdownAnalysis } from "./monteCarloAnalysis";
 import { getSortedSnapResults } from "./snapshot/sortSnapResults";
 
 export const showDefaultStats = async () => {
@@ -21,18 +24,7 @@ export const showDefaultStats = async () => {
 			s.maxTradeLength === params.maxTradeLength
 	);
 
-	type ClosedPosition = {
-		pair: string;
-		startTime: DateString;
-		endTime: DateString;
-		positionSide: string;
-		pnl: string;
-		accPnl: string;
-		entryPrice: string;
-		stgName: string;
-	};
-
-	const closedPositions: ClosedPosition[] = filteredAccResults.length
+	const accClosedPositions: StatClosedPosition[] = filteredAccResults.length
 		? JSON.parse(filteredAccResults[0].closedPositions as string).map(
 				(c: any) => {
 					return {
@@ -40,7 +32,7 @@ export const showDefaultStats = async () => {
 						startTime: getDate(c.startTime).dateString,
 						endTime: getDate(c.endTime).dateString,
 						positionSide: c.positionSide,
-						pnl: formatPercent(Number(c.pnl)),
+						pnl: Number(c.pnl),
 						accPnl: formatPercent(Number(c.accPnl)),
 						entryPrice: Number(c.entryPriceUSDT).toFixed(2),
 						stgName: c.stgName,
@@ -48,9 +40,13 @@ export const showDefaultStats = async () => {
 				}
 		  )
 		: [];
-	closedPositions
+	accClosedPositions
 		.sort((a, b) => a.pair.localeCompare(b.pair))
-		.sort((a, b) => a.startTime.localeCompare(b.startTime));
+		.sort((a, b) =>
+			getDate(a.startTime).dateString.localeCompare(
+				getDate(b.startTime).dateString
+			)
+		);
 
 	console.table({
 		tp: formatPercent(params.defaultTP),
@@ -58,7 +54,14 @@ export const showDefaultStats = async () => {
 		maxTradeLength: params.maxTradeLength,
 		amountToTradePt: formatPercent(params.amountToTradePt),
 	});
-	console.table(closedPositions);
+	console.table(
+		accClosedPositions.map((c) => {
+			return {
+				...c,
+				pnl: formatPercent(c.pnl),
+			};
+		})
+	);
 
 	console.log("Winning pairs for the first result:");
 	console.log(JSON.parse(snapFilteredResults[0].winningPairs as string));
@@ -89,10 +92,24 @@ export const showDefaultStats = async () => {
 			maxAccPnl: formatPercent(Number(r.maxAccPnl)),
 			minAccPnl: formatPercent(Number(r.minAccPnl)),
 			accPnl: formatPercent(Number(r.accPnl)),
-			minDrawdown: formatPercent(Number(r.minDrawdown)),
+			drawdown: formatPercent(Number(r.drawdown)),
 			winRate: formatPercent(Number(r.winRate)),
 			avTradeLength: Number(r.avTradeLength).toFixed(2),
 		}))
+	);
+
+	const confidenceLevel = 0.95;
+	const amountOfSimulations = 1000;
+	const drawdownMonteCarlo = monteCarloDrawdownAnalysis({
+		accClosedPositions,
+		confidenceLevel,
+		amountOfSimulations,
+	});
+
+	console.log(
+		`Drawdown Monte Carlo with ${amountOfSimulations} simulations and confidence level ${formatPercent(
+			confidenceLevel
+		)} --> ${formatPercent(drawdownMonteCarlo)} `
 	);
 };
 showDefaultStats();

@@ -8,6 +8,7 @@ import { chosenStrategies } from "../../strategies";
 import { type Symbol } from "../../symbol/Symbol";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
+import { monteCarloDrawdownAnalysis } from "../monteCarloAnalysis";
 
 export const accumulate = async ({ log }: { log: boolean }) => {
 	const symbolsData = await db.select().from(symbolsBT);
@@ -52,7 +53,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	let maxAccPnl = 0;
 	let minAccPnl = 0;
 	let accPnl = 0;
-	let minDrawdown = 0;
+	let drawdown = 0;
 
 	do {
 		const candlestickStartIndex = candleIndex - params.lookBackLength;
@@ -120,7 +121,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
 				closedPositions.push({
 					...openPosition,
 					endTime: lastCandle.openTime,
@@ -147,7 +148,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
 				closedPositions.push({
 					...openPosition,
 					endTime: lastCandle.openTime,
@@ -176,7 +177,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
 				closedPositions.push({
 					...openPosition,
 					endTime: lastCandle.openTime,
@@ -230,6 +231,11 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	const avTradeLength =
 		closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
 			tradesQty || 0;
+	const drawdownMonteCarlo = monteCarloDrawdownAnalysis({
+		confidenceLevel: 0.95,
+		amountOfSimulations: 1000,
+		accClosedPositions: closedPositions,
+	});
 	const stats: StatsAccBT = {
 		maxTradeLength: params.maxTradeLength,
 		sl: params.defaultSL,
@@ -238,7 +244,8 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		maxAccPnl,
 		minAccPnl,
 		accPnl,
-		minDrawdown: -minDrawdown,
+		drawdown,
+		drawdownMonteCarlo,
 		winRate,
 		avPnl: accPnl / tradesQty,
 		avTradeLength,

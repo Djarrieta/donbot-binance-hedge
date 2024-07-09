@@ -23,3 +23,13 @@ export type Position = {
 	sl?: number;
 	tp?: number;
 };
+export type StatClosedPosition = Pick<
+	Position,
+	| "pnl"
+	| "pair"
+	| "positionSide"
+	| "startTime"
+	| "endTime"
+	| "stgName"
+	| "entryPriceUSDT"
+>;
