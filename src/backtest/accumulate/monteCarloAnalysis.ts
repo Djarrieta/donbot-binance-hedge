@@ -14,24 +14,34 @@ export const monteCarloAnalysis = ({
 		}
 		return values;
 	};
-	const response = [];
+	const result = [];
 	for (let index = 0; index < amountOfSimulations; index++) {
 		const shuffled = shuffleArray(values);
 		let maxAccPnl = 0;
 		let accPnl = 0;
 		let drawdown = 0;
+		let badRun = 0;
+		let badRunLocal = 0;
 		for (let index = 0; index < shuffled.length; index++) {
 			accPnl += Number(shuffled[index]);
 			if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 			if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
+			if (Number(shuffled[index]) <= 0) badRunLocal++;
+			if (Number(shuffled[index]) > 0) {
+				if (badRunLocal > badRun) badRun = badRunLocal;
+				badRunLocal = 0;
+			}
 		}
 
-		response.push({
+		result.push({
 			drawdown,
+			badRun,
 		});
 	}
-	response.sort((a, b) => a.drawdown - b.drawdown);
-	const drawdownMonteCarlo =
-		response[Math.floor(amountOfSimulations * confidenceLevel)].drawdown;
-	return { drawdownMonteCarlo };
+	result.sort((a, b) => a.drawdown - b.drawdown);
+	const response = result[Math.floor(amountOfSimulations * confidenceLevel)];
+	return {
+		drawdownMonteCarlo: response.drawdown,
+		badRunMonteCarlo: response.badRun,
+	};
 };

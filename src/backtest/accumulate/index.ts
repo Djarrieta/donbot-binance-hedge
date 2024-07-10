@@ -231,7 +231,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
 			tradesQty || 0;
 
-	const { drawdownMonteCarlo } = monteCarloAnalysis({
+	const { drawdownMonteCarlo, badRunMonteCarlo } = monteCarloAnalysis({
 		values: closedPositions.map((p) => p.pnl),
 		amountOfSimulations: 1000,
 		confidenceLevel: 0.95,
@@ -247,7 +247,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		accPnl,
 		drawdown,
 		drawdownMonteCarlo,
-		badRun: 0,
+		badRunMonteCarlo,
 		winRate,
 		avPnl: accPnl / tradesQty,
 		avTradeLength,

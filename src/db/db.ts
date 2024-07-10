@@ -50,7 +50,7 @@ export type StatsAccBT = {
 	accPnl: number;
 	drawdown: number;
 	drawdownMonteCarlo: number;
-	badRun: number;
+	badRunMonteCarlo: number;
 	winRate: number;
 	avPnl: number;
 	avTradeLength: number;
@@ -59,7 +59,7 @@ export type StatsAccBT = {
 
 export const createTableStatsAccBTService = () => {
 	db.query(
-		"CREATE TABLE IF NOT EXISTS statsAccBT (maxTradeLength, sl, tp, tradesQty, maxAccPnl, minAccPnl, accPnl, drawdown, drawdownMonteCarlo, badRun, winRate, avPnl, avTradeLength, closedPositions)"
+		"CREATE TABLE IF NOT EXISTS statsAccBT (maxTradeLength, sl, tp, tradesQty, maxAccPnl, minAccPnl, accPnl, drawdown, drawdownMonteCarlo, badRunMonteCarlo, winRate, avPnl, avTradeLength, closedPositions)"
 	).run();
 };
 
