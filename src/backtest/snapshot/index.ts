@@ -6,7 +6,8 @@ import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 import { Context } from "../../Context";
-import { getSymbolsBTService, type StatsSnapBT } from "../../db/db";
+import { getSymbolsBTService } from "../services";
+import type { StatSnapBT } from "../StatSnapBT";
 
 export const snapshot = async ({ log }: { log: boolean }) => {
 	const symbolsData = getSymbolsBTService();
@@ -218,7 +219,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 		}
 	}
 
-	const stats: StatsSnapBT = {
+	const stats: StatSnapBT = {
 		maxTradeLength: params.maxTradeLength,
 		sl: params.defaultSL,
 		tp: params.defaultTP,

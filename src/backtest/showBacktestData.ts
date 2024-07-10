@@ -1,4 +1,4 @@
-import { getSymbolsBTService } from "../db/db";
+import { getSymbolsBTService } from "./services";
 import type { Candle } from "../sharedModels/Candle";
 import { Interval } from "../sharedModels/Interval";
 import { getDate } from "../utils/getDate";

@@ -1,4 +1,4 @@
-import { getSnapStatsBTService } from "../../db/db";
+import { getSnapStatsBTService } from "../services";
 
 export const getSortedSnapResults = async () => {
 	const results = getSnapStatsBTService();

@@ -1,4 +1,4 @@
-import { getAccStatsBTService } from "../../db/db";
+import { getAccStatsBTService } from "../services";
 
 export const getSortedAccResults = async () => {
 	const results = getAccStatsBTService();

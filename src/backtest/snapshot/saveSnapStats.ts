@@ -4,11 +4,7 @@ import type { Strategy } from "../../strategies/Strategy";
 import { snapshot } from ".";
 import { chosenStrategies } from "../../strategies";
 import { withRetry } from "../../utils/withRetry";
-import {
-	deleteTableService,
-	insertSnapStatsBTService,
-	type StatsSnapBT,
-} from "../../db/db";
+import { deleteTableService, insertSnapStatsBTService } from "../services";
 
 type SaveStatsResultsProps = {
 	slArray: number[];
@@ -43,8 +39,8 @@ export const saveSnapStats = async ({
 				params.maxTradeLength = maxTradeLength;
 				const result = await snapshot({ log: false });
 				if (!result) continue;
+				withRetry(() => insertSnapStatsBTService(result));
 
-				insertSnapStatsBTService(result);
 				loop++;
 				progressBar.update(loop);
 			}

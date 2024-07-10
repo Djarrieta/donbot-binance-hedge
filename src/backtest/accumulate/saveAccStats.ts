@@ -2,7 +2,7 @@ import cliProgress from "cli-progress";
 import { params } from "../../Params";
 import { accumulate } from ".";
 import { withRetry } from "../../utils/withRetry";
-import { deleteTableService, insertAccStatsBTService } from "../../db/db";
+import { deleteTableService, insertAccStatsBTService } from "../services";
 
 export const saveAccStats = async () => {
 	deleteTableService("statsAccBT");
@@ -30,7 +30,7 @@ export const saveAccStats = async () => {
 				const result = await accumulate({ log: false });
 
 				if (!result) continue;
-				insertAccStatsBTService(result);
+				withRetry(() => insertAccStatsBTService(result));
 
 				loop++;
 				progressBar.update(loop);

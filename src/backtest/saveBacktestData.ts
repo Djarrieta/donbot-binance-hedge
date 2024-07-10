@@ -9,7 +9,7 @@ import {
 	deleteTableService,
 	getSymbolsBTService,
 	insertSymbolBTService,
-} from "../db/db";
+} from "./services";
 
 type SaveBacktestDataProps = { pairList: string[] };
 
@@ -45,11 +45,12 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 			};
 		});
 		if (!fixedDateCandlestick.length) continue;
-
-		insertSymbolBTService({
-			pair,
-			candlestickBT: JSON.stringify(fixedDateCandlestick),
-		});
+		withRetry(() =>
+			insertSymbolBTService({
+				pair,
+				candlestickBT: JSON.stringify(fixedDateCandlestick),
+			})
+		);
 
 		progressBar.update(pairIndex + 1);
 	}

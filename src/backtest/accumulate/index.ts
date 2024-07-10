@@ -1,12 +1,13 @@
 import { Context } from "../../Context";
 import { params } from "../../Params";
-import { getSymbolsBTService, type StatsAccBT } from "../../db/db";
 import type { Candle } from "../../sharedModels/Candle";
 import type { Position } from "../../sharedModels/Position";
 import { chosenStrategies } from "../../strategies";
 import { type Symbol } from "../../symbol/Symbol";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
+import type { StatAccBT } from "../StatAccBT";
+import { getSymbolsBTService } from "../services";
 import { monteCarloAnalysis } from "./monteCarloAnalysis";
 
 export const accumulate = async ({ log }: { log: boolean }) => {
@@ -237,7 +238,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		confidenceLevel: 0.95,
 	});
 
-	const stats: StatsAccBT = {
+	const stats: StatAccBT = {
 		maxTradeLength: params.maxTradeLength,
 		sl: params.defaultSL,
 		tp: params.defaultTP,
