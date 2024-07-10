@@ -14,7 +14,7 @@ export const showSnapStats = async () => {
 			winRate: formatPercent(Number(r.winRate)),
 		}))
 	);
-	console.log("Winning pairs for the first result:");
+	console.log("Winning pairs:");
 	console.log(JSON.parse(sortedResults[0].winningPairs as string));
 };
 

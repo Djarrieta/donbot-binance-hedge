@@ -60,7 +60,7 @@ export const showDefaultStats = async () => {
 	});
 	console.table(closedPositions);
 
-	console.log("Winning pairs for the first result:");
+	console.log("Winning pairs:");
 	console.log(JSON.parse(snapFilteredResults[0].winningPairs as string));
 
 	console.log(
@@ -90,6 +90,7 @@ export const showDefaultStats = async () => {
 			minAccPnl: formatPercent(Number(r.minAccPnl)),
 			accPnl: formatPercent(Number(r.accPnl)),
 			drawdown: formatPercent(Number(r.drawdown)),
+			drawdownMonteCarlo: formatPercent(Number(r.drawdownMonteCarlo)),
 			winRate: formatPercent(Number(r.winRate)),
 			avTradeLength: Number(r.avTradeLength).toFixed(2),
 		}))

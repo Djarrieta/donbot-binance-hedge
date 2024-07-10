@@ -7,7 +7,7 @@ export const getSortedAccResults = async () => {
 		.sort((a, b) => Number(b.tradesQty) - Number(a.tradesQty))
 		.sort((a, b) => Number(b.winRate) - Number(a.winRate))
 		.sort((a, b) => Number(a.minAccPnl) - Number(b.minAccPnl))
-		.sort((a, b) => Number(b.drawdown) - Number(a.drawdown))
+		.sort((a, b) => Number(b.drawdownMonteCarlo) - Number(a.drawdownMonteCarlo))
 		.sort((a, b) => Number(b.accPnl) - Number(a.accPnl));
 
 	return sortedResults;

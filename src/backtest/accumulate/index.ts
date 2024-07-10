@@ -233,7 +233,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 
 	const { drawdownMonteCarlo } = monteCarloAnalysis({
 		values: closedPositions.map((p) => p.pnl),
-		amountOfSimulations: 10,
+		amountOfSimulations: 1000,
 		confidenceLevel: 0.95,
 	});
 
