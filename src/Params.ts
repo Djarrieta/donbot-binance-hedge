@@ -11,7 +11,7 @@ export const params = {
 	maxProtectedPositions: 1,
 	maxHedgePositions: 15,
 
-	lookBackLengthBacktest: (7 * Interval["1d"]) / Interval["5m"],
+	lookBackLengthBacktest: (30 * Interval["1d"]) / Interval["5m"],
 	backtestSLArray: [1 / 100, 2 / 100],
 	backtestTPArray: [10 / 100],
 	backtestMaxTradeLengthArray: [100],
