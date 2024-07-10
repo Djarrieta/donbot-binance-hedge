@@ -1,7 +1,6 @@
 import { Context } from "../../Context";
 import { params } from "../../Params";
-import { db } from "../../db/db";
-import { symbolsBT, type StatsAccBT } from "../../db/schema";
+import { getSymbolsBTService, type StatsAccBT } from "../../db/db";
 import type { Candle } from "../../sharedModels/Candle";
 import type { Position } from "../../sharedModels/Position";
 import { chosenStrategies } from "../../strategies";
@@ -10,7 +9,7 @@ import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 
 export const accumulate = async ({ log }: { log: boolean }) => {
-	const symbolsData = await db.select().from(symbolsBT);
+	const symbolsData = getSymbolsBTService();
 
 	log &&
 		console.table({
@@ -52,7 +51,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	let maxAccPnl = 0;
 	let minAccPnl = 0;
 	let accPnl = 0;
-	let minDrawdown = 0;
+	let drawdown = 0;
 
 	do {
 		const candlestickStartIndex = candleIndex - params.lookBackLength;
@@ -120,7 +119,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
 				closedPositions.push({
 					...openPosition,
 					endTime: lastCandle.openTime,
@@ -147,7 +146,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
 				closedPositions.push({
 					...openPosition,
 					endTime: lastCandle.openTime,
@@ -176,7 +175,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
 				if (accPnl < minAccPnl) minAccPnl = accPnl;
-				if (maxAccPnl - accPnl > minDrawdown) minDrawdown = maxAccPnl - accPnl;
+				if (maxAccPnl - accPnl > drawdown) drawdown = maxAccPnl - accPnl;
 				closedPositions.push({
 					...openPosition,
 					endTime: lastCandle.openTime,
@@ -238,7 +237,9 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		maxAccPnl,
 		minAccPnl,
 		accPnl,
-		minDrawdown: -minDrawdown,
+		drawdown,
+		drawdownMonteCarlo: 0,
+		badRun: 0,
 		winRate,
 		avPnl: accPnl / tradesQty,
 		avTradeLength,

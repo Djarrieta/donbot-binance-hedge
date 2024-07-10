@@ -1,8 +1,7 @@
-import { db } from "../../db/db";
-import { statsSnapBT } from "../../db/schema";
+import { getSnapStatsBTService } from "../../db/db";
 
 export const getSortedSnapResults = async () => {
-	const results = await db.select().from(statsSnapBT);
+	const results = getSnapStatsBTService();
 
 	const sortedResults = results
 		.sort((a, b) => Number(b.tradesQty) - Number(a.tradesQty))

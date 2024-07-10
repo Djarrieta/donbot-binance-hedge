@@ -1,16 +1,15 @@
 import { params } from "../../Params";
-import { db } from "../../db/db";
 import type { Candle } from "../../sharedModels/Candle";
 import { type Position } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
-import { symbolsBT, type StatsSnapBT } from "../../db/schema";
 import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 import { Context } from "../../Context";
+import { getSymbolsBTService, type StatsSnapBT } from "../../db/db";
 
 export const snapshot = async ({ log }: { log: boolean }) => {
-	const symbolsData = await db.select().from(symbolsBT);
+	const symbolsData = getSymbolsBTService();
 
 	log &&
 		console.table({

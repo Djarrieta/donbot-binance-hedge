@@ -6,21 +6,16 @@
     "start": "bun ./src/main.ts",
     "dbRestart": "bun dbDelete && bun i && bun dbCreate && bun dbMigrate ",
     "lint": "bunx oxlint && tsc ",
-
     "saveBacktestData": "bun ./src/backtest/saveBacktestData.ts",
     "saveSnapStats": "bun ./src/backtest/snapshot/saveSnapStats.ts",
     "saveAccStats": "bun ./src/backtest/accumulate/saveAccStats.ts",
-
     "showBacktestData": "bun ./src/backtest/showBacktestData.ts",
     "showSnapStats": "bun ./src/backtest/snapshot/showSnapStats.ts",
     "showAccStats": "bun ./src/backtest/accumulate/showAccStats.ts",
     "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
     "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
     "showDefaultStats": "bun ./src/backtest/showDefaultStats",
-
-    "dbDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules",
-    "dbCreate": "drizzle-kit generate:sqlite --config drizzle.config.ts",
-    "dbMigrate": "bun ./src/db/migrate.ts"
+    "dbDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -37,7 +32,6 @@
     "big.js": "^6.2.1",
     "binance-api-node": "^0.12.7",
     "cli-progress": "^3.12.0",
-    "drizzle-orm": "^0.30.4",
     "node-binance-api": "^0.13.1",
     "node-cron": "^3.0.3",
     "technicalindicators": "^3.1.0"

@@ -1,11 +1,11 @@
-import { db } from "../db/db";
+import { getSymbolsBTService } from "../db/db";
 import type { Candle } from "../sharedModels/Candle";
 import { Interval } from "../sharedModels/Interval";
-import { symbolsBT } from "../db/schema";
 import { getDate } from "../utils/getDate";
 
 export const showBacktestData = async () => {
-	const results = await db.select().from(symbolsBT);
+	const results = getSymbolsBTService();
+
 	if (!results.length) return console.log("No backtest data found.");
 	const startDate = (
 		JSON.parse(results[0].candlestickBT as string)[0] as Candle

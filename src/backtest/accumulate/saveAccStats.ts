@@ -1,12 +1,11 @@
 import cliProgress from "cli-progress";
 import { params } from "../../Params";
-import { db } from "../../db/db";
 import { accumulate } from ".";
-import { statsAccBT } from "../../db/schema";
 import { withRetry } from "../../utils/withRetry";
+import { deleteTableService, insertAccStatsBTService } from "../../db/db";
 
 export const saveAccStats = async () => {
-	await withRetry(async () => await db.delete(statsAccBT));
+	deleteTableService("statsAccBT");
 
 	const {
 		backtestSLArray: slArray,
@@ -31,7 +30,7 @@ export const saveAccStats = async () => {
 				const result = await accumulate({ log: false });
 
 				if (!result) continue;
-				await withRetry(async () => await db.insert(statsAccBT).values(result));
+				insertAccStatsBTService(result);
 
 				loop++;
 				progressBar.update(loop);

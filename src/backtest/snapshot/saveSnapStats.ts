@@ -1,11 +1,14 @@
 import cliProgress from "cli-progress";
 import { params } from "../../Params";
-import { db } from "../../db/db";
 import type { Strategy } from "../../strategies/Strategy";
-import { statsSnapBT, type StatsSnapBT } from "../../db/schema";
 import { snapshot } from ".";
 import { chosenStrategies } from "../../strategies";
 import { withRetry } from "../../utils/withRetry";
+import {
+	deleteTableService,
+	insertSnapStatsBTService,
+	type StatsSnapBT,
+} from "../../db/db";
 
 type SaveStatsResultsProps = {
 	slArray: number[];
@@ -21,7 +24,7 @@ export const saveSnapStats = async ({
 	strategies,
 }: SaveStatsResultsProps) => {
 	console.log(strategies.map((s) => s.stgName).join(", "));
-	await withRetry(async () => await db.delete(statsSnapBT));
+	deleteTableService("statsSnapBT");
 
 	const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 
@@ -38,12 +41,10 @@ export const saveSnapStats = async ({
 				params.defaultSL = sl;
 				params.defaultTP = tp;
 				params.maxTradeLength = maxTradeLength;
-				let results: StatsSnapBT[] = [];
 				const result = await snapshot({ log: false });
-				result && results.push(result);
-				await withRetry(
-					async () => await db.insert(statsSnapBT).values(results)
-				);
+				if (!result) continue;
+
+				insertSnapStatsBTService(result);
 				loop++;
 				progressBar.update(loop);
 			}

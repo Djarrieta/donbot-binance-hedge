@@ -1,12 +1,15 @@
 import cliProgress from "cli-progress";
 import { params } from "../Params";
-import { db } from "../db/db";
 import { getCandlestick } from "../symbol/services/getCandlestick";
 import { getDate } from "../utils/getDate";
-import { symbolsBT } from "../db/schema";
 import { getPairList } from "../symbol/services/getPairList";
 import { Interval } from "../sharedModels/Interval";
 import { withRetry } from "../utils/withRetry";
+import {
+	deleteTableService,
+	getSymbolsBTService,
+	insertSymbolBTService,
+} from "../db/db";
 
 type SaveBacktestDataProps = { pairList: string[] };
 
@@ -24,7 +27,7 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 		cliProgress.Presets.shades_classic
 	);
 	progressBar.start(pairList.length, 0);
-	await withRetry(async () => await db.delete(symbolsBT));
+	deleteTableService("symbolsBT");
 
 	for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 		const pair = pairList[pairIndex];
@@ -42,18 +45,17 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 			};
 		});
 		if (!fixedDateCandlestick.length) continue;
-		await withRetry(
-			async () =>
-				await db
-					.insert(symbolsBT)
-					.values({ pair, candlestickBT: JSON.stringify(fixedDateCandlestick) })
-		);
+
+		insertSymbolBTService({
+			pair,
+			candlestickBT: JSON.stringify(fixedDateCandlestick),
+		});
 
 		progressBar.update(pairIndex + 1);
 	}
 	progressBar.stop();
 
-	const results = await db.select().from(symbolsBT);
+	const results = getSymbolsBTService();
 	console.log(
 		"Backtest data saved for " +
 			results

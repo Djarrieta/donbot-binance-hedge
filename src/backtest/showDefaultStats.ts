@@ -89,7 +89,7 @@ export const showDefaultStats = async () => {
 			maxAccPnl: formatPercent(Number(r.maxAccPnl)),
 			minAccPnl: formatPercent(Number(r.minAccPnl)),
 			accPnl: formatPercent(Number(r.accPnl)),
-			minDrawdown: formatPercent(Number(r.minDrawdown)),
+			drawdown: formatPercent(Number(r.drawdown)),
 			winRate: formatPercent(Number(r.winRate)),
 			avTradeLength: Number(r.avTradeLength).toFixed(2),
 		}))
