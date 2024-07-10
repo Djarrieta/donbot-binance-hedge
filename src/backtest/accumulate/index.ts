@@ -7,6 +7,7 @@ import { chosenStrategies } from "../../strategies";
 import { type Symbol } from "../../symbol/Symbol";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
+import { monteCarloAnalysis } from "./monteCarloAnalysis";
 
 export const accumulate = async ({ log }: { log: boolean }) => {
 	const symbolsData = getSymbolsBTService();
@@ -229,6 +230,13 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	const avTradeLength =
 		closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
 			tradesQty || 0;
+
+	const { drawdownMonteCarlo } = monteCarloAnalysis({
+		values: closedPositions.map((p) => p.pnl),
+		amountOfSimulations: 10,
+		confidenceLevel: 0.95,
+	});
+
 	const stats: StatsAccBT = {
 		maxTradeLength: params.maxTradeLength,
 		sl: params.defaultSL,
@@ -238,7 +246,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		minAccPnl,
 		accPnl,
 		drawdown,
-		drawdownMonteCarlo: 0,
+		drawdownMonteCarlo,
 		badRun: 0,
 		winRate,
 		avPnl: accPnl / tradesQty,

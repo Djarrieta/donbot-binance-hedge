@@ -4,7 +4,6 @@
   "type": "module",
   "scripts": {
     "start": "bun ./src/main.ts",
-    "dbRestart": "bun dbDelete && bun i && bun dbCreate && bun dbMigrate ",
     "lint": "bunx oxlint && tsc ",
     "saveBacktestData": "bun ./src/backtest/saveBacktestData.ts",
     "saveSnapStats": "bun ./src/backtest/snapshot/saveSnapStats.ts",
@@ -15,7 +14,7 @@
     "showSnapClosedPosStats": "bun ./src/backtest/snapshot/showSnapClosedPosStats.ts",
     "showAccClosedPosStats": "bun ./src/backtest/accumulate/showAccClosedPosStats.ts",
     "showDefaultStats": "bun ./src/backtest/showDefaultStats",
-    "dbDelete": "rm -rf ./data && rm -rf ./drizzle && rm -rf ./node_modules"
+    "dbDelete": "rm -rf DB.db && rm -rf DB.db-shm && rm -rf DB.db-wal "
   },
   "devDependencies": {
     "@types/bun": "latest",
