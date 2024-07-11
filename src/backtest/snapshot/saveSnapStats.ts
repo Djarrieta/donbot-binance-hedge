@@ -1,10 +1,17 @@
 import cliProgress from "cli-progress";
-import { params } from "../../Params";
-import type { Strategy } from "../../strategies/Strategy";
 import { snapshot } from ".";
+import { params } from "../../Params";
+import type { Candle } from "../../sharedModels/Candle";
 import { chosenStrategies } from "../../strategies";
+import type { Strategy } from "../../strategies/Strategy";
+import { type Symbol } from "../../symbol/Symbol";
+import { getDate } from "../../utils/getDate";
 import { withRetry } from "../../utils/withRetry";
-import { deleteTableService, insertSnapStatsBTService } from "../services";
+import {
+	deleteTableService,
+	getSymbolsBTService,
+	insertSnapStatsBTService,
+} from "../services";
 
 type SaveStatsResultsProps = {
 	slArray: number[];
@@ -21,7 +28,30 @@ export const saveSnapStats = async ({
 }: SaveStatsResultsProps) => {
 	console.log(strategies.map((s) => s.stgName).join(", "));
 	deleteTableService("statsSnapBT");
+	const symbolsData = getSymbolsBTService();
+	const symbolList: Symbol[] = symbolsData.map((s) => {
+		const unformattedCandlestick = JSON.parse(s.candlestickBT as string);
 
+		const candlestick: Candle[] = unformattedCandlestick.map((c: Candle) => {
+			return {
+				...c,
+				openTime: getDate(c.openTime).date,
+			};
+		});
+
+		return {
+			pair: s.pair,
+			candlestick,
+			currentPrice: 0,
+			isReady: true,
+			isLoading: false,
+			volatility: 0,
+			pricePrecision: 0,
+			quantityPrecision: 0,
+			minQuantityUSD: 0,
+			minNotional: 0,
+		};
+	});
 	const loopSize = slArray.length * tpArray.length * maxTradeLengthArray.length;
 
 	const progressBar = new cliProgress.SingleBar(
@@ -37,7 +67,8 @@ export const saveSnapStats = async ({
 				params.defaultSL = sl;
 				params.defaultTP = tp;
 				params.maxTradeLength = maxTradeLength;
-				const result = await snapshot({ log: false });
+
+				const result = await snapshot({ log: false, symbolList });
 				if (!result) continue;
 				withRetry(() => insertSnapStatsBTService(result));
 

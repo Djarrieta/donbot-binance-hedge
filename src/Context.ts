@@ -264,13 +264,15 @@ export class Context {
 			);
 
 		for (const strategy of this.strategies) {
-			for (const symbol of readySymbols) {
-				const stgResponse = strategy?.validate({
-					candlestick: symbol.candlestick,
-					pair: symbol.pair,
-				});
-				if (stgResponse.positionSide) {
-					response.trades.push(stgResponse);
+			if (strategy.isEnabled) {
+				for (const symbol of readySymbols) {
+					const stgResponse = strategy?.validate({
+						candlestick: symbol.candlestick,
+						pair: symbol.pair,
+					});
+					if (stgResponse.positionSide) {
+						response.trades.push(stgResponse);
+					}
 				}
 			}
 		}
@@ -634,7 +636,7 @@ export class Context {
 		} ready of ${this.symbolList.length}.`;
 
 		const strategiesText = `Strategies: ${this.strategies
-			.map((s) => s.stgName)
+			.map((s) => (s.stgName + " " + s.isEnabled ? "enabled" : "disabled"))
 			.join(", ")}`;
 
 		return `${userText}\n${symbolText}\n${strategiesText}`;

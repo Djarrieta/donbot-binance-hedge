@@ -6,42 +6,21 @@ import { chosenStrategies } from "../../strategies";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 import { Context } from "../../Context";
-import { getSymbolsBTService } from "../services";
 import type { StatSnapBT } from "../StatSnapBT";
 
-export const snapshot = async ({ log }: { log: boolean }) => {
-	const symbolsData = getSymbolsBTService();
-
+export const snapshot = async ({
+	log,
+	symbolList,
+}: {
+	log: boolean;
+	symbolList: Symbol[];
+}) => {
 	log &&
 		console.table({
 			sl: formatPercent(params.defaultSL),
 			tp: formatPercent(params.defaultTP),
 			maxTradeLength: params.maxTradeLength,
 		});
-
-	const symbolList: Symbol[] = symbolsData.map((s) => {
-		const unformattedCandlestick = JSON.parse(s.candlestickBT as string);
-
-		const candlestick: Candle[] = unformattedCandlestick.map((c: Candle) => {
-			return {
-				...c,
-				openTime: getDate(c.openTime).date,
-			};
-		});
-
-		return {
-			pair: s.pair,
-			candlestick,
-			currentPrice: 0,
-			isReady: true,
-			isLoading: false,
-			volatility: 0,
-			pricePrecision: 0,
-			quantityPrecision: 0,
-			minQuantityUSD: 0,
-			minNotional: 0,
-		};
-	});
 
 	if (!symbolList.length) {
 		throw new Error("No symbols found trying to backtest snapshot");

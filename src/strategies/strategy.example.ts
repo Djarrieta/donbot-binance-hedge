@@ -40,6 +40,7 @@ const stg: Strategy = {
 
 		return response;
 	},
+	isEnabled: true, // Leave as true, it would change automatically with dynamic stats.
 };
 
 export default stg;

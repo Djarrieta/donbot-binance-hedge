@@ -241,6 +241,7 @@ const stg: Strategy = {
 
 		return response;
 	},
+	isEnabled: true,
 };
 
 export default stg;

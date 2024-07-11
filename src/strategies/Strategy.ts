@@ -18,4 +18,5 @@ export type Strategy = {
 		candlestick: Candle[];
 		pair: string;
 	}) => StrategyResponse;
+	isEnabled: boolean;
 };

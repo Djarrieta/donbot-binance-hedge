@@ -1,8 +1,12 @@
 import cron from "node-cron";
 import { Context } from "./Context";
 import { params } from "./Params";
+import { snapshot } from "./backtest/snapshot";
 import { CronInterval, Interval } from "./sharedModels/Interval";
 import { chosenStrategies } from "./strategies";
+import type { Symbol } from "./symbol/Symbol";
+import { getCandlestick } from "./symbol/services/getCandlestick";
+import { getPairList } from "./symbol/services/getPairList";
 import { getSymbolsData } from "./symbol/services/getSymbolsData";
 import { subscribeToSymbolUpdates } from "./symbol/services/subscribeToSymbolUpdates";
 import { getUsersData } from "./user/services/getUsersData";
@@ -115,6 +119,54 @@ const trade = async () => {
 		}
 		context.updateUsers({ userList: await getUsersData() });
 		context.securePositions();
+	});
+
+	cron.schedule(CronInterval["1h"], async () => {
+		console.log("Running dynamic backtest");
+		const context = await Context.getInstance();
+		if (!context) return;
+
+		const pairList = await getPairList();
+		let symbolList: Symbol[] = [];
+		for (const pair of pairList) {
+			const candlestick = await getCandlestick({
+				pair,
+				lookBackLength: params.lookBackLengthDynamicBacktest,
+				interval: params.interval,
+				apiLimit: params.candlestickAPILimit,
+			});
+			symbolList.push({
+				pair,
+				candlestick,
+				currentPrice: candlestick[candlestick.length - 1].close,
+				quantityPrecision: 0,
+				pricePrecision: 0,
+				isReady: true,
+			});
+		}
+		let badStgIndexes = [];
+		for (let stgIndex = 0; stgIndex < context.strategies.length; stgIndex++) {
+			for (let i = 0; i < context.strategies.length; i++) {
+				if (i != stgIndex) {
+					context.strategies[i].isEnabled = false;
+				} else {
+					context.strategies[i].isEnabled = true;
+				}
+			}
+			const snapStats = await snapshot({ log: false, symbolList });
+			if (Number(snapStats?.avPnl) < 0) {
+				badStgIndexes.push(stgIndex);
+			}
+		}
+		for (let stgIndex = 0; stgIndex < context.strategies.length; stgIndex++) {
+			if (badStgIndexes.includes(stgIndex)) {
+				context.strategies[stgIndex].isEnabled = false;
+			} else {
+				context.strategies[stgIndex].isEnabled = true;
+			}
+		}
+
+		console.log(context.text());
 	});
 
 	do {
