@@ -91,6 +91,7 @@ export const showDefaultStats = async () => {
 			accPnl: formatPercent(Number(r.accPnl)),
 			drawdown: formatPercent(Number(r.drawdown)),
 			drawdownMonteCarlo: formatPercent(Number(r.drawdownMonteCarlo)),
+			badRunMonteCarlo: r.badRunMonteCarlo,
 			winRate: formatPercent(Number(r.winRate)),
 			avTradeLength: Number(r.avTradeLength).toFixed(2),
 		}))
