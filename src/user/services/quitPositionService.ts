@@ -30,7 +30,7 @@ export const quitPositionService = async ({
 	await authExchange.futuresOrder({
 		type: "MARKET",
 		side: positionSide === "LONG" ? "SELL" : "BUY",
-		positionSide: positionSide === "LONG" ? "SHORT" : "LONG",
+		positionSide,
 		symbol: symbol.pair,
 		quantity,
 		recvWindow: 59999,

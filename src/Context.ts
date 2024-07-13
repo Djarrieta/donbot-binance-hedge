@@ -158,7 +158,7 @@ export class Context {
 			});
 		}
 
-		//Quit if total Pnl > hedge open PosPnl
+		//Quit if good Pnl
 		for (const pair of hedgePosUniquePairs) {
 			const openPosSamePair = this.userList[userIndex].openPositions.filter(
 				(p) => p.pair === pair
@@ -169,10 +169,12 @@ export class Context {
 			const symbol = this.symbolList.find((s) => s.pair === pair);
 			if (!symbol) continue;
 
-			if (this.userList[userIndex].totalPnlPt + samePairOpenPosPnlPt > 0) {
+			if (
+				this.userList[userIndex].totalPnlPt + samePairOpenPosPnlPt > 0 ||
+				samePairOpenPosPnlPt > 0
+			) {
 				for (const pos of openPosSamePair) {
 					if (!pos.coinQuantity) continue;
-					console.log("Quitting " + pos.pair + " PNL Balance");
 					await this.quitPosition({
 						userName,
 						positionSide: pos.positionSide,
@@ -253,15 +255,6 @@ export class Context {
 							readySymbols.map((s) => s.pair).join(", ")
 				  );
 		}
-
-		logs &&
-			console.log(
-				"Date: " +
-					getDate(
-						readySymbols[0].candlestick[readySymbols[0].candlestick.length - 1]
-							.openTime
-					).dateString
-			);
 
 		for (const strategy of this.strategies) {
 			for (const symbol of readySymbols) {
