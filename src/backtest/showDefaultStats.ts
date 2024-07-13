@@ -2,6 +2,7 @@ import { params } from "../Params";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate, type DateString } from "../utils/getDate";
 import { getSortedAccResults } from "./accumulate/sortAccResults";
+import { showBacktestData } from "./showBacktestData";
 import { getSortedSnapResults } from "./snapshot/sortSnapResults";
 
 export const showDefaultStats = async () => {
@@ -52,16 +53,13 @@ export const showDefaultStats = async () => {
 		.sort((a, b) => a.pair.localeCompare(b.pair))
 		.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
+	showBacktestData();
 	console.table({
 		tp: formatPercent(params.defaultTP),
 		sl: formatPercent(params.defaultSL),
 		maxTradeLength: params.maxTradeLength,
 		amountToTradePt: formatPercent(params.amountToTradePt),
 	});
-	console.table(closedPositions);
-
-	console.log("Winning pairs:");
-	console.log(JSON.parse(snapFilteredResults[0].winningPairs as string));
 
 	console.log(
 		"Snapshot data saved for " + snapFilteredResults.length + " pairs."
@@ -96,5 +94,8 @@ export const showDefaultStats = async () => {
 			avTradeLength: Number(r.avTradeLength).toFixed(2),
 		}))
 	);
+	console.table(closedPositions);
+	console.log("Winning pairs:");
+	console.log(JSON.parse(snapFilteredResults[0].winningPairs as string));
 };
 showDefaultStats();
