@@ -9,7 +9,7 @@ export const params = {
 	defaultBE: 1 / 100, // it is not considered in backtest
 	breakevenAlert: 5 / 100, // it is not considered in backtest
 	maxProtectedPositions: 1,
-	maxHedgePositions: 30,
+	maxHedgePositions: 15,
 
 	lookBackLengthBacktest: (9 * Interval["1M"]) / Interval["5m"],
 	backtestSLArray: [2 / 100],
