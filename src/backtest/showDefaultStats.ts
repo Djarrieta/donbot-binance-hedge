@@ -96,6 +96,8 @@ export const showDefaultStats = async () => {
 	);
 	console.table(closedPositions);
 	console.log("Winning pairs:");
-	console.log(JSON.parse(snapFilteredResults[0].winningPairs as string));
+	if (snapFilteredResults.length) {
+		console.log(JSON.parse(snapFilteredResults[0].winningPairs as string));
+	}
 };
 showDefaultStats();

@@ -20,7 +20,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			maxTradeLength: params.maxTradeLength,
 		});
 
-	const symbolList: Symbol[] = symbolsData.map((s) => {
+	const nonNormalSymbolList: Symbol[] = symbolsData.map((s) => {
 		const unformattedCandlestick = JSON.parse(s.candlestickBT as string);
 
 		const candlestick: Candle[] = unformattedCandlestick.map((c: Candle) => {
@@ -43,6 +43,51 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			minNotional: 0,
 		};
 	});
+	const lastDate = Math.min(
+		...nonNormalSymbolList.map(
+			(s) => getDate(s.candlestick[s.candlestick.length - 1].openTime).dateMs
+		)
+	);
+	let maxCandlestickLength = 0;
+	const croppedSymbolList = nonNormalSymbolList.map((s) => {
+		const lastCandleIndex = s.candlestick.findIndex(
+			(c) => getDate(c.openTime).dateMs === lastDate
+		);
+
+		const croppedCandlestick =
+			lastCandleIndex <= s.candlestick.length
+				? s.candlestick.slice(0, lastCandleIndex)
+				: s.candlestick;
+
+		if (croppedCandlestick.length > maxCandlestickLength)
+			maxCandlestickLength = croppedCandlestick.length;
+
+		return {
+			...s,
+			candlestick: croppedCandlestick,
+		};
+	});
+	const symbolList = croppedSymbolList.map((s) => {
+		const normalizedCandlestick: Candle[] =
+			s.candlestick.length < maxCandlestickLength
+				? [
+						...Array(maxCandlestickLength - s.candlestick.length).fill({
+							open: NaN,
+							high: NaN,
+							low: NaN,
+							close: NaN,
+							volume: NaN,
+							openTime: NaN,
+						}),
+						...s.candlestick,
+				  ]
+				: s.candlestick;
+		return {
+			...s,
+			candlestick: normalizedCandlestick,
+		};
+	});
+
 	if (!symbolList.length) {
 		throw new Error("No symbols found");
 	}
@@ -59,15 +104,21 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 		const candlestickStartIndex = candleIndex - params.lookBackLength;
 		const candlestickEndIndex = candleIndex;
 
-		const readySymbols = symbolList.map((s) => {
-			return {
-				...s,
-				candlestick: s.candlestick.slice(
-					candlestickStartIndex,
-					candlestickEndIndex
-				),
-			};
+		const readySymbols: Symbol[] = [];
+		symbolList.forEach((s) => {
+			const candlestick = s.candlestick.slice(
+				candlestickStartIndex,
+				candlestickEndIndex
+			);
+
+			if (!Number.isNaN(candlestick[0].open)) {
+				readySymbols.push({
+					...s,
+					candlestick,
+				});
+			}
 		});
+
 		const context = await Context.getInstance({
 			symbolList: readySymbols,
 			userList: [],
