@@ -6,6 +6,7 @@
     "start": "bun ./src/main.ts",
     "lint": "bunx oxlint && tsc ",
     "saveBacktestData": "bun ./src/backtest/saveBacktestData.ts",
+    "prepareExchange": "bun ./src/user/services/prepareExchange.ts",
     "saveSnapStats": "bun ./src/backtest/snapshot/saveSnapStats.ts",
     "saveAccStats": "bun ./src/backtest/accumulate/saveAccStats.ts",
     "showBacktestData": "bun ./src/backtest/showBacktestData.ts",

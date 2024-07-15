@@ -10,6 +10,7 @@ export const params = {
 	breakevenAlert: 5 / 100, // it is not considered in backtest
 	maxProtectedPositions: 1,
 	maxHedgePositions: 15,
+	leverage: 10,
 
 	lookBackLengthBacktest: (9 * Interval["1M"]) / Interval["5m"],
 	backtestSLArray: [2 / 100],
