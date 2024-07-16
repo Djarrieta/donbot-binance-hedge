@@ -58,7 +58,7 @@ export const showDefaultStats = async () => {
 		tp: formatPercent(params.defaultTP),
 		sl: formatPercent(params.defaultSL),
 		maxTradeLength: params.maxTradeLength,
-		amountToTradePt: formatPercent(params.amountToTradePt),
+		risk: formatPercent(params.riskPt),
 	});
 
 	console.log(

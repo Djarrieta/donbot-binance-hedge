@@ -166,8 +166,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				(openPosition.positionSide === "SHORT" &&
 					(lastCandle.high >= stopLoss || lastCandle.close >= stopLoss))
 			) {
-				openPosition.pnl =
-					params.amountToTradePt * (-params.defaultSL - params.fee);
+				openPosition.pnl = -params.riskPt - params.fee;
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 				accPnl += openPosition.pnl;
 				if (accPnl > maxAccPnl) maxAccPnl = accPnl;
@@ -191,8 +190,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				(openPosition.positionSide === "SHORT" &&
 					(lastCandle.low <= takeProfit || lastCandle.close <= takeProfit))
 			) {
-				openPosition.pnl =
-					params.amountToTradePt * (params.defaultTP - params.fee);
+				openPosition.pnl = params.riskPt * (tp / sl) - params.fee;
 
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 
@@ -213,15 +211,14 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 				continue;
 			}
 			if (Number(openPosition.tradeLength) + 1 >= params.maxTradeLength) {
-				const pnlWithoutFee =
-					openPosition.positionSide === "LONG"
-						? (lastCandle.close - openPosition.entryPriceUSDT) /
-						  openPosition.entryPriceUSDT
-						: (openPosition.entryPriceUSDT - lastCandle.close) /
-						  openPosition.entryPriceUSDT;
+				const pnlGraph =
+					(openPosition.positionSide === "LONG"
+						? lastCandle.close - openPosition.entryPriceUSDT
+						: openPosition.entryPriceUSDT - lastCandle.close) /
+					openPosition.entryPriceUSDT;
 
 				openPosition.pnl =
-					params.amountToTradePt * (pnlWithoutFee - params.fee);
+					params.riskPt * (pnlGraph / params.defaultSL) - params.fee;
 
 				openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
 

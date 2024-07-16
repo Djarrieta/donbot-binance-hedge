@@ -372,10 +372,7 @@ export class Context {
 				? this.symbolList[symbolIndex].currentPrice * (1 + tp)
 				: this.symbolList[symbolIndex].currentPrice * (1 - tp);
 
-		const quantityUSDT = Math.max(
-			this.userList[userIndex].balanceUSDT * params.amountToTradePt,
-			params.minAmountToTrade
-		);
+		const quantityUSDT = this.amountToTradeUSDT({ userName, sl });
 
 		const coinQuantity = Math.max(
 			quantityUSDT / this.symbolList[symbolIndex].currentPrice,
@@ -618,6 +615,15 @@ export class Context {
 	updateUsers({ userList }: { userList?: User[] }) {
 		if (!userList) return;
 		this.userList = userList;
+	}
+	amountToTradeUSDT({ userName, sl }: { userName: string; sl: number }) {
+		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		if (userIndex === -1) return 0;
+
+		return Math.max(
+			(this.userList[userIndex].balanceUSDT * params.riskPt) / sl,
+			params.minAmountToTradeUSDT
+		);
 	}
 
 	text() {

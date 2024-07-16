@@ -17,13 +17,6 @@ export const getSymbolsData = async () => {
 		) as any;
 		if (!symbolInfo) continue;
 
-		const minQty = Number(
-			symbolInfo.filters.find((f: any) => f.filterType === "LOT_SIZE").minQty
-		);
-		const minNotional = Number(
-			symbolInfo.filters.find((f: any) => f.filterType === "MIN_NOTIONAL")
-				.notional
-		);
 		const candlestick = await getCandlestick({
 			pair,
 			lookBackLength: params.lookBackLength,
@@ -32,17 +25,6 @@ export const getSymbolsData = async () => {
 		});
 		const currentPrice =
 			Number(candlestick[candlestick.length - 1]?.close) || 0;
-		const minQuantityUSD = minQty * currentPrice;
-		if (
-			symbolInfo.status !== "TRADING" ||
-			symbolInfo.quoteAsset !== "USDT" ||
-			symbolInfo.baseAsset === "USDT" ||
-			symbolInfo.contractType !== "PERPETUAL" ||
-			minQuantityUSD > params.minAmountToTrade ||
-			minNotional > params.minAmountToTrade
-		) {
-			continue;
-		}
 
 		symbolList.push({
 			pair,

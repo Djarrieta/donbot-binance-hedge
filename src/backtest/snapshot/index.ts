@@ -125,7 +125,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 					(shouldTrade === "SHORT" &&
 						(candle.high >= stopLoss || candle.close >= stopLoss))
 				) {
-					pnl = params.amountToTradePt * (-sl - params.fee);
+					pnl = -params.riskPt - params.fee;
 
 					closedPositions.push({
 						pair: openedSymbol.pair,
@@ -148,7 +148,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 					(shouldTrade === "SHORT" &&
 						(candle.low <= takeProfit || candle.close <= takeProfit))
 				) {
-					pnl = params.amountToTradePt * (tp - params.fee);
+					pnl = params.riskPt * (tp / sl) - params.fee;
 
 					closedPositions.push({
 						pair: openedSymbol.pair,
@@ -168,12 +168,12 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 			if (pnl === 0) {
 				const lastPrice =
 					openedSymbol.profitStick[openedSymbol.profitStick.length - 1].close;
-				pnl =
-					(params.amountToTradePt *
-						(shouldTrade === "LONG"
-							? lastPrice - entryPriceUSDT
-							: entryPriceUSDT - lastPrice)) /
-					entryPriceUSDT;
+				const pnlGraph =
+					(shouldTrade === "LONG"
+						? lastPrice - entryPriceUSDT
+						: entryPriceUSDT - lastPrice) / entryPriceUSDT;
+
+				pnl = params.riskPt * (pnlGraph / sl) - params.fee;
 			}
 
 			closedPositions.push({

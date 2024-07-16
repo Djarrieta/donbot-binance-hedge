@@ -20,8 +20,8 @@ export const params = {
 	interval: Interval["5m"],
 	lookBackLength: 200,
 	fee: 0.0005,
-	minAmountToTrade: 6,
-	amountToTradePt: 25 / 100,
+	minAmountToTradeUSDT: 6,
+	riskPt: 0.5 / 100,
 	candlestickAPILimit: 500,
 };
 export type Params = typeof params;

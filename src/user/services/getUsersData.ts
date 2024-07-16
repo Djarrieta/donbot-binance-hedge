@@ -179,10 +179,10 @@ export const getUsersData = async () => {
 			(Number(totalPnlPt || 0) * balanceUSDT).toFixed(2) +
 			" " +
 			formatPercent(Number(totalPnlPt || 0)) +
-			"; Amount to trade $" +
+			"; Amount to trade: $" +
 			Math.max(
-				params.amountToTradePt * balanceUSDT,
-				params.minAmountToTrade
+				(balanceUSDT * params.riskPt) / params.defaultSL,
+				params.minAmountToTradeUSDT
 			).toFixed(2);
 
 		if (openPositions.length) {

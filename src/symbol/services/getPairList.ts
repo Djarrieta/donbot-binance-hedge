@@ -31,8 +31,8 @@ export const getPairList = async () => {
 			quoteAsset !== "USDT" ||
 			baseAsset === "USDT" ||
 			contractType !== "PERPETUAL" ||
-			minQuantityUSD > params.minAmountToTrade ||
-			minNotional > params.minAmountToTrade
+			minQuantityUSD > params.minAmountToTradeUSDT ||
+			minNotional > params.minAmountToTradeUSDT
 		) {
 			continue;
 		}
