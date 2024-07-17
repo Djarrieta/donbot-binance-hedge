@@ -8,11 +8,11 @@ export const params = {
 	defaultTP: 10 / 100,
 	defaultBE: 1 / 100, // it is not considered in backtest
 	breakevenAlert: 5 / 100, // it is not considered in backtest
-	maxProtectedPositions: 1,
+	maxProtectedPositions: 2,
 	maxHedgePositions: 15,
 	leverage: 10,
 
-	lookBackLengthBacktest: (9 * Interval["1M"]) / Interval["5m"],
+	lookBackLengthBacktest: (12 * Interval["1M"]) / Interval["5m"],
 	backtestSLArray: [2 / 100],
 	backtestTPArray: [10 / 100],
 	backtestMaxTradeLengthArray: [100],
