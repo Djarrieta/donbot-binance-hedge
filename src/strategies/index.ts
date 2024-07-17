@@ -2,7 +2,7 @@ import rsiDivergency5m from "./rsiDivergency5m";
 import mfiDivergency5m from "./mfiDivergency5m";
 import superTrend from "./superTrend";
 
-export const chosenStrategies = [superTrend, rsiDivergency5m];
+export const chosenStrategies = [rsiDivergency5m];
 
 // Backtest data available for XRPUSDT, EOSUSDT, TRXUSDT and 245 other pairs.
 // Data for 270.8 days from 2023 10 16 16:15:00 to 2024 07 13 11:40:00
