@@ -175,6 +175,14 @@ export class Context {
 			) {
 				for (const pos of openPosSamePair) {
 					if (!pos.coinQuantity) continue;
+					console.log(
+						"Quitting good pnl " +
+							pos.positionSide +
+							" position for" +
+							this.userList[userIndex].name +
+							" in " +
+							symbol.pair
+					);
 					await this.quitPosition({
 						userName,
 						positionSide: pos.positionSide,
@@ -201,7 +209,41 @@ export class Context {
 		} of positionsTakingTooLong) {
 			const symbol = this.symbolList.find((s) => s.pair === pair);
 			if (!symbol) continue;
-			console.log("Quitting " + pair + " Position taking too long");
+			console.log(
+				"Quitting " +
+					positionSide +
+					" position taking too long for" +
+					this.userList[userIndex].name +
+					" in " +
+					symbol.pair
+			);
+			this.quitPosition({
+				userName,
+				positionSide,
+				pair,
+				coinQuantity,
+			});
+		}
+
+		// Quit unbalanced position
+		const unbalancedPositions = this.userList[userIndex].openPositions.filter(
+			(p) => p.isHedgeUnbalance
+		);
+		for (const {
+			positionSide,
+			coinQuantity = 0,
+			pair,
+		} of unbalancedPositions) {
+			const symbol = this.symbolList.find((s) => s.pair === pair);
+			if (!symbol) continue;
+			console.log(
+				"Quitting unbalanced " +
+					positionSide +
+					" position for" +
+					this.userList[userIndex].name +
+					" in " +
+					symbol.pair
+			);
 			this.quitPosition({
 				userName,
 				positionSide,
@@ -304,12 +346,7 @@ export class Context {
 
 		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
 		if (symbolIndex === -1) return;
-		console.log(
-			"Quitting position for " +
-				this.userList[userIndex].name +
-				" in " +
-				this.symbolList[symbolIndex].pair
-		);
+
 		try {
 			await quitPositionService({
 				user: this.userList[userIndex],
