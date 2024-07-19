@@ -61,9 +61,7 @@ export const showDefaultStats = async () => {
 		risk: formatPercent(params.riskPt),
 	});
 
-	console.log(
-		"Snapshot data saved for " + snapFilteredResults.length + " pairs."
-	);
+	console.log("Snapshot");
 	console.table(
 		snapFilteredResults.map((r) => ({
 			sl: formatPercent(Number(r.sl)),
@@ -75,9 +73,7 @@ export const showDefaultStats = async () => {
 		}))
 	);
 
-	console.log(
-		"Accumulated data saved for " + filteredAccResults.length + " pairs."
-	);
+	console.log("Accumulated");
 	console.table(
 		filteredAccResults.map((r) => ({
 			sl: formatPercent(Number(r.sl)),
