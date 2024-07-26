@@ -1,5 +1,6 @@
 import { params } from "./Params";
 import type { Candle } from "./sharedModels/Candle";
+import { OrderType } from "./sharedModels/Order";
 import type { PositionSide } from "./sharedModels/Position";
 import type { Strategy, StrategyResponse } from "./strategies/Strategy";
 import type { Symbol } from "./symbol/Symbol";
@@ -510,13 +511,28 @@ export class Context {
 				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
 
 				if (!symbol || !symbol.currentPrice) continue;
+				const breakOrdersSameSymbol = this.userList[
+					userIndex
+				].openOrders.filter(
+					(order) =>
+						order.pair === pos.pair && order.orderType === OrderType.BREAK
+				);
 
 				const pnlGraph =
 					pos.positionSide === "LONG"
 						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
 						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
-				for (const alert of params.breakEventAlerts) {
-					if (pnlGraph > alert.alert && Number(pos.tradeLength) >= alert.len) {
+				for (
+					let alertIndex = 0;
+					alertIndex < params.breakEventAlerts.length;
+					alertIndex++
+				) {
+					const alert = params.breakEventAlerts[alertIndex];
+					if (
+						pnlGraph > alert.alert &&
+						Number(pos.tradeLength) >= alert.len &&
+						breakOrdersSameSymbol.length <= alertIndex
+					) {
 						const bePrice =
 							pos.positionSide === "LONG"
 								? pos.entryPriceUSDT * (1 + alert.value)
