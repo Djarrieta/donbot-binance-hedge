@@ -567,6 +567,7 @@ export class Context {
 			this.symbolList[symbolIndex].currentPrice = currentPrice;
 			return;
 		}
+		if (!this.symbolList[symbolIndex].candlestick.length) return;
 
 		const prevOpenTime = getDate(
 			this.symbolList[symbolIndex].candlestick[

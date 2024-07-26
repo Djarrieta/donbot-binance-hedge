@@ -8,7 +8,7 @@ export const params = {
 	defaultTP: 10 / 100,
 	defaultBE: 1 / 100, // it is not considered in backtest
 	breakevenAlert: 5 / 100, // it is not considered in backtest
-	maxProtectedPositions: 2,
+	maxProtectedPositions: 1,
 	maxHedgePositions: 15,
 	leverage: 10,
 
