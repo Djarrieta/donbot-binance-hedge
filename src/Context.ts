@@ -506,7 +506,7 @@ export class Context {
 			) {
 				const pos = this.userList[userIndex].openPositions[posIndex];
 
-				if (pos.status !== "PROTECTED") continue;
+				if (pos.status !== "PROTECTED" && pos.status !== "SECURED") continue;
 
 				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
 
@@ -559,6 +559,14 @@ export class Context {
 
 							this.userList[userIndex].openPositions[posIndex].status =
 								"SECURED";
+							breakOrdersSameSymbol.push({
+								pair: pos.pair,
+								orderType: OrderType.BREAK,
+								price: bePrice,
+								coinQuantity: 0,
+								orderId: 0,
+								clientOrderId: "",
+							});
 						} catch (e) {
 							console.error(e);
 						}
