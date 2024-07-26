@@ -6,8 +6,12 @@ export const params = {
 	maxTradeLength: 100,
 	defaultSL: 2 / 100,
 	defaultTP: 10 / 100,
-	defaultBE: 1 / 100, // it is not considered in backtest
-	breakevenAlert: 5 / 100, // it is not considered in backtest
+	breakEventAlerts: [
+		{ alert: 3 / 100, value: 1 / 100, len: 3 },
+		{ alert: 5 / 100, value: 3 / 100, len: 3 },
+		{ alert: 7 / 100, value: 5 / 100, len: 3 },
+		{ alert: 9 / 100, value: 7 / 100, len: 3 },
+	], // it is not considered in backtest
 	maxProtectedPositions: 1,
 	maxHedgePositions: 15,
 	leverage: 10,

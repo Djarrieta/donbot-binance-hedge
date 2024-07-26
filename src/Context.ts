@@ -497,7 +497,6 @@ export class Context {
 		}
 	}
 	async securePositions() {
-		if (!params.defaultBE || !params.breakevenAlert) return;
 		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
 			for (
 				let posIndex = 0;
@@ -516,35 +515,38 @@ export class Context {
 					pos.positionSide === "LONG"
 						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
 						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
+				for (const alert of params.breakEventAlerts) {
+					if (pnlGraph > alert.alert && Number(pos.tradeLength) >= alert.len) {
+						const bePrice =
+							pos.positionSide === "LONG"
+								? pos.entryPriceUSDT * (1 + alert.value)
+								: pos.entryPriceUSDT * (1 - alert.value);
+						console.log(
+							"Securing position for " +
+								this.userList[userIndex].name +
+								" " +
+								pos.pair +
+								" " +
+								pos.positionSide
+						);
+						try {
+							await securePositionService({
+								symbol,
+								user: this.userList[userIndex],
+								positionSide:
+									this.userList[userIndex].openPositions[posIndex].positionSide,
+								coinQuantity: Number(
+									this.userList[userIndex].openPositions[posIndex].coinQuantity
+								),
+								bePrice,
+							});
 
-				if (pnlGraph < params.breakevenAlert) continue;
-				const bePrice =
-					pos.positionSide === "LONG"
-						? pos.entryPriceUSDT * (1 + params.defaultBE)
-						: pos.entryPriceUSDT * (1 - params.defaultBE);
-				console.log(
-					"Securing position for " +
-						this.userList[userIndex].name +
-						" " +
-						pos.pair +
-						" " +
-						pos.positionSide
-				);
-				try {
-					await securePositionService({
-						symbol,
-						user: this.userList[userIndex],
-						positionSide:
-							this.userList[userIndex].openPositions[posIndex].positionSide,
-						coinQuantity: Number(
-							this.userList[userIndex].openPositions[posIndex].coinQuantity
-						),
-						bePrice,
-					});
-
-					this.userList[userIndex].openPositions[posIndex].status = "SECURED";
-				} catch (e) {
-					console.error(e);
+							this.userList[userIndex].openPositions[posIndex].status =
+								"SECURED";
+						} catch (e) {
+							console.error(e);
+						}
+					}
 				}
 			}
 		}

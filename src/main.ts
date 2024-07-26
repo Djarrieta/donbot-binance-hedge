@@ -43,10 +43,10 @@ const startModel = async () => {
 		"Lookback Length": params.lookBackLength,
 		"Default SL": formatPercent(params.defaultSL),
 		"Default TP": formatPercent(params.defaultTP),
-		Breakeven:
-			formatPercent(params.defaultBE) +
-			" @ " +
-			formatPercent(params.breakevenAlert),
+		"Break Even": params.breakEventAlerts
+			.map((a) => formatPercent(a.value))
+			.join(", "),
+
 		"Risk per trade": formatPercent(params.riskPt),
 		"Max Trade Length": params.maxTradeLength,
 		"Max Protected Positions": params.maxProtectedPositions,
