@@ -7,11 +7,11 @@ export const params = {
 	defaultSL: 2 / 100,
 	defaultTP: 10 / 100,
 	breakEventAlerts: [
-		{ alert: 1 / 100, value: 0.5 / 100, len: 3 },
-		{ alert: 3 / 100, value: 1 / 100, len: 3 },
-		{ alert: 5 / 100, value: 3 / 100, len: 3 },
-		{ alert: 7 / 100, value: 5 / 100, len: 3 },
-		{ alert: 9 / 100, value: 7 / 100, len: 3 },
+		{ alert: 1 / 100, value: 0.5 / 100, len: 1 },
+		{ alert: 3 / 100, value: 1 / 100, len: 1 },
+		{ alert: 5 / 100, value: 3 / 100, len: 1 },
+		{ alert: 7 / 100, value: 5 / 100, len: 1 },
+		{ alert: 9 / 100, value: 7 / 100, len: 1 },
 	], // it is not considered in backtest
 	maxProtectedPositions: 1,
 	maxHedgePositions: 15,
