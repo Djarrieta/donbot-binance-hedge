@@ -43,7 +43,12 @@ export const securePositionService = async ({
 		quantity,
 		stopPrice: BEPrice,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.BREAK + ORDER_ID_DIV + BEPrice,
+		newClientOrderId:
+			OrderType.BREAK +
+			ORDER_ID_DIV +
+			BEPrice +
+			ORDER_ID_DIV +
+			new Date().getTime(),
 		timeInForce: "GTC",
 	});
 };

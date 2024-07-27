@@ -72,6 +72,8 @@ const startModel = async () => {
 	for (const user of context.userList) {
 		await context.handleExistingPositions({ userName: user.name });
 	}
+	context.securePositions();
+
 	runSubscribers();
 };
 
