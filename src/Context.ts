@@ -111,7 +111,13 @@ export class Context {
 			tp,
 		});
 	}
-	async handleExistingPositions({ userName }: { userName: string }) {
+	async handleExistingPositions({
+		userName,
+		trades,
+	}: {
+		userName: string;
+		trades?: StrategyResponse[];
+	}) {
 		console.log("Handling existing positions for " + userName);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
@@ -241,6 +247,41 @@ export class Context {
 				"Quitting unbalanced " +
 					positionSide +
 					" position for" +
+					this.userList[userIndex].name +
+					" in " +
+					symbol.pair
+			);
+			this.quitPosition({
+				userName,
+				positionSide,
+				pair,
+				coinQuantity,
+			});
+		}
+
+		//Quit position if reverting direction
+		const protectedPositionsReverting = this.userList[
+			userIndex
+		].openPositions.filter((p) => {
+			const tradesSamePairOppositeSide = trades?.filter(
+				(t) =>
+					t.pair === p.pair &&
+					t.positionSide !== null &&
+					t.positionSide !== p.positionSide
+			);
+			return p.status === "PROTECTED" && tradesSamePairOppositeSide?.length;
+		});
+		for (const {
+			positionSide,
+			coinQuantity = 0,
+			pair,
+		} of protectedPositionsReverting) {
+			const symbol = this.symbolList.find((s) => s.pair === pair);
+			if (!symbol) continue;
+			console.log(
+				"Quitting " +
+					positionSide +
+					" position trending in opposite direction for " +
 					this.userList[userIndex].name +
 					" in " +
 					symbol.pair

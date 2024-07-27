@@ -113,7 +113,7 @@ const trade = async () => {
 		await delay(5000);
 		context.updateUsers({ userList: await getUsersData() });
 		for (const user of context.userList) {
-			await context.handleExistingPositions({ userName: user.name });
+			await context.handleExistingPositions({ userName: user.name, trades });
 		}
 		context.updateUsers({ userList: await getUsersData() });
 		context.securePositions();
