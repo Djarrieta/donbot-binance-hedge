@@ -119,7 +119,11 @@ const trade = async () => {
 
 	do {
 		await delay(Interval["15m"]);
-		runSubscribers();
+		try {
+			runSubscribers();
+		} catch (e) {
+			console.error(e);
+		}
 	} while (true);
 };
 
