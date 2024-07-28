@@ -1,9 +1,9 @@
 import Binance from "binance-api-node";
-import { params } from "../../Params";
 import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
+import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";
 
 interface OpenPositionServiceProps {
@@ -65,6 +65,11 @@ export const openPositionService = async ({
 		recvWindow: 59999,
 		newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
 	});
+	const newClientOrderId = orderIdNameGenerator({
+		orderType: OrderType.NEW,
+		positionSide,
+		price: symbol.currentPrice.toString(),
+	}).fullIdName;
 
 	await authExchange.futuresOrder({
 		type: "MARKET",
@@ -73,6 +78,6 @@ export const openPositionService = async ({
 		symbol: symbol.pair,
 		quantity,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.NEW + ORDER_ID_DIV + symbol.currentPrice,
+		newClientOrderId,
 	});
 };

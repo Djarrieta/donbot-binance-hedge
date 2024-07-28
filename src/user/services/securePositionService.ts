@@ -1,9 +1,9 @@
 import Binance from "binance-api-node";
-import { params } from "../../Params";
-import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
+import { OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
+import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";
 
 interface SecurePositionServiceProps {
@@ -43,12 +43,11 @@ export const securePositionService = async ({
 		quantity,
 		stopPrice: BEPrice,
 		recvWindow: 59999,
-		newClientOrderId:
-			OrderType.BREAK +
-			ORDER_ID_DIV +
-			BEPrice +
-			ORDER_ID_DIV +
-			new Date().getTime(),
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.BREAK,
+			positionSide,
+			price: BEPrice,
+		}).fullIdName,
 		timeInForce: "GTC",
 	});
 };

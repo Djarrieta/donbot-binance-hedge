@@ -1,9 +1,9 @@
 import Binance from "binance-api-node";
-import { params } from "../../Params";
-import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
+import { OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
+import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";
 
 interface ProtectPositionServiceProps {
@@ -45,7 +45,11 @@ export const protectPositionService = async ({
 		quantity,
 		stopPrice: HEPrice,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + HEPrice,
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.HEDGE,
+			positionSide,
+			price: HEPrice,
+		}).fullIdName,
 		timeInForce: "GTC",
 	});
 
@@ -62,7 +66,11 @@ export const protectPositionService = async ({
 		quantity,
 		stopPrice: TPPrice,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + TPPrice,
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.HEDGE,
+			positionSide,
+			price: TPPrice,
+		}).fullIdName,
 		timeInForce: "GTC",
 	});
 };

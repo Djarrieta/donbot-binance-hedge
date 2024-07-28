@@ -1,8 +1,9 @@
-import Binance, { type Binance as IBinance } from "binance-api-node";
+import Binance from "binance-api-node";
 import OldBinance from "node-binance-api";
-import type { User } from "../User";
-import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
 import { Context } from "../../Context";
+import { OrderType } from "../../sharedModels/Order";
+import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
+import type { User } from "../User";
 
 export const subscribeToUserUpdates = async ({ user }: { user: User }) => {
 	const oldExchange = new OldBinance().options({
@@ -38,9 +39,7 @@ const handleOrderUpdate = async ({
 		originalQuantity: quantity,
 	} = event.order;
 
-	const orderType =
-		OrderType[clientOrderId.split(ORDER_ID_DIV)[0] as OrderType] ||
-		OrderType.UNKNOWN;
+	const orderType = orderIdNameGenerator(clientOrderId).orderType;
 
 	if (orderStatus === "FILLED" && Number(quantity) > 0) {
 		if (
