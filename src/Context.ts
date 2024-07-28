@@ -260,7 +260,7 @@ export class Context {
 		}
 
 		//Quit position if reverting direction
-		const protectedPositionsReverting = this.userList[
+		const securedPositionsReverting = this.userList[
 			userIndex
 		].openPositions.filter((p) => {
 			const tradesSamePairOppositeSide = trades?.filter(
@@ -269,13 +269,13 @@ export class Context {
 					t.positionSide !== null &&
 					t.positionSide !== p.positionSide
 			);
-			return p.status === "PROTECTED" && tradesSamePairOppositeSide?.length;
+			return p.status === "SECURED" && tradesSamePairOppositeSide?.length;
 		});
 		for (const {
 			positionSide,
 			coinQuantity = 0,
 			pair,
-		} of protectedPositionsReverting) {
+		} of securedPositionsReverting) {
 			const symbol = this.symbolList.find((s) => s.pair === pair);
 			if (!symbol) continue;
 			console.log(
