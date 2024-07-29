@@ -3,6 +3,7 @@ export enum OrderType {
 	HEDGE = "HEDGE",
 	PROFIT = "PROFIT",
 	BREAK = "BREAK",
+	QUIT = "QUIT",
 	UNKNOWN = "UNKNOWN",
 }
 

@@ -21,9 +21,9 @@ export const orderIdNameGenerator = (props: NewOrderId | string) => {
 		const split = props.split(ORDER_ID_DIV);
 		if (split.length !== 3) return response;
 
-		response.positionSide = split[0] as PositionSide;
-		response.price = split[2];
-		response.orderType = OrderType[split[1] as OrderType];
+		response.positionSide = (split[0] as PositionSide) || "";
+		response.orderType = (split[1] as OrderType) || OrderType.UNKNOWN;
+		response.price = split[2] || "0";
 		response.fullIdName = props;
 
 		return response;

@@ -1,7 +1,9 @@
 import Binance from "binance-api-node";
+import { OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
 import type { Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
+import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";
 
 export const quitPositionService = async ({
@@ -33,6 +35,11 @@ export const quitPositionService = async ({
 		positionSide,
 		symbol: symbol.pair,
 		quantity,
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.QUIT,
+			positionSide,
+			price: symbol.currentPrice.toString(),
+		}).fullIdName,
 		recvWindow: 59999,
 	});
 };
