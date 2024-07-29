@@ -13,17 +13,15 @@ export const orderIdNameGenerator = (props: NewOrderId | string) => {
 		price: "0",
 		orderType: OrderType.UNKNOWN,
 		fullIdName: "",
-		date: Date.now(),
 	};
 
 	if (typeof props === "string") {
 		const split = props.split(ORDER_ID_DIV);
-		if (split.length !== 4) return response;
+		if (split.length !== 3) return response;
 
 		response.positionSide = split[0] as PositionSide;
 		response.price = split[2];
 		response.orderType = OrderType[split[1] as OrderType];
-		response.date = Number(split[3]);
 		response.fullIdName = props;
 
 		return response;
@@ -31,19 +29,12 @@ export const orderIdNameGenerator = (props: NewOrderId | string) => {
 
 	const { positionSide, orderType, price } = props;
 	const fullIdName =
-		positionSide +
-		ORDER_ID_DIV +
-		orderType +
-		ORDER_ID_DIV +
-		price +
-		ORDER_ID_DIV +
-		Date.now();
+		positionSide + ORDER_ID_DIV + orderType + ORDER_ID_DIV + price;
 
 	response.positionSide = positionSide;
 	response.price = price;
 	response.orderType = orderType;
 	response.fullIdName = fullIdName;
-	response.date = Date.now();
 
 	return response;
 };
