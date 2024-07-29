@@ -1,5 +1,7 @@
-import { ORDER_ID_DIV, OrderType } from "../sharedModels/Order";
+import { OrderType } from "../sharedModels/Order";
 import type { PositionSide } from "../sharedModels/Position";
+
+export const ORDER_ID_DIV = "__";
 
 type NewOrderId = {
 	positionSide: PositionSide;

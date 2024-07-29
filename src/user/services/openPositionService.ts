@@ -1,9 +1,12 @@
 import Binance from "binance-api-node";
-import { ORDER_ID_DIV, OrderType } from "../../sharedModels/Order";
+import { OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
 import { type Symbol } from "../../symbol/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
-import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
+import {
+	ORDER_ID_DIV,
+	orderIdNameGenerator,
+} from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";
 
 interface OpenPositionServiceProps {

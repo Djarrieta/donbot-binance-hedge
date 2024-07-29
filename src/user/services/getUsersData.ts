@@ -1,13 +1,17 @@
 import Binance from "binance-api-node";
 import { params } from "../../Params";
 import { Interval } from "../../sharedModels/Interval";
-import { ORDER_ID_DIV, OrderType, type Order } from "../../sharedModels/Order";
+import { OrderType, type Order } from "../../sharedModels/Order";
 import type { Position, PositionSide } from "../../sharedModels/Position";
 import { userSeedList } from "../../userSeed";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 import type { User } from "../User";
 import { getHistoricalPnl } from "./getHistoricalPnl";
+import {
+	ORDER_ID_DIV,
+	orderIdNameGenerator,
+} from "../../utils/orderIdNameGenerator";
 
 export const getUsersData = async () => {
 	const userList: User[] = [];
@@ -38,9 +42,7 @@ export const getUsersData = async () => {
 					o.stopPrice || o.clientOrderId.split(ORDER_ID_DIV)[2] || ""
 				),
 				coinQuantity: Number(o.origQty),
-				orderType:
-					OrderType[o.clientOrderId.split(ORDER_ID_DIV)[0] as OrderType] ||
-					OrderType.UNKNOWN,
+				orderType: orderIdNameGenerator(o.clientOrderId).orderType,
 			};
 		});
 
@@ -94,29 +96,25 @@ export const getUsersData = async () => {
 
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
-				).length >= 2
+				samePairOpenOrders.filter((o) => o.orderType === OrderType.HEDGE)
+					.length >= 2
 			) {
 				openPositions[posIndex].status = "PROTECTED";
 			}
 			if (
 				samePairPositions.length === 1 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.HEDGE
-				).length >= 1 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
-				).length >= 1
+				samePairOpenOrders.filter((o) => o.orderType === OrderType.HEDGE)
+					.length >= 1 &&
+				samePairOpenOrders.filter((o) => o.orderType === OrderType.PROFIT)
+					.length >= 1
 			) {
 				openPositions[posIndex].status = "PROTECTED";
 			}
 			if (
 				samePairPositions.length === 1 &&
 				pos.pnl > 0 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.BREAK
-				).length >= 1
+				samePairOpenOrders.filter((o) => o.orderType === OrderType.BREAK)
+					.length >= 1
 			) {
 				openPositions[posIndex].status = "SECURED";
 			}
@@ -141,9 +139,8 @@ export const getUsersData = async () => {
 				pos.status === "UNKNOWN" &&
 				samePairPositions.length === 1 &&
 				samePairOpenOrders.length === 2 &&
-				samePairOpenOrders.filter(
-					(o) => o.clientOrderId.split(ORDER_ID_DIV)[0] === OrderType.PROFIT
-				).length === 2
+				samePairOpenOrders.filter((o) => o.orderType === OrderType.PROFIT)
+					.length === 2
 			) {
 				openPositions[posIndex].status = "UNPROTECTED";
 			}
