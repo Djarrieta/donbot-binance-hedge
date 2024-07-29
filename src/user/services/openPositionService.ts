@@ -49,7 +49,11 @@ export const openPositionService = async ({
 		quantity,
 		stopPrice: HEPrice,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.HEDGE + ORDER_ID_DIV + HEPrice,
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.HEDGE,
+			positionSide,
+			price: HEPrice,
+		}).fullIdName,
 		timeInForce: "GTC",
 	});
 
@@ -66,13 +70,12 @@ export const openPositionService = async ({
 		quantity,
 		stopPrice: TPPrice,
 		recvWindow: 59999,
-		newClientOrderId: OrderType.PROFIT + ORDER_ID_DIV + TPPrice,
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.PROFIT,
+			positionSide,
+			price: TPPrice,
+		}).fullIdName,
 	});
-	const newClientOrderId = orderIdNameGenerator({
-		orderType: OrderType.NEW,
-		positionSide,
-		price: symbol.currentPrice.toString(),
-	}).fullIdName;
 
 	await authExchange.futuresOrder({
 		type: "MARKET",
@@ -81,6 +84,10 @@ export const openPositionService = async ({
 		symbol: symbol.pair,
 		quantity,
 		recvWindow: 59999,
-		newClientOrderId,
+		newClientOrderId: orderIdNameGenerator({
+			orderType: OrderType.NEW,
+			positionSide,
+			price: symbol.currentPrice.toString(),
+		}).fullIdName,
 	});
 };
