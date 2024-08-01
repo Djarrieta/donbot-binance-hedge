@@ -20,7 +20,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			maxTradeLength: params.maxTradeLength,
 		});
 
-	const nonNormalSymbolList: Symbol[] = symbolsData.map((s) => {
+	const symbolList: Symbol[] = symbolsData.map((s) => {
 		const unformattedCandlestick = JSON.parse(s.candlestickBT as string);
 
 		const candlestick: Candle[] = unformattedCandlestick.map((c: Candle) => {
@@ -43,101 +43,6 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			minNotional: 0,
 		};
 	});
-
-	const firstDate = Math.min(
-		...nonNormalSymbolList.map((s) => getDate(s.candlestick[0].openTime).dateMs)
-	);
-	const lastDate = Math.max(
-		...nonNormalSymbolList.map(
-			(s) => getDate(s.candlestick[s.candlestick.length - 1].openTime).dateMs
-		)
-	);
-
-	const unfixedSymbolList = nonNormalSymbolList.map((s) => {
-		const symbolFirstDate = getDate(s.candlestick[0].openTime).dateMs;
-
-		const startCandlesAmount =
-			symbolFirstDate - firstDate >= 0
-				? (symbolFirstDate - firstDate) / params.interval
-				: 0;
-
-		const startCandles =
-			startCandlesAmount > 0
-				? Array(startCandlesAmount).fill({
-						open: NaN,
-						high: NaN,
-						low: NaN,
-						close: NaN,
-						volume: NaN,
-						openTime: NaN,
-				  })
-				: [];
-
-		const symbolLastDate = getDate(
-			s.candlestick[s.candlestick.length - 1].openTime
-		).dateMs;
-
-		const endCandlesAmount =
-			lastDate - symbolLastDate >= 0
-				? (lastDate - symbolLastDate) / params.interval
-				: 0;
-
-		const endCandles =
-			endCandlesAmount > 0
-				? Array(endCandlesAmount)
-						.fill(0)
-						.map((_, index) => ({
-							open: s.candlestick[s.candlestick.length - 1].open,
-							high: s.candlestick[s.candlestick.length - 1].high,
-							low: s.candlestick[s.candlestick.length - 1].low,
-							close: s.candlestick[s.candlestick.length - 1].close,
-							volume: s.candlestick[s.candlestick.length - 1].volume,
-							openTime: getDate(
-								getDate(s.candlestick[s.candlestick.length - 1].openTime)
-									.dateMs +
-									(1 + index) * params.interval
-							).date,
-						}))
-				: [];
-
-		const finalCandlestick = [...startCandles, ...s.candlestick, ...endCandles];
-
-		return {
-			...s,
-			candlestick: finalCandlestick,
-		};
-	});
-	const symbolsWithProblems: string[] = [];
-	symbolLoop: for (const symbol of unfixedSymbolList) {
-		for (let index = 0; index < symbol.candlestick.length - 1; index++) {
-			const currentCandle = symbol.candlestick[index];
-			const nextCandle = symbol.candlestick[index + 1];
-
-			const candlesDifference =
-				(getDate(nextCandle.openTime).dateMs -
-					getDate(currentCandle.openTime).dateMs) /
-				params.interval;
-
-			if (
-				!isNaN(currentCandle.openTime) &&
-				!isNaN(nextCandle.openTime) &&
-				candlesDifference !== 1
-			) {
-				symbolsWithProblems.push(symbol.pair);
-				continue symbolLoop;
-			}
-		}
-	}
-
-	log &&
-		console.log(
-			symbolsWithProblems.length + " symbols with problems in candlesticks: ",
-			symbolsWithProblems
-		);
-
-	const symbolList = unfixedSymbolList.filter(
-		(s) => !symbolsWithProblems.includes(s.pair)
-	);
 
 	if (!symbolList.length) {
 		throw new Error("No symbols found");
