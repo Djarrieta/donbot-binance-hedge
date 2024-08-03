@@ -69,13 +69,16 @@ export const saveBacktestData = async ({ pairList }: SaveBacktestDataProps) => {
 			volume: NaN,
 			openTime: getDate(initialTimeDate).dateString,
 		};
+		const incompleteCandlestickMap = new Map();
+
+		incompleteCandlestick.forEach((candle) => {
+			incompleteCandlestickMap.set(getDate(candle.openTime).dateString, candle);
+		});
 
 		let candlestick: BTCandle[] = [];
 		let time = initialTime;
 		do {
-			const candle = incompleteCandlestick.find(
-				(c) => getDate(c.openTime).dateString === getDate(time).dateString
-			);
+			const candle = incompleteCandlestickMap.get(getDate(time).dateString);
 			if (candle) {
 				const formattedCandle: BTCandle = {
 					...candle,
