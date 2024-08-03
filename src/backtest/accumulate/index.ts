@@ -10,7 +10,15 @@ import type { StatAccBT } from "../StatAccBT";
 import { getSymbolsBTService } from "../services";
 import { monteCarloAnalysis } from "./monteCarloAnalysis";
 
-export const accumulate = async ({ log }: { log: boolean }) => {
+export const accumulate = async ({
+	log,
+	startPt = 0,
+	endPt = 1,
+}: {
+	log: boolean;
+	startPt?: number;
+	endPt?: number;
+}) => {
 	const symbolsData = getSymbolsBTService();
 
 	log &&
@@ -47,8 +55,19 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 	if (!symbolList.length) {
 		throw new Error("No symbols found");
 	}
+	const dataInitialTime = Math.min(
+		...symbolList.map((s) => getDate(s.candlestick[0].openTime).dateMs)
+	);
+	const dataFinalTime = Math.max(
+		...symbolList.map(
+			(s) => getDate(s.candlestick[s.candlestick.length - 1].openTime).dateMs
+		)
+	);
+	const dataCandlesQty = (dataFinalTime - dataInitialTime) / params.interval;
+	const dataStartCandleIndex = Math.floor(dataCandlesQty * startPt);
+	const dataEndCandleIndex = Math.floor(dataCandlesQty * endPt);
 
-	let candleIndex = params.lookBackLength;
+	let candleIndex = params.lookBackLength + dataStartCandleIndex;
 	let openPosition: Position | null = null;
 	const closedPositions: Position[] = [];
 	let maxAccPnl = 0;
@@ -223,10 +242,7 @@ export const accumulate = async ({ log }: { log: boolean }) => {
 			continue;
 		}
 		candleIndex++;
-	} while (
-		candleIndex <=
-		params.lookBackLengthBacktest + params.lookBackLength
-	);
+	} while (candleIndex <= dataEndCandleIndex);
 
 	const tradesQty = closedPositions.length;
 	const winningPositions = closedPositions.filter((p) => p.pnl > 0);

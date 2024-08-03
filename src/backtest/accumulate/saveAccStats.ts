@@ -27,7 +27,11 @@ export const saveAccStats = async () => {
 				params.defaultSL = sl;
 				params.defaultTP = tp;
 				params.maxTradeLength = maxTradeLength;
-				const result = await accumulate({ log: false });
+				const result = await accumulate({
+					log: false,
+					startPt: 0 / 100,
+					endPt: 700 / 100,
+				});
 
 				if (!result) continue;
 				withRetry(() => insertAccStatsBTService(result));
