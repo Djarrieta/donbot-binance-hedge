@@ -9,7 +9,15 @@ import { Context } from "../../Context";
 import { getSymbolsBTService } from "../services";
 import type { StatSnapBT } from "../StatSnapBT";
 
-export const snapshot = async ({ log }: { log: boolean }) => {
+export const snapshot = async ({
+	log,
+	startPt = 0,
+	endPt = 1,
+}: {
+	log: boolean;
+	startPt?: number;
+	endPt?: number;
+}) => {
 	const symbolsData = getSymbolsBTService();
 
 	log &&
@@ -47,7 +55,20 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 		throw new Error("No symbols found trying to backtest snapshot");
 	}
 
-	let candleIndex = params.lookBackLength;
+	const dataInitialTime = Math.min(
+		...symbolList.map((s) => getDate(s.candlestick[0].openTime).dateMs)
+	);
+	const dataFinalTime = Math.max(
+		...symbolList.map(
+			(s) => getDate(s.candlestick[s.candlestick.length - 1].openTime).dateMs
+		)
+	);
+	const dataCandlesQty = (dataFinalTime - dataInitialTime) / params.interval;
+	const dataStartCandleIndex = Math.floor(dataCandlesQty * startPt);
+	const dataEndCandleIndex = Math.floor(dataCandlesQty * endPt);
+
+	let candleIndex = params.lookBackLength + dataStartCandleIndex;
+
 	const closedPositions: Position[] = [];
 
 	do {
@@ -189,10 +210,7 @@ export const snapshot = async ({ log }: { log: boolean }) => {
 			});
 		}
 		candleIndex++;
-	} while (
-		candleIndex <=
-		params.lookBackLengthBacktest + params.lookBackLength
-	);
+	} while (candleIndex <= dataEndCandleIndex);
 
 	const tradesQty = closedPositions.length;
 	const winningPositions = closedPositions.filter((p) => p.pnl > 0);

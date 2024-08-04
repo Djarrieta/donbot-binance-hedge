@@ -53,7 +53,7 @@ export const accumulate = async ({
 	});
 
 	if (!symbolList.length) {
-		throw new Error("No symbols found");
+		throw new Error("No symbols found trying to backtest accumulate");
 	}
 	const dataInitialTime = Math.min(
 		...symbolList.map((s) => getDate(s.candlestick[0].openTime).dateMs)

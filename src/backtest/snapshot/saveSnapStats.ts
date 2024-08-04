@@ -37,7 +37,11 @@ export const saveSnapStats = async ({
 				params.defaultSL = sl;
 				params.defaultTP = tp;
 				params.maxTradeLength = maxTradeLength;
-				const result = await snapshot({ log: false });
+				const result = await snapshot({
+					log: false,
+					startPt: params.backtestStartPt,
+					endPt: params.backtestEndPt,
+				});
 				if (!result) continue;
 				withRetry(() => insertSnapStatsBTService(result));
 

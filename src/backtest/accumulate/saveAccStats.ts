@@ -29,8 +29,8 @@ export const saveAccStats = async () => {
 				params.maxTradeLength = maxTradeLength;
 				const result = await accumulate({
 					log: false,
-					startPt: 0 / 100,
-					endPt: 700 / 100,
+					startPt: params.backtestStartPt,
+					endPt: params.backtestEndPt,
 				});
 
 				if (!result) continue;

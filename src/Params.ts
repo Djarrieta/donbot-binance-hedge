@@ -21,6 +21,8 @@ export const params = {
 	backtestSLArray: [2 / 100],
 	backtestTPArray: [10 / 100],
 	backtestMaxTradeLengthArray: [100],
+	backtestStartPt: 0 / 100,
+	backtestEndPt: 100 / 100,
 
 	interval: Interval["5m"],
 	lookBackLength: 200,
