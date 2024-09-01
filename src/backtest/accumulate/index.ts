@@ -68,16 +68,24 @@ export const accumulate = async ({
 	const dataEndCandleIndex = Math.floor(dataCandlesQty * endPt);
 
 	let candleIndex = params.lookBackLength + dataStartCandleIndex;
-	let openPosition: Position | null = null;
+	let openPositions: Position[] = [];
 	const closedPositions: Position[] = [];
 	let maxAccPnl = 0;
 	let minAccPnl = 0;
 	let accPnl = 0;
 	let drawdown = 0;
 
-	do {
+	candleIndexLoop: do {
 		const candlestickStartIndex = candleIndex - params.lookBackLength;
 		const candlestickEndIndex = candleIndex;
+
+		const startTime = getDate(
+			Math.min(
+				...symbolList.map(
+					(s) => getDate(s.candlestick[candlestickStartIndex].openTime).dateMs
+				)
+			)
+		).dateString;
 
 		const readySymbols: Symbol[] = [];
 		symbolList.forEach((s) => {
@@ -86,13 +94,20 @@ export const accumulate = async ({
 				candlestickEndIndex
 			);
 
-			if (!Number.isNaN(candlestick[0].open)) {
+			if (
+				!Number.isNaN(candlestick[0].open) &&
+				getDate(candlestick[0].openTime).dateString === startTime
+			) {
 				readySymbols.push({
 					...s,
 					candlestick,
 				});
 			}
 		});
+
+		if (readySymbols.length !== symbolList.length) {
+			console.log("humm");
+		}
 
 		const context = await Context.getInstance({
 			symbolList: readySymbols,
@@ -108,21 +123,21 @@ export const accumulate = async ({
 			checkSymbols: false,
 		});
 
-		if (openPosition !== null) {
+		posLoop: for (
+			let posIndex = 0;
+			posIndex < openPositions.length;
+			posIndex++
+		) {
+			const openPosition = openPositions[posIndex];
+
 			const symbolOpened = readySymbols.find(
 				(s) => s.pair === openPosition?.pair
 			);
 
-			if (!symbolOpened) {
-				candleIndex++;
-				continue;
-			}
+			if (!symbolOpened) continue posLoop;
 			const lastCandle =
 				symbolOpened.candlestick[symbolOpened.candlestick.length - 1];
-			if (!lastCandle) {
-				candleIndex++;
-				continue;
-			}
+			if (!lastCandle) continue posLoop;
 			const sl = openPosition.sl || params.defaultSL;
 			const tp = openPosition.tp || params.defaultTP;
 
@@ -152,11 +167,12 @@ export const accumulate = async ({
 					endTime: lastCandle.openTime,
 					accPnl,
 				});
-				candleIndex++;
 
-				openPosition = null;
+				openPositions = openPositions.filter(
+					(p) => p.pair !== openPosition.pair
+				);
 
-				continue;
+				continue posLoop;
 			}
 
 			if (
@@ -179,11 +195,11 @@ export const accumulate = async ({
 					accPnl,
 				});
 
-				candleIndex++;
+				openPositions = openPositions.filter(
+					(p) => p.pair !== openPosition.pair
+				);
 
-				openPosition = null;
-
-				continue;
+				continue posLoop;
 			}
 			if (Number(openPosition.tradeLength) + 1 >= params.maxTradeLength) {
 				const pnlGraph =
@@ -206,41 +222,48 @@ export const accumulate = async ({
 					endTime: lastCandle.openTime,
 					accPnl,
 				});
-				candleIndex++;
-				openPosition = null;
-				continue;
+
+				openPositions = openPositions.filter(
+					(p) => p.pair !== openPosition.pair
+				);
+
+				continue posLoop;
 			}
 			openPosition.tradeLength = Number(openPosition.tradeLength) + 1;
-			candleIndex++;
-			continue;
+		}
+		const openProtectedPositions = openPositions.filter(
+			(p) => p.status === "PROTECTED"
+		);
+		if (
+			trades.length &&
+			openProtectedPositions.length < params.maxProtectedPositions
+		) {
+			let newPos: Position[] = [];
+			trades.slice(0, params.maxProtectedPositions).forEach((t) => {
+				const symbolToOpen = readySymbols.find(
+					(s) => s.pair === trades[0].pair
+				);
+				if (!symbolToOpen) return;
+				newPos.push({
+					pair: t.pair,
+					status: "UNKNOWN",
+					startTime:
+						symbolToOpen.candlestick[symbolToOpen.candlestick.length - 1]
+							.openTime,
+					positionSide: t.positionSide || "LONG",
+					pnl: 0,
+					isHedgeUnbalance: false,
+					entryPriceUSDT:
+						symbolToOpen.candlestick[symbolToOpen.candlestick.length - 1].close,
+					stgName: t.stgName,
+					tradeLength: 0,
+					sl: t.sl,
+					tp: t.tp,
+				});
+			});
+			newPos.length && openPositions.push(...newPos);
 		}
 
-		if (trades.length && !openPosition) {
-			const symbolOpened = readySymbols.find((s) => s.pair === trades[0].pair);
-			if (!symbolOpened) {
-				candleIndex++;
-				continue;
-			}
-			const startTime =
-				symbolOpened.candlestick[symbolOpened.candlestick.length - 1].openTime;
-			openPosition = {
-				pair: symbolOpened.pair,
-				status: "UNKNOWN",
-				startTime,
-				positionSide: trades[0].positionSide || "LONG",
-				pnl: 0,
-				isHedgeUnbalance: false,
-				entryPriceUSDT:
-					symbolOpened.candlestick[symbolOpened.candlestick.length - 1].close,
-				stgName: trades[0].stgName,
-				tradeLength: 0,
-				sl: trades[0].sl,
-				tp: trades[0].tp,
-			};
-
-			candleIndex++;
-			continue;
-		}
 		candleIndex++;
 	} while (candleIndex <= dataEndCandleIndex);
 
