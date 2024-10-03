@@ -1,14 +1,8 @@
-import {
-	getDate,
-	type DateString,
-	type ShortDateString,
-} from "../utils/getDate";
 import Binance, { type CandleChartInterval_LT } from "binance-api-node";
 import { Database } from "bun:sqlite";
 import cliProgress from "cli-progress";
-import { chosenStrategies } from "../strategies";
 import { rsi } from "technicalindicators";
-import { getVolatility } from "../utils/getVolatility";
+import { getDate, type DateString } from "../utils/getDate";
 
 export enum Interval {
 	"1m" = 1000 * 60,
@@ -70,7 +64,7 @@ export type Position = {
 };
 type BTPosition = Omit<
 	Position,
-	"coinQuantity" | "status" | "isHedgeUnbalance"
+	"coinQuantity" | "status" | "isHedgeUnbalance" | "sl" | "tp"
 > & { tradeLength: number };
 
 type OrderType = "NEW" | "HEDGE" | "PROFIT" | "BREAK" | "QUIT" | "UNKNOWN";
@@ -146,8 +140,8 @@ const rsiDivergency5m = new Strategy({
 	lookBackLength: 200,
 	interval: Interval["5m"],
 	allowedPairs: [],
-	sl: 0,
-	tp: 0,
+	sl: 1 / 100,
+	tp: 5 / 100,
 
 	validate({ candlestick, pair }) {
 		const response: StrategyResponse = {
@@ -232,7 +226,7 @@ const rsiDivergency5m = new Strategy({
 	},
 });
 
-class BacktestDataService {
+class BacktestSymbolService {
 	private db: Database;
 
 	constructor() {
@@ -268,20 +262,73 @@ class BacktestDataService {
 		});
 	};
 
-	showNumberOfRows = async () => {
-		const results = this.db.query("SELECT * FROM symbolsBT").all();
-		console.log(results.length);
+	showNumberOfPairs = async () => {
+		const pairList = this.getSavedPairList();
+
+		const firstTwoPairs = pairList.slice(0, 2).join(", ");
+		const remainingPairs = pairList.length - 2;
+		console.log(
+			`Pairs in symbolsBT table: ${firstTwoPairs}${
+				remainingPairs > 0 ? `, and ${remainingPairs} others` : ""
+			}`
+		);
 	};
 
-	getCandlestick = (
-		pairs?: string[],
-		start?: number,
-		end?: number
-	): Candle[] => {
+	showSavedInformation = () => {
+		const items = 5;
+		const results = this.db
+			.query(
+				"SELECT pair, COUNT(*) AS count, MIN(openTime) AS startTime, MAX(openTime) AS endTime FROM symbolsBT GROUP BY pair"
+			)
+			.all() as {
+			pair: string;
+			count: number;
+			startTime: number;
+			endTime: number;
+		}[];
+
+		results.sort((a, b) => a.count - b.count);
+		console.log(
+			`Pairs in symbolsBT table with number of candles and time range:\n${results
+				.slice(0, items)
+				.map(
+					({ pair, count, startTime, endTime }) =>
+						`${pair} - ${count} candles from ${
+							getDate(startTime).dateString
+						} to ${getDate(endTime).dateString}`
+				)
+				.join(",\n")}${
+				results.length > items
+					? `,\n ...and ${results.length - items} others`
+					: ""
+			}`
+		);
+	};
+
+	getSavedPairList = () => {
+		const results = this.db
+			.query("SELECT DISTINCT pair FROM symbolsBT")
+			.all() as { pair: string }[];
+		const pairList = results.map(
+			(result: { pair: string }) => result.pair
+		) as string[];
+
+		return pairList;
+	};
+
+	getCandlestick = ({
+		pairs,
+		start,
+		end,
+	}: {
+		pairs?: string[];
+		start?: number;
+		end?: number;
+	}): Candle[] => {
 		const query = `SELECT * FROM symbolsBT ${
 			pairs ? `WHERE pair IN (${pairs.map((p) => `'${p}'`).join(",")})` : ""
 		} ${start ? `AND openTime >= ${start}` : ""} ${
-			end ? `AND openTime <= ${end}` : ""
+			end ? `AND openTime < ${end}` : ""
 		} ORDER BY openTime ASC`;
 
 		const results = this.db.query(query).all() as Candle[];
@@ -297,19 +344,71 @@ class BacktestDataService {
 		this.db.close();
 	}
 }
-class SymbolService {
-	getBacktestData({
-		pairList,
-		start,
-		end,
-	}: {
-		pairList?: string[];
-		start: number;
-		end: number;
-	}): Promise<Symbol[]> {
-		//TODO implement
-		return Promise.resolve([]);
+class BacktestPositionService {
+	private db: Database;
+
+	constructor() {
+		this.db = new Database("DB.db");
+		this.configureDatabase();
 	}
+
+	closeConnection() {
+		this.db.close();
+	}
+
+	deleteRows() {
+		this.db.query("DELETE FROM positionsBT").run();
+		console.log("All rows deleted from positionsBT");
+	}
+
+	save(position: BTPosition) {
+		const query = `INSERT INTO positionsBT (pair, positionSide, startTime, entryPriceUSDT, pnl, tradeLength, stgName, sl, tp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+		this.db
+			.query(query)
+			.run(
+				position.pair,
+				position.positionSide,
+				position.startTime,
+				position.entryPriceUSDT,
+				position.pnl,
+				position.tradeLength,
+				position.stgName
+			);
+	}
+
+	get({
+		pair,
+		sl,
+		tp,
+		tradeLength,
+	}: {
+		pair: string;
+		sl: number;
+		tp: number;
+		tradeLength: number;
+	}): BTPosition[] {
+		const query = `SELECT * FROM positionsBT 
+			WHERE pair = '${pair}' 
+			AND sl = ${sl} 
+			AND tp = ${tp} 
+			AND tradeLength = ${tradeLength} 
+			ORDER BY startTime ASC`;
+
+		const results = this.db.query(query).all() as BTPosition[];
+		return results;
+	}
+
+	configureDatabase() {
+		this.db.run("PRAGMA busy_timeout = 5000");
+		this.db.query("PRAGMA journal_mode = WAL");
+		this.db
+			.query(
+				"CREATE TABLE IF NOT EXISTS positionsBT (pair TEXT, positionSide TEXT, startTime INTEGER, endTime INTEGER, entryPriceUSDT REAL, pnl REAL, accPnl REAL, tradeLength INTEGER, coinQuantity REAL, status TEXT, isHedgeUnbalance INTEGER, stgName TEXT, sl REAL, tp REAL)"
+			)
+			.run();
+	}
+}
+class SymbolService {
 	getSymbolsData({
 		start,
 		end,
@@ -329,7 +428,7 @@ class SymbolService {
 		const exchange = Binance();
 		const { symbols: unformattedList } = await exchange.futuresExchangeInfo();
 		const prices = await exchange.futuresMarkPrice();
-		for (const symbol of unformattedList.slice(0, 10)) {
+		for (const symbol of unformattedList) {
 			const {
 				symbol: pair,
 				status,
@@ -363,30 +462,38 @@ class SymbolService {
 		}
 		return pairList;
 	}
+
 	async getCandlestick({
 		pair,
-		lookBackLength,
+		start,
+		end,
 		interval,
 		apiLimit,
 	}: {
 		pair: string;
 		interval: Interval;
-		lookBackLength: number;
+		start: number;
+		end: number;
 		apiLimit: number;
 	}): Promise<Candle[]> {
 		let candlestick: Candle[] = [];
 
 		const exchange = Binance();
-
-		let n = lookBackLength;
+		let startTime = start;
+		let endTime = end + interval;
 
 		do {
-			const startTime = getDate(getDate().dateMs - (n + 1) * interval).dateMs;
+			let lookBackLength = Math.floor((endTime - startTime) / interval);
+			if (lookBackLength > apiLimit) {
+				endTime = startTime + (apiLimit - 1) * interval;
+				lookBackLength = apiLimit;
+			}
+
 			const unformattedCandlestick = await exchange.futuresCandles({
 				symbol: pair,
 				interval: Interval[interval] as CandleChartInterval_LT,
 				startTime,
-				limit: Math.min(lookBackLength, apiLimit),
+				limit: lookBackLength,
 			});
 
 			const formattedCandlestick = unformattedCandlestick.map(
@@ -402,19 +509,43 @@ class SymbolService {
 					};
 				}
 			);
+			candlestick.push(...formattedCandlestick);
 
-			const firstCandle = formattedCandlestick.length
-				? getDate(formattedCandlestick[0].openTime).dateMs
-				: 0;
-			const startTimeDiff = Math.abs(startTime - firstCandle) / interval;
-			if (startTimeDiff <= 1) {
-				candlestick.push(...formattedCandlestick);
-			}
-
-			n -= apiLimit;
-		} while (n > 0);
+			startTime = endTime + interval;
+			endTime = end + interval;
+		} while (startTime < end);
 
 		return candlestick;
+	}
+
+	fixCandlestick({
+		candlestick,
+		start,
+		end,
+		interval,
+	}: {
+		candlestick: Candle[];
+		start: number;
+		end: number;
+		interval: Interval;
+	}): Candle[] {
+		const fixedCandlestick: Candle[] = [];
+		let time = start;
+		let prevCandle: Candle | undefined;
+		do {
+			const candle = candlestick.find((c) => c.openTime === time);
+			if (candle) {
+				fixedCandlestick.push(candle);
+				prevCandle = candle;
+			} else if (prevCandle) {
+				fixedCandlestick.push({
+					...prevCandle,
+					openTime: time,
+				});
+			}
+			time += interval;
+		} while (time <= end);
+		return fixedCandlestick;
 	}
 }
 
@@ -434,8 +565,8 @@ const params = {
 	minAmountToTradeUSDT: 6,
 	candlestickAPILimit: 500,
 	backtest: {
-		start: getDate("2024 09 23 00:00:00" as DateString).dateMs,
-		end: getDate("2024 09 24 00:00:00" as DateString).dateMs,
+		start: getDate("2024 09 20 00:00:00" as DateString).dateMs,
+		end: getDate("2024 09 30 00:00:00" as DateString).dateMs,
 		maxTradeLengthArray: [100],
 		slArray: [1 / 100],
 		tpArray: [5 / 100],
@@ -444,7 +575,8 @@ const params = {
 
 class Trade {
 	params = params;
-	backtestDataService = new BacktestDataService();
+	backtestSymbolService = new BacktestSymbolService();
+	backtestPositionService = new BacktestPositionService();
 	symbolService = new SymbolService();
 	userService = new UserService();
 	symbols: Symbol[] = [];
@@ -452,21 +584,19 @@ class Trade {
 	strategies: Strategy[] = [rsiDivergency5m];
 
 	async prepareBacktest() {
-		this.backtestDataService.deleteRows();
+		this.backtestSymbolService.deleteRows();
 
-		const pairList = await this.symbolService.getPairList({
-			minAmountToTradeUSDT: this.params.minAmountToTradeUSDT,
-		});
+		const pairList = (
+			await this.symbolService.getPairList({
+				minAmountToTradeUSDT: this.params.minAmountToTradeUSDT,
+			})
+		).slice(0, 10);
 
 		const progressBar = new cliProgress.SingleBar(
 			{},
 			cliProgress.Presets.shades_classic
 		);
 		progressBar.start(pairList.length, 0);
-
-		const lookBackLength =
-			(this.params.backtest.end - this.params.backtest.start) /
-			this.params.interval;
 
 		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 			const pair = pairList[pairIndex];
@@ -475,104 +605,220 @@ class Trade {
 				pair,
 				apiLimit: this.params.candlestickAPILimit,
 				interval: this.params.interval,
-				lookBackLength,
+				start: this.params.backtest.start,
+				end: this.params.backtest.end,
 			});
-			progressBar.stop();
 
-			this.backtestDataService.saveCandlestick(candlestick);
+			const fixedCandlestick = this.symbolService.fixCandlestick({
+				candlestick,
+				start: this.params.backtest.start,
+				end: this.params.backtest.end,
+				interval: this.params.interval,
+			});
+			if (candlestick.length !== fixedCandlestick.length) {
+				console.log(candlestick.length, fixedCandlestick.length);
+			}
+
+			this.backtestSymbolService.saveCandlestick(fixedCandlestick);
 			progressBar.update(pairIndex + 1);
 		}
+		progressBar.stop();
+
 		console.log("Backtest data prepared for " + pairList.length + " pairs");
 	}
 	async backtest() {
+		this.backtestSymbolService.showSavedInformation();
+		const pairList = this.backtestSymbolService.getSavedPairList();
+
+		const totalLookBackLength =
+			(this.params.backtest.end -
+				this.params.backtest.start -
+				this.params.interval * (1 + this.params.lookBackLength)) /
+			this.params.interval;
+		const progressTotal =
+			this.params.backtest.slArray.length *
+			this.params.backtest.tpArray.length *
+			this.params.backtest.maxTradeLengthArray.length *
+			totalLookBackLength;
+
+		const progressBar = new cliProgress.SingleBar(
+			{},
+			cliProgress.Presets.shades_classic
+		);
+		progressBar.start(progressTotal, 0);
+		let progress = 0;
+
 		for (const sl of this.params.backtest.slArray) {
 			for (const tp of this.params.backtest.tpArray) {
-				const closedPositions: BTPosition[] = [];
+				for (const maxTradeLength of this.params.backtest.maxTradeLengthArray) {
+					let start = this.params.backtest.start;
+					let end =
+						this.params.backtest.start +
+						this.params.lookBackLength * this.params.interval;
 
-				let start = this.params.backtest.start;
-				let end =
-					this.params.backtest.start +
-					this.params.lookBackLength * this.params.interval;
+					const closedPositions: BTPosition[] = [];
+					do {
+						const trades = [];
+						for (const pair of pairList) {
+							const candlestick = this.backtestSymbolService.getCandlestick({
+								pairs: [pair],
+								start,
+								end,
+							});
 
-				do {
-					const symbols = await this.symbolService.getBacktestData({
-						start,
-						end,
-					});
-					const { trades } = this.checkForTrades({ symbols });
+							for (const strategy of this.strategies) {
+								const trade = strategy?.validate({
+									candlestick,
+									pair,
+								});
 
-					for (const trade of trades) {
-						const symbol = symbols.find((s) => s.pair === trade.pair);
+								if (trade.positionSide) {
+									trades.push(trade);
+									this.symbols.push({
+										pair,
+										pricePrecision: 0,
+										quantityPrecision: 0,
+										currentPrice: candlestick[candlestick.length - 1].close,
+										isReady: true,
+										candlestick,
+									});
+								}
+							}
+						}
 
-						if (symbol && trade.positionSide) {
-							for (const maxTradeLength of this.params.backtest
-								.maxTradeLengthArray) {
-								const { candlestick: profitStick } = (
-									await this.symbolService.getBacktestData({
-										pairList: [symbol.pair],
-										start: start + this.params.interval,
-										end: start + this.params.interval + maxTradeLength,
-									})
-								)[0];
-								let pnl = 0;
-								let stickIndex = 0;
-								let done = false;
-								do {
-									const candle = profitStick[stickIndex];
+						tradeLoop: for (const trade of trades) {
+							const symbol = this.symbols.find((s) => s.pair === trade.pair);
+							if (!symbol) continue tradeLoop;
+							if (!trade.positionSide) continue tradeLoop;
 
-									if (
-										(trade.positionSide === "LONG" &&
-											(candle.low <= trade.sl || candle.close <= trade.sl)) ||
-										(trade.positionSide === "SHORT" &&
-											(candle.high >= trade.sl || candle.close >= trade.sl))
-									) {
-										pnl = -this.params.riskPt - this.params.fee;
-										done = true;
-									}
+							const profitStick = this.backtestSymbolService.getCandlestick({
+								pairs: [symbol.pair],
+								start: end,
+								end: end + maxTradeLength * this.params.interval,
+							});
 
-									if (
-										(trade.positionSide === "LONG" &&
-											(candle.high >= trade.tp || candle.close >= trade.tp)) ||
-										(trade.positionSide === "SHORT" &&
-											(candle.low <= trade.tp || candle.close <= trade.tp))
-									) {
-										pnl = this.params.riskPt * (tp / sl) - this.params.fee;
-										done = true;
-									}
+							const entryPriceUSDT = profitStick[0].open;
 
-									stickIndex++;
-								} while (done !== true && stickIndex < profitStick.length - 1);
+							let pnl = 0;
+							let stickIndex = 0;
+							let done = false;
+							do {
+								const candle = profitStick[stickIndex];
+								const stopLoss =
+									trade.positionSide === "LONG"
+										? entryPriceUSDT * (1 - sl)
+										: entryPriceUSDT * (1 + sl);
+								const takeProfit = tp
+									? trade.positionSide === "LONG"
+										? entryPriceUSDT * (1 + tp)
+										: entryPriceUSDT * (1 - tp)
+									: 0;
 
-								if (pnl === 0) {
-									const lastPrice = profitStick[profitStick.length - 1].close;
-									const pnlGraph =
-										(trade.positionSide === "LONG"
-											? lastPrice - profitStick[0].open
-											: profitStick[0].open - lastPrice) / profitStick[0].open;
-
-									pnl = this.params.riskPt * (pnlGraph / sl) - this.params.fee;
+								if (
+									(trade.positionSide === "LONG" &&
+										(candle.low <= stopLoss || candle.close <= stopLoss)) ||
+									(trade.positionSide === "SHORT" &&
+										(candle.high >= stopLoss || candle.close >= stopLoss))
+								) {
+									pnl = -this.params.riskPt - this.params.fee;
+									done = true;
 								}
 
-								closedPositions.push({
-									pair: symbol.pair,
-									entryPriceUSDT: profitStick[0].open,
-									startTime: profitStick[0].openTime,
-									pnl,
-									tradeLength: stickIndex,
-									stgName: trade.stgName,
-									positionSide: trade.positionSide,
-									sl: trade.sl,
-									tp: trade.tp,
-								});
+								if (
+									(trade.positionSide === "LONG" &&
+										(candle.high >= takeProfit ||
+											candle.close >= takeProfit)) ||
+									(trade.positionSide === "SHORT" &&
+										(candle.low <= takeProfit || candle.close <= takeProfit))
+								) {
+									pnl = this.params.riskPt * (tp / sl) - this.params.fee;
+									done = true;
+								}
+
+								stickIndex++;
+							} while (done !== true && stickIndex < profitStick.length - 1);
+
+							if (pnl === 0) {
+								const lastPrice = profitStick[profitStick.length - 1].close;
+								const pnlGraph =
+									(trade.positionSide === "LONG"
+										? lastPrice - profitStick[0].open
+										: profitStick[0].open - lastPrice) / profitStick[0].open;
+
+								pnl = this.params.riskPt * (pnlGraph / sl) - this.params.fee;
 							}
+							closedPositions.push({
+								pair: symbol.pair,
+								positionSide: trade.positionSide,
+								startTime: profitStick[0].openTime,
+								entryPriceUSDT: profitStick[0].open,
+								pnl,
+								tradeLength: stickIndex,
+								stgName: trade.stgName,
+							});
+						}
+
+						start += this.params.interval;
+						end += this.params.interval;
+						progress++;
+						progressBar.update(progress);
+					} while (end < this.params.backtest.end);
+
+					const tradesQty = closedPositions.length;
+					const winningPositions = closedPositions.filter((p) => p.pnl > 0);
+					const winRate = winningPositions.length / tradesQty;
+					const accPnl = closedPositions.reduce((acc, p) => acc + p.pnl, 0);
+					const avPnl = accPnl / tradesQty || 0;
+					const avTradeLength =
+						closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
+							tradesQty || 0;
+
+					let winningPairs: string[] = [];
+
+					for (
+						let symbolIndex = 0;
+						symbolIndex < pairList.length;
+						symbolIndex++
+					) {
+						const pair = pairList[symbolIndex];
+						const closedPosForSymbol = closedPositions.filter(
+							(pos) => pos.pair === pair
+						);
+						const tradesQty = closedPosForSymbol.length;
+						const totalPnl = closedPosForSymbol.reduce(
+							(acc, a) => acc + a.pnl,
+							0
+						);
+						const avPnl = totalPnl / tradesQty || 0;
+
+						if (avPnl > 0) {
+							winningPairs.push(pair);
 						}
 					}
 
-					start += this.params.lookBackLength;
-					end += this.params.lookBackLength;
-				} while (end < this.params.backtest.end);
+					console.table({
+						sl,
+						tp,
+						maxTradeLength,
+						tradesQty,
+						winRate,
+						avPnl,
+						avTradeLength,
+						winningPairs: winningPairs.join(","),
+					});
+					console.table(
+						closedPositions.map((p) => {
+							return {
+								...p,
+								startTime: getDate(p.startTime).dateString,
+							};
+						})
+					);
+				}
 			}
 		}
+
+		progressBar.stop();
 	}
 
 	init() {
@@ -624,4 +870,5 @@ class Trade {
 }
 
 const trade = new Trade();
+//trade.prepareBacktest();
 trade.backtest();
