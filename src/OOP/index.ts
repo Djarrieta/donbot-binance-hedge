@@ -326,7 +326,9 @@ class BacktestSymbolService {
 		end?: number;
 	}): Candle[] => {
 		const query = `SELECT * FROM symbolsBT ${
-			pairs ? `WHERE pair IN (${pairs.map((p) => `'${p}'`).join(",")})` : ""
+			pairs && pairs.length
+				? `WHERE pair IN (${pairs.map((p) => `'${p}'`).join(",")})`
+				: ""
 		} ${start ? `AND openTime >= ${start}` : ""} ${
 			end ? `AND openTime < ${end}` : ""
 		} ORDER BY openTime ASC`;
@@ -565,7 +567,7 @@ const params = {
 	minAmountToTradeUSDT: 6,
 	candlestickAPILimit: 500,
 	backtest: {
-		start: getDate("2024 09 20 00:00:00" as DateString).dateMs,
+		start: getDate("2024 09 27 00:00:00" as DateString).dateMs,
 		end: getDate("2024 09 30 00:00:00" as DateString).dateMs,
 		maxTradeLengthArray: [100],
 		slArray: [1 / 100],
@@ -586,11 +588,9 @@ class Trade {
 	async prepareBacktest() {
 		this.backtestSymbolService.deleteRows();
 
-		const pairList = (
-			await this.symbolService.getPairList({
-				minAmountToTradeUSDT: this.params.minAmountToTradeUSDT,
-			})
-		).slice(0, 10);
+		const pairList = await this.symbolService.getPairList({
+			minAmountToTradeUSDT: this.params.minAmountToTradeUSDT,
+		});
 
 		const progressBar = new cliProgress.SingleBar(
 			{},
@@ -654,17 +654,25 @@ class Trade {
 					let start = this.params.backtest.start;
 					let end =
 						this.params.backtest.start +
-						this.params.lookBackLength * this.params.interval;
+						(this.params.lookBackLength + this.params.maxTradeLength) *
+							this.params.interval;
 
 					const closedPositions: BTPosition[] = [];
 					do {
 						const trades = [];
-						for (const pair of pairList) {
-							const candlestick = this.backtestSymbolService.getCandlestick({
-								pairs: [pair],
+						const candlesticksAllSymbols =
+							this.backtestSymbolService.getCandlestick({
+								pairs: pairList,
 								start,
 								end,
 							});
+						for (const pair of pairList) {
+							const candlestick = candlesticksAllSymbols.filter(
+								(c) =>
+									c.pair === pair &&
+									c.openTime <
+										end - this.params.maxTradeLength * this.params.interval
+							);
 
 							for (const strategy of this.strategies) {
 								const trade = strategy?.validate({
@@ -691,11 +699,12 @@ class Trade {
 							if (!symbol) continue tradeLoop;
 							if (!trade.positionSide) continue tradeLoop;
 
-							const profitStick = this.backtestSymbolService.getCandlestick({
-								pairs: [symbol.pair],
-								start: end,
-								end: end + maxTradeLength * this.params.interval,
-							});
+							const profitStick = candlesticksAllSymbols.filter(
+								(c) =>
+									c.pair === symbol.pair &&
+									c.openTime >=
+										end - this.params.maxTradeLength * this.params.interval
+							);
 
 							const entryPriceUSDT = profitStick[0].open;
 
@@ -764,15 +773,6 @@ class Trade {
 						progressBar.update(progress);
 					} while (end < this.params.backtest.end);
 
-					const tradesQty = closedPositions.length;
-					const winningPositions = closedPositions.filter((p) => p.pnl > 0);
-					const winRate = winningPositions.length / tradesQty;
-					const accPnl = closedPositions.reduce((acc, p) => acc + p.pnl, 0);
-					const avPnl = accPnl / tradesQty || 0;
-					const avTradeLength =
-						closedPositions.reduce((acc, a) => acc + Number(a.tradeLength), 0) /
-							tradesQty || 0;
-
 					let winningPairs: string[] = [];
 
 					for (
@@ -796,21 +796,59 @@ class Trade {
 						}
 					}
 
+					const closedPositionsWP = closedPositions.filter((p) => {
+						return winningPairs.includes(p.pair);
+					});
+
+					const tradesQtyWP = closedPositionsWP.length;
+					const winningPositionsWP = closedPositionsWP.filter((p) => p.pnl > 0);
+					const winRateWP = winningPositionsWP.length / tradesQtyWP;
+					const accPnlWP = closedPositionsWP.reduce((acc, p) => acc + p.pnl, 0);
+					const avPnlWP = accPnlWP / tradesQtyWP || 0;
+
+					const closedPositionsAcc = [];
+					let openPosTime = 0;
+					for (const position of closedPositionsWP) {
+						if (position.startTime > openPosTime) {
+							closedPositionsAcc.push(position);
+							openPosTime =
+								position.startTime +
+								position.tradeLength * this.params.interval;
+						}
+					}
+
+					const tradesQtyAcc = closedPositionsAcc.length;
+					const winningPositionsAcc = closedPositionsAcc.filter(
+						(p) => p.pnl > 0
+					);
+					const winRateAcc = winningPositionsAcc.length / tradesQtyAcc;
+					const accPnlAcc = closedPositionsAcc.reduce(
+						(acc, p) => acc + p.pnl,
+						0
+					);
+					const avPnlAcc = accPnlAcc / tradesQtyAcc || 0;
+
 					console.table({
 						sl,
 						tp,
 						maxTradeLength,
-						tradesQty,
-						winRate,
-						avPnl,
-						avTradeLength,
-						winningPairs: winningPairs.join(","),
+						tradesQtyWP,
+						winRateWP,
+						avPnlWP,
+						tradesQtyAcc,
+						winRateAcc,
+						avPnlAcc,
 					});
+					console.log({ winningPairs: winningPairs.join(",") });
+
 					console.table(
-						closedPositions.map((p) => {
+						closedPositionsAcc.map((p) => {
 							return {
 								...p,
 								startTime: getDate(p.startTime).dateString,
+								endTime: getDate(
+									p.startTime + p.tradeLength * this.params.interval
+								).dateString,
 							};
 						})
 					);
@@ -819,6 +857,10 @@ class Trade {
 		}
 
 		progressBar.stop();
+	}
+
+	async forwardTest() {
+		//TODO implement
 	}
 
 	init() {
