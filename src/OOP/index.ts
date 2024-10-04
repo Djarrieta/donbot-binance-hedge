@@ -3,6 +3,7 @@ import { Database } from "bun:sqlite";
 import cliProgress from "cli-progress";
 import { rsi } from "technicalindicators";
 import { getDate, type DateString } from "../utils/getDate";
+import { formatPercent } from "../utils/formatPercent";
 
 export enum Interval {
 	"1m" = 1000 * 60,
@@ -226,6 +227,21 @@ const rsiDivergency5m = new Strategy({
 	},
 });
 
+type BTRecord = {
+	sl: number;
+	tp: number;
+	maxTradeLength: number;
+	tradesQtyWP: number;
+	winRateWP: number;
+	avPnlWP: number;
+	tradesQtyAcc: number;
+	winRateAcc: number;
+	avPnlAcc: number;
+	winningPairs: string[];
+	closedPositionsAcc: string;
+	closedPositionsWP: string;
+};
+
 class BacktestSymbolService {
 	private db: Database;
 
@@ -346,7 +362,10 @@ class BacktestSymbolService {
 		this.db.close();
 	}
 }
-class BacktestPositionService {
+
+const BT_RECORD_TABLE_NAME = "recordBT";
+
+class BacktestRecordService {
 	private db: Database;
 
 	constructor() {
@@ -354,62 +373,106 @@ class BacktestPositionService {
 		this.configureDatabase();
 	}
 
-	closeConnection() {
-		this.db.close();
-	}
-
-	deleteRows() {
-		this.db.query("DELETE FROM positionsBT").run();
-		console.log("All rows deleted from positionsBT");
-	}
-
-	save(position: BTPosition) {
-		const query = `INSERT INTO positionsBT (pair, positionSide, startTime, entryPriceUSDT, pnl, tradeLength, stgName, sl, tp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-		this.db
-			.query(query)
-			.run(
-				position.pair,
-				position.positionSide,
-				position.startTime,
-				position.entryPriceUSDT,
-				position.pnl,
-				position.tradeLength,
-				position.stgName
-			);
-	}
-
-	get({
-		pair,
-		sl,
-		tp,
-		tradeLength,
-	}: {
-		pair: string;
-		sl: number;
-		tp: number;
-		tradeLength: number;
-	}): BTPosition[] {
-		const query = `SELECT * FROM positionsBT 
-			WHERE pair = '${pair}' 
-			AND sl = ${sl} 
-			AND tp = ${tp} 
-			AND tradeLength = ${tradeLength} 
-			ORDER BY startTime ASC`;
-
-		const results = this.db.query(query).all() as BTPosition[];
-		return results;
-	}
-
-	configureDatabase() {
-		this.db.run("PRAGMA busy_timeout = 5000");
-		this.db.query("PRAGMA journal_mode = WAL");
+	private configureDatabase() {
 		this.db
 			.query(
-				"CREATE TABLE IF NOT EXISTS positionsBT (pair TEXT, positionSide TEXT, startTime INTEGER, endTime INTEGER, entryPriceUSDT REAL, pnl REAL, accPnl REAL, tradeLength INTEGER, coinQuantity REAL, status TEXT, isHedgeUnbalance INTEGER, stgName TEXT, sl REAL, tp REAL)"
+				`CREATE TABLE IF NOT EXISTS ${BT_RECORD_TABLE_NAME} (sl REAL, tp REAL, maxTradeLength REAL, tradesQtyWP INTEGER, winRateWP REAL, avPnlWP REAL, tradesQtyAcc INTEGER, winRateAcc REAL, avPnlAcc REAL, winningPairs TEXT, closedPositionsAcc TEXT, closedPositionsWP TEXT)`
 			)
 			.run();
 	}
+
+	deleteRows() {
+		this.db.query(`DELETE FROM ${BT_RECORD_TABLE_NAME}`).run();
+		console.log(`All rows deleted from ${BT_RECORD_TABLE_NAME}`);
+	}
+
+	saveRecord(record: BTRecord) {
+		this.db
+			.query(
+				`INSERT INTO ${BT_RECORD_TABLE_NAME} (sl, tp, maxTradeLength, tradesQtyWP, winRateWP, avPnlWP, tradesQtyAcc, winRateAcc, avPnlAcc, winningPairs, closedPositionsAcc, closedPositionsWP) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			)
+			.run(
+				record.sl,
+				record.tp,
+				record.maxTradeLength,
+				record.tradesQtyWP,
+				record.winRateWP,
+				record.avPnlWP,
+				record.tradesQtyAcc,
+				record.winRateAcc,
+				record.avPnlAcc,
+				JSON.stringify(record.winningPairs),
+				record.closedPositionsAcc,
+				record.closedPositionsWP
+			);
+	}
+
+	getRecords() {
+		return this.db
+			.query(`SELECT * FROM ${BT_RECORD_TABLE_NAME}`)
+			.all() as BTRecord[];
+	}
+	showRecords(interval: Interval) {
+		const r = this.getRecords();
+		r.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
+			.sort((a, b) => b.winRateAcc - a.winRateAcc)
+			.sort((a, b) => b.avPnlWP - a.avPnlWP)
+			.sort((a, b) => b.winRateWP - a.winRateWP)
+			.sort((a, b) => b.tradesQtyWP - a.tradesQtyWP);
+		console.table(
+			r.map((r) => ({
+				sl: formatPercent(Number(r.sl)),
+				tp: formatPercent(Number(r.tp)),
+				maxTradeLength: Number(r.maxTradeLength),
+				winRateAcc: formatPercent(Number(r.winRateAcc)),
+				avPnlAcc: formatPercent(Number(r.avPnlAcc)),
+				avPnlWP: formatPercent(Number(r.avPnlWP)),
+				winRateWP: formatPercent(Number(r.winRateWP)),
+				tradesQtyWP: Number(r.tradesQtyWP),
+				tradesQtyAcc: Number(r.tradesQtyAcc),
+			}))
+		);
+
+		const closedPosBestRecord = JSON.parse(
+			r[0].closedPositionsAcc
+		) as BTPosition[];
+
+		console.table(
+			closedPosBestRecord.map((p) => {
+				return {
+					pair: p.pair,
+					side: p.positionSide,
+					startTime: getDate(p.startTime).dateString,
+					endTime: getDate(p.startTime + p.tradeLength * interval).dateString,
+					pnl: formatPercent(Number(p.pnl)),
+					len: Number(p.tradeLength),
+					stg: p.stgName,
+				};
+			})
+		);
+	}
+
+	getClosedPositions({
+		sl,
+		tp,
+		maxTradeLength,
+	}: {
+		sl: number;
+		tp: number;
+		maxTradeLength: number;
+	}): BTPosition[] {
+		return this.db
+			.query(
+				`SELECT closedPositionsAcc FROM ${BT_RECORD_TABLE_NAME} WHERE sl = ? AND tp = ? AND maxTradeLength = ?`
+			)
+			.all({
+				1: sl,
+				2: tp,
+				3: maxTradeLength,
+			}) as BTPosition[];
+	}
 }
+
 class SymbolService {
 	getSymbolsData({
 		start,
@@ -567,18 +630,18 @@ const params = {
 	minAmountToTradeUSDT: 6,
 	candlestickAPILimit: 500,
 	backtest: {
-		start: getDate("2024 09 27 00:00:00" as DateString).dateMs,
+		start: getDate("2024 09 20 00:00:00" as DateString).dateMs,
 		end: getDate("2024 09 30 00:00:00" as DateString).dateMs,
 		maxTradeLengthArray: [100],
 		slArray: [1 / 100],
-		tpArray: [5 / 100],
+		tpArray: [5 / 100, 10 / 100],
 	},
 };
 
 class Trade {
 	params = params;
 	backtestSymbolService = new BacktestSymbolService();
-	backtestPositionService = new BacktestPositionService();
+	backtestRecordService = new BacktestRecordService();
 	symbolService = new SymbolService();
 	userService = new UserService();
 	symbols: Symbol[] = [];
@@ -628,6 +691,7 @@ class Trade {
 	}
 	async backtest() {
 		this.backtestSymbolService.showSavedInformation();
+		this.backtestRecordService.deleteRows();
 		const pairList = this.backtestSymbolService.getSavedPairList();
 
 		const totalLookBackLength =
@@ -828,7 +892,7 @@ class Trade {
 					);
 					const avPnlAcc = accPnlAcc / tradesQtyAcc || 0;
 
-					console.table({
+					this.backtestRecordService.saveRecord({
 						sl,
 						tp,
 						maxTradeLength,
@@ -838,25 +902,17 @@ class Trade {
 						tradesQtyAcc,
 						winRateAcc,
 						avPnlAcc,
+						winningPairs,
+						closedPositionsAcc: JSON.stringify(closedPositionsAcc),
+						closedPositionsWP: JSON.stringify(closedPositionsWP),
 					});
-					console.log({ winningPairs: winningPairs.join(",") });
-
-					console.table(
-						closedPositionsAcc.map((p) => {
-							return {
-								...p,
-								startTime: getDate(p.startTime).dateString,
-								endTime: getDate(
-									p.startTime + p.tradeLength * this.params.interval
-								).dateString,
-							};
-						})
-					);
 				}
 			}
 		}
 
 		progressBar.stop();
+
+		this.backtestRecordService.showRecords(this.params.interval);
 	}
 
 	async forwardTest() {
