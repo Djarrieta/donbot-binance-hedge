@@ -451,26 +451,6 @@ class BacktestRecordService {
 			})
 		);
 	}
-
-	getClosedPositions({
-		sl,
-		tp,
-		maxTradeLength,
-	}: {
-		sl: number;
-		tp: number;
-		maxTradeLength: number;
-	}): BTPosition[] {
-		return this.db
-			.query(
-				`SELECT closedPositionsAcc FROM ${BT_RECORD_TABLE_NAME} WHERE sl = ? AND tp = ? AND maxTradeLength = ?`
-			)
-			.all({
-				1: sl,
-				2: tp,
-				3: maxTradeLength,
-			}) as BTPosition[];
-	}
 }
 
 class SymbolService {
@@ -630,11 +610,14 @@ const params = {
 	minAmountToTradeUSDT: 6,
 	candlestickAPILimit: 500,
 	backtest: {
-		start: getDate("2024 09 20 00:00:00" as DateString).dateMs,
-		end: getDate("2024 09 30 00:00:00" as DateString).dateMs,
+		startTime: getDate("2024 09 20 00:00:00" as DateString).dateMs,
+		endTime: getDate("2024 09 27 00:00:00" as DateString).dateMs,
+		forwardEnd: getDate("2024 09 30 00:00:00" as DateString).dateMs,
 		maxTradeLengthArray: [100],
-		slArray: [1 / 100],
-		tpArray: [5 / 100, 10 / 100],
+		backSLArray: [1 / 100],
+		backTPArray: [5 / 100, 10 / 100],
+		forwardSLArray: [1 / 100],
+		forwardTPArray: [5 / 100],
 	},
 };
 
@@ -647,9 +630,39 @@ class Trade {
 	symbols: Symbol[] = [];
 	users: User[] = [];
 	strategies: Strategy[] = [rsiDivergency5m];
+	forwardTestRecordService: any;
 
 	async prepareBacktest() {
+		if (
+			this.params.backtest.startTime >= this.params.backtest.endTime ||
+			this.params.backtest.endTime >= this.params.backtest.forwardEnd
+		) {
+			throw new Error(
+				"Backtest startTime should be < endTime should be < forwardEnd"
+			);
+		}
+
 		this.backtestSymbolService.deleteRows();
+
+		const daysBacktest = Math.ceil(
+			(this.params.backtest.endTime - this.params.backtest.startTime) /
+				Interval["1d"]
+		);
+		const daysForwardTest = Math.ceil(
+			(this.params.backtest.forwardEnd - this.params.backtest.endTime) /
+				Interval["1d"]
+		);
+		const totalDays = daysBacktest + daysForwardTest;
+		const startDateString = getDate(this.params.backtest.startTime).dateString;
+		const endDateString = getDate(this.params.backtest.forwardEnd).dateString;
+
+		console.log(
+			`Preparing backtest: ${daysBacktest} days (${formatPercent(
+				daysBacktest / totalDays
+			)}), ${daysForwardTest} days for forwardtest (${formatPercent(
+				daysForwardTest / totalDays
+			)})\nfrom ${startDateString} to ${endDateString}...`
+		);
 
 		const pairList = await this.symbolService.getPairList({
 			minAmountToTradeUSDT: this.params.minAmountToTradeUSDT,
@@ -668,19 +681,16 @@ class Trade {
 				pair,
 				apiLimit: this.params.candlestickAPILimit,
 				interval: this.params.interval,
-				start: this.params.backtest.start,
-				end: this.params.backtest.end,
+				start: this.params.backtest.startTime,
+				end: this.params.backtest.forwardEnd,
 			});
 
 			const fixedCandlestick = this.symbolService.fixCandlestick({
 				candlestick,
-				start: this.params.backtest.start,
-				end: this.params.backtest.end,
+				start: this.params.backtest.startTime,
+				end: this.params.backtest.forwardEnd,
 				interval: this.params.interval,
 			});
-			if (candlestick.length !== fixedCandlestick.length) {
-				console.log(candlestick.length, fixedCandlestick.length);
-			}
 
 			this.backtestSymbolService.saveCandlestick(fixedCandlestick);
 			progressBar.update(pairIndex + 1);
@@ -691,17 +701,25 @@ class Trade {
 	}
 	async backtest() {
 		this.backtestSymbolService.showSavedInformation();
+
+		console.log(
+			"\nStarting backtest from " +
+				getDate(this.params.backtest.startTime).dateString +
+				" to " +
+				getDate(this.params.backtest.endTime).dateString +
+				"..."
+		);
 		this.backtestRecordService.deleteRows();
 		const pairList = this.backtestSymbolService.getSavedPairList();
 
 		const totalLookBackLength =
-			(this.params.backtest.end -
-				this.params.backtest.start -
+			(this.params.backtest.endTime -
+				this.params.backtest.startTime -
 				this.params.interval * (1 + this.params.lookBackLength)) /
 			this.params.interval;
 		const progressTotal =
-			this.params.backtest.slArray.length *
-			this.params.backtest.tpArray.length *
+			this.params.backtest.backSLArray.length *
+			this.params.backtest.backTPArray.length *
 			this.params.backtest.maxTradeLengthArray.length *
 			totalLookBackLength;
 
@@ -712,12 +730,12 @@ class Trade {
 		progressBar.start(progressTotal, 0);
 		let progress = 0;
 
-		for (const sl of this.params.backtest.slArray) {
-			for (const tp of this.params.backtest.tpArray) {
+		for (const sl of this.params.backtest.backSLArray) {
+			for (const tp of this.params.backtest.backTPArray) {
 				for (const maxTradeLength of this.params.backtest.maxTradeLengthArray) {
-					let start = this.params.backtest.start;
+					let start = this.params.backtest.startTime;
 					let end =
-						this.params.backtest.start +
+						this.params.backtest.startTime +
 						(this.params.lookBackLength + this.params.maxTradeLength) *
 							this.params.interval;
 
@@ -835,7 +853,7 @@ class Trade {
 						end += this.params.interval;
 						progress++;
 						progressBar.update(progress);
-					} while (end < this.params.backtest.end);
+					} while (end < this.params.backtest.endTime);
 
 					let winningPairs: string[] = [];
 
@@ -909,16 +927,54 @@ class Trade {
 				}
 			}
 		}
-
 		progressBar.stop();
-
 		this.backtestRecordService.showRecords(this.params.interval);
 	}
 
 	async forwardTest() {
-		//TODO implement
-	}
+		this.backtestSymbolService.showSavedInformation();
 
+		console.log(
+			"\nStarting forwardtest from " +
+				getDate(this.params.backtest.endTime).dateString +
+				" to " +
+				getDate(this.params.backtest.forwardEnd).dateString +
+				"..."
+		);
+		this.forwardTestRecordService.deleteRows();
+		const pairList = this.backtestSymbolService.getSavedPairList();
+
+		const totalLookBackLength =
+			(this.params.backtest.endTime -
+				this.params.backtest.startTime -
+				this.params.interval * (1 + this.params.lookBackLength)) /
+			this.params.interval;
+		const progressTotal =
+			this.params.backtest.backSLArray.length *
+			this.params.backtest.backTPArray.length *
+			this.params.backtest.maxTradeLengthArray.length *
+			totalLookBackLength;
+
+		const progressBar = new cliProgress.SingleBar(
+			{},
+			cliProgress.Presets.shades_classic
+		);
+		progressBar.start(progressTotal, 0);
+		let progress = 0;
+
+		for (const sl of this.params.backtest.backSLArray) {
+			for (const tp of this.params.backtest.backTPArray) {
+				for (const maxTradeLength of this.params.backtest.maxTradeLengthArray) {
+					let start = this.params.backtest.startTime;
+					let end =
+						this.params.backtest.startTime +
+						(this.params.lookBackLength + this.params.maxTradeLength) *
+							this.params.interval;
+				}
+			}
+		}
+		progressBar.stop();
+	}
 	init() {
 		//TODO implement
 		//load symbols
