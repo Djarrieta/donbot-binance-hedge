@@ -23,7 +23,6 @@ export type BacktestConfig = {
 };
 
 type Trade = StrategyResponse & {
-	candlestick: Candle[];
 	profitStick: Candle[];
 };
 
@@ -32,9 +31,6 @@ type PositionBT = Pick<
 	"pair" | "positionSide" | "startTime" | "entryPriceUSDT" | "pnl" | "stgName"
 > & {
 	tradeLength: number;
-	sl: number;
-	tp: number;
-	maxTradeLength: number;
 };
 export class TradingStrategyTester {
 	constructor(
@@ -127,9 +123,9 @@ export class TradingStrategyTester {
 					let start = this.config.backtestStart;
 					let end =
 						this.config.backtestStart +
-						(this.config.lookBackLength + maxTradeLength) *
+						(this.config.lookBackLength + maxTradeLength - 1) *
 							this.config.interval;
-					const endCandlestick =
+					let endCandlestick =
 						this.config.backtestStart +
 						this.config.lookBackLength * this.config.interval;
 
@@ -155,7 +151,7 @@ export class TradingStrategyTester {
 									pair,
 								});
 								if (stgResponse.positionSide) {
-									trades.push({ ...stgResponse, candlestick, profitStick });
+									trades.push({ ...stgResponse, profitStick });
 								}
 							}
 						}
@@ -221,14 +217,12 @@ export class TradingStrategyTester {
 								pnl,
 								tradeLength: stickIndex,
 								stgName: trade.stgName,
-								sl,
-								tp,
-								maxTradeLength,
 							});
 						}
 
 						start += this.config.interval;
 						end += this.config.interval;
+						endCandlestick += this.config.interval;
 						progress++;
 						progressBar.update(progress);
 					} while (end < this.config.backtestEnd);

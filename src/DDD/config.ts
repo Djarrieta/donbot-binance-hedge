@@ -13,7 +13,7 @@ export const backtestConfig: BacktestConfig = {
 	minAmountToTradeUSDT: 6,
 	apiLimit: 500,
 	slArray: [1 / 100],
-	tpArray: [5 / 100, 10 / 100],
+	tpArray: [5 / 100],
 	maxTradeLengthArray: [100],
 	riskPt: 0.5 / 100,
 	feePt: 0.0005,
