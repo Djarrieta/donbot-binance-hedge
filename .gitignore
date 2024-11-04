@@ -3,6 +3,7 @@
 DB.*
 backup
 src/userSeed.ts
+*.db
 
 # Logs
 
