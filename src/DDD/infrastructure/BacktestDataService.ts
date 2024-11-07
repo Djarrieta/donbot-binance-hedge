@@ -138,7 +138,7 @@ export class BacktestDataService {
 		console.log("Stats saved successfully.");
 	}
 
-	showSavedStats() {
+	getSavedStats() {
 		const unformattedResults = this.db
 			.query(`SELECT * FROM ${this.statsTableName} `)
 			.all() as any[];
@@ -157,20 +157,79 @@ export class BacktestDataService {
 			positionsAcc: JSON.parse(r.positionsAcc),
 		}));
 
+		return stats;
+	}
+
+	showSavedStats() {
+		const stats = this.getSavedStats();
+
 		const { sl, tp, maxTradeLength } = stats[0];
+		console.log("\n\n");
+		console.log(
+			"======================================================================================================="
+		);
+		console.log(
+			`Stats for sl=${formatPercent(sl)}, tp=${formatPercent(
+				tp
+			)}, maxTradeLength=${maxTradeLength}`
+		);
+		console.log(
+			"======================================================================================================="
+		);
+		console.log("\n\n");
+
+		const positions = this.getSavedStatsPositions({
+			sl,
+			tp,
+			maxTradeLength,
+			column: "positions",
+		});
+		console.log("All Positions:");
+		console.table(
+			positions.map((p) => ({
+				...p,
+				startTime: getDate(p.startTime).dateString,
+				pnl: formatPercent(p.pnl),
+			}))
+		);
+
 		const winningPairs = this.getWinningPairs({
 			sl,
 			tp,
 			maxTradeLength,
 		});
-
+		console.log(`Winning pairs : ${winningPairs.length}`);
 		console.log(winningPairs);
-		this.showSavedStatsPositions({
+
+		const positionsWP = this.getSavedStatsPositions({
+			sl,
+			tp,
+			maxTradeLength,
+			column: "positionsWP",
+		});
+		console.log("Positions for winning pairs:");
+		console.table(
+			positionsWP.map((p) => ({
+				...p,
+				startTime: getDate(p.startTime).dateString,
+				pnl: formatPercent(p.pnl),
+			}))
+		);
+
+		console.log("Positions width accumulation for winning pairs:");
+		const positionsAcc = this.getSavedStatsPositions({
 			sl,
 			tp,
 			maxTradeLength,
 			column: "positionsAcc",
 		});
+		console.table(
+			positionsAcc.map((p) => ({
+				...p,
+				startTime: getDate(p.startTime).dateString,
+				pnl: formatPercent(p.pnl),
+			}))
+		);
 
 		console.table(
 			stats.map((r) => ({
@@ -214,7 +273,8 @@ export class BacktestDataService {
 			.get() as any;
 		return JSON.parse(unformattedResults.winningPairs);
 	}
-	showSavedStatsPositions({
+
+	getSavedStatsPositions({
 		sl,
 		tp,
 		maxTradeLength,
@@ -238,14 +298,8 @@ export class BacktestDataService {
 			.get() as any;
 
 		const positions: PositionBT[] = JSON.parse(unformattedPositions[column]);
-		console.log(column.toUpperCase());
-		console.table(
-			positions.map((p) => ({
-				...p,
-				startTime: getDate(p.startTime).dateString,
-				pnl: formatPercent(p.pnl),
-			}))
-		);
+
+		return positions;
 	}
 
 	deleteStatsRows() {
