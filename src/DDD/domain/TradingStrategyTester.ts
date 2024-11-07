@@ -40,11 +40,14 @@ export class TradingStrategyTester {
 	}
 
 	public async prepare(): Promise<void> {
-		this.validateTimeRanges(
-			this.config.backtestStart,
-			this.config.backtestEnd,
-			this.config.forwardTestEnd
-		);
+		if (
+			this.config.backtestStart >= this.config.backtestEnd ||
+			this.config.backtestEnd >= this.config.forwardTestEnd
+		) {
+			throw new Error(
+				"Backtest startTime should be < endTime should be < forwardEnd"
+			);
+		}
 
 		console.log("\n\n");
 		console.log(
@@ -349,21 +352,6 @@ export class TradingStrategyTester {
 		};
 
 		return stats;
-	}
-
-	private validateTimeRanges(
-		backtestStartTime: number,
-		backtestEndTime: number,
-		forwardTestEndTime: number
-	): void {
-		if (
-			backtestStartTime >= backtestEndTime ||
-			backtestEndTime >= forwardTestEndTime
-		) {
-			throw new Error(
-				"Backtest startTime should be < endTime should be < forwardEnd"
-			);
-		}
 	}
 
 	private fixCandlestick({
