@@ -150,16 +150,20 @@ export class BacktestDataService {
 
 		console.table(
 			results.map((r) => ({
-				...r,
 				sl: formatPercent(r.sl),
 				tp: formatPercent(r.tp),
-				avPnlWP: formatPercent(r.avPnlWP),
-				avPnlAcc: formatPercent(r.avPnlAcc),
-				winRateWP: formatPercent(r.winRateWP),
-				winRateAcc: formatPercent(r.winRateAcc),
+				maxTradeLength: r.maxTradeLength,
+
 				positions: r.positions.length,
 				positionsWP: r.positionsWP.length,
 				positionsAcc: r.positionsAcc.length,
+
+				winRateWP: formatPercent(r.winRateWP),
+				winRateAcc: formatPercent(r.winRateAcc),
+
+				avPnlWP: formatPercent(r.avPnlWP),
+				avPnlAcc: formatPercent(r.avPnlAcc),
+
 				winningPairs: r.winningPairs.length,
 			}))
 		);
