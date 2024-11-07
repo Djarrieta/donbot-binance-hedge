@@ -1,8 +1,9 @@
 import { Database } from "bun:sqlite";
+import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
 import type { Candle } from "../domain/Candle";
+import type { PositionBT } from "../domain/Position";
 import type { Stat } from "../domain/Stat";
-import { formatPercent } from "../../utils/formatPercent";
 
 export class BacktestDataService {
 	private db: Database;
@@ -142,7 +143,7 @@ export class BacktestDataService {
 			.query(`SELECT * FROM ${this.statsTableName} `)
 			.all() as any[];
 
-		const results: Stat[] = unformattedResults.map((r) => ({
+		const stats: Stat[] = unformattedResults.map((r) => ({
 			sl: Number(r.sl),
 			tp: Number(r.tp),
 			maxTradeLength: Number(r.maxTradeLength),
@@ -156,8 +157,23 @@ export class BacktestDataService {
 			positionsAcc: JSON.parse(r.positionsAcc),
 		}));
 
+		const { sl, tp, maxTradeLength } = stats[0];
+		const winningPairs = this.getWinningPairs({
+			sl,
+			tp,
+			maxTradeLength,
+		});
+
+		console.log(winningPairs);
+		this.showSavedStatsPositions({
+			sl,
+			tp,
+			maxTradeLength,
+			column: "positionsAcc",
+		});
+
 		console.table(
-			results.map((r) => ({
+			stats.map((r) => ({
 				sl: formatPercent(r.sl),
 				tp: formatPercent(r.tp),
 				maxTradeLength: r.maxTradeLength,
@@ -173,6 +189,61 @@ export class BacktestDataService {
 				avPnlAcc: formatPercent(r.avPnlAcc),
 
 				winningPairs: r.winningPairs.length,
+			}))
+		);
+	}
+	getWinningPairs({
+		sl,
+		tp,
+		maxTradeLength,
+	}: {
+		sl: number;
+		tp: number;
+		maxTradeLength: number;
+	}) {
+		const unformattedResults = this.db
+			.query(
+				`SELECT winningPairs 
+				FROM ${this.statsTableName} 
+				WHERE sl = ${sl}  
+				AND tp = ${tp}  
+				AND maxTradeLength = ${maxTradeLength} 
+				AND winningPairs IS NOT NULL
+				LIMIT 1`
+			)
+			.get() as any;
+		return JSON.parse(unformattedResults.winningPairs);
+	}
+	showSavedStatsPositions({
+		sl,
+		tp,
+		maxTradeLength,
+		column,
+	}: {
+		sl: number;
+		tp: number;
+		maxTradeLength: number;
+		column: "positionsWP" | "positionsAcc" | "positions";
+	}) {
+		const unformattedPositions = this.db
+			.query(
+				`SELECT ${column} 
+				FROM ${this.statsTableName} 
+				WHERE sl = ${sl}  
+				AND tp = ${tp}  
+				AND maxTradeLength = ${maxTradeLength} 
+				AND ${column} IS NOT NULL
+				LIMIT 1`
+			)
+			.get() as any;
+
+		const positions: PositionBT[] = JSON.parse(unformattedPositions[column]);
+		console.log(column.toUpperCase());
+		console.table(
+			positions.map((p) => ({
+				...p,
+				startTime: getDate(p.startTime).dateString,
+				pnl: formatPercent(p.pnl),
 			}))
 		);
 	}
