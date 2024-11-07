@@ -69,44 +69,6 @@ export class BacktestDataService {
 		return results;
 	};
 
-	deleteCandlestickRows() {
-		this.db.query(`DELETE FROM ${this.candlestickTableName}`).run();
-		console.log(`All rows deleted from ${this.candlestickTableName}`);
-	}
-
-	showSavedCandlestick = () => {
-		const items = 5;
-		const results = this.db
-			.query(
-				`SELECT pair, COUNT(*) AS count, MIN(openTime) AS startTime, MAX(openTime) AS endTime FROM ${this.candlestickTableName} GROUP BY pair`
-			)
-			.all() as {
-			pair: string;
-			count: number;
-			startTime: number;
-			endTime: number;
-		}[];
-
-		results.sort((a, b) => a.count - b.count);
-		console.log(
-			`Pairs in ${
-				this.candlestickTableName
-			} table with number of candles and time range:\n${results
-				.slice(0, items)
-				.map(
-					({ pair, count, startTime, endTime }) =>
-						`${pair} - ${count} candles from ${
-							getDate(startTime).dateString
-						} to ${getDate(endTime).dateString}`
-				)
-				.join(",\n")}${
-				results.length > items
-					? `,\n ...and ${results.length - items} others`
-					: ""
-			}`
-		);
-	};
-
 	saveStats(stats: Stat) {
 		const query = `INSERT INTO ${this.statsTableName} (
 			sl,
@@ -159,6 +121,90 @@ export class BacktestDataService {
 
 		return stats;
 	}
+
+	getWinningPairs({
+		sl,
+		tp,
+		maxTradeLength,
+	}: {
+		sl: number;
+		tp: number;
+		maxTradeLength: number;
+	}) {
+		const unformattedResults = this.db
+			.query(
+				`SELECT winningPairs 
+				FROM ${this.statsTableName} 
+				WHERE sl = ${sl}  
+				AND tp = ${tp}  
+				AND maxTradeLength = ${maxTradeLength} 
+				AND winningPairs IS NOT NULL
+				LIMIT 1`
+			)
+			.get() as any;
+		return JSON.parse(unformattedResults.winningPairs);
+	}
+
+	getSavedStatsPositions({
+		sl,
+		tp,
+		maxTradeLength,
+		column,
+	}: {
+		sl: number;
+		tp: number;
+		maxTradeLength: number;
+		column: "positionsWP" | "positionsAcc" | "positions";
+	}) {
+		const unformattedPositions = this.db
+			.query(
+				`SELECT ${column} 
+				FROM ${this.statsTableName} 
+				WHERE sl = ${sl}  
+				AND tp = ${tp}  
+				AND maxTradeLength = ${maxTradeLength} 
+				AND ${column} IS NOT NULL
+				LIMIT 1`
+			)
+			.get() as any;
+
+		const positions: PositionBT[] = JSON.parse(unformattedPositions[column]);
+
+		return positions;
+	}
+
+	showSavedCandlestick = () => {
+		const items = 5;
+		const results = this.db
+			.query(
+				`SELECT pair, COUNT(*) AS count, MIN(openTime) AS startTime, MAX(openTime) AS endTime FROM ${this.candlestickTableName} GROUP BY pair`
+			)
+			.all() as {
+			pair: string;
+			count: number;
+			startTime: number;
+			endTime: number;
+		}[];
+
+		results.sort((a, b) => a.count - b.count);
+		console.log(
+			`Pairs in ${
+				this.candlestickTableName
+			} table with number of candles and time range:\n${results
+				.slice(0, items)
+				.map(
+					({ pair, count, startTime, endTime }) =>
+						`${pair} - ${count} candles from ${
+							getDate(startTime).dateString
+						} to ${getDate(endTime).dateString}`
+				)
+				.join(",\n")}${
+				results.length > items
+					? `,\n ...and ${results.length - items} others`
+					: ""
+			}`
+		);
+	};
 
 	showSavedStats() {
 		const stats = this.getSavedStats();
@@ -251,60 +297,15 @@ export class BacktestDataService {
 			}))
 		);
 	}
-	getWinningPairs({
-		sl,
-		tp,
-		maxTradeLength,
-	}: {
-		sl: number;
-		tp: number;
-		maxTradeLength: number;
-	}) {
-		const unformattedResults = this.db
-			.query(
-				`SELECT winningPairs 
-				FROM ${this.statsTableName} 
-				WHERE sl = ${sl}  
-				AND tp = ${tp}  
-				AND maxTradeLength = ${maxTradeLength} 
-				AND winningPairs IS NOT NULL
-				LIMIT 1`
-			)
-			.get() as any;
-		return JSON.parse(unformattedResults.winningPairs);
-	}
-
-	getSavedStatsPositions({
-		sl,
-		tp,
-		maxTradeLength,
-		column,
-	}: {
-		sl: number;
-		tp: number;
-		maxTradeLength: number;
-		column: "positionsWP" | "positionsAcc" | "positions";
-	}) {
-		const unformattedPositions = this.db
-			.query(
-				`SELECT ${column} 
-				FROM ${this.statsTableName} 
-				WHERE sl = ${sl}  
-				AND tp = ${tp}  
-				AND maxTradeLength = ${maxTradeLength} 
-				AND ${column} IS NOT NULL
-				LIMIT 1`
-			)
-			.get() as any;
-
-		const positions: PositionBT[] = JSON.parse(unformattedPositions[column]);
-
-		return positions;
-	}
 
 	deleteStatsRows() {
 		this.db.query(`DELETE FROM ${this.statsTableName}`).run();
 		console.log(`All rows deleted from ${this.statsTableName}`);
+	}
+
+	deleteCandlestickRows() {
+		this.db.query(`DELETE FROM ${this.candlestickTableName}`).run();
+		console.log(`All rows deleted from ${this.candlestickTableName}`);
 	}
 	private configureDatabase() {
 		this.db
