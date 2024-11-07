@@ -114,14 +114,12 @@ export class BacktestDataService {
 			positions,
 			winningPairs,
 			positionsWP,
-			tradesQtyWP,
 			winRateWP,
 			avPnlWP,
-			tradesQtyAcc,
 			winRateAcc,
 			avPnlAcc,
 			positionsAcc
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+		) VALUES (?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 		const values = [
 			stats.sl,
 			stats.tp,
@@ -129,10 +127,8 @@ export class BacktestDataService {
 			JSON.stringify(stats.positions),
 			JSON.stringify(stats.winningPairs),
 			JSON.stringify(stats.positionsWP),
-			stats.tradesQtyWP,
 			stats.winRateWP,
 			stats.avPnlWP,
-			stats.tradesQtyAcc,
 			stats.winRateAcc,
 			stats.avPnlAcc,
 			JSON.stringify(stats.positionsAcc),
@@ -142,11 +138,23 @@ export class BacktestDataService {
 	}
 
 	showSavedStats() {
-		const results = this.db
-			.query(
-				`SELECT * FROM ${this.statsTableName} ORDER BY maxTradeLength DESC`
-			)
-			.all() as Stat[];
+		const unformattedResults = this.db
+			.query(`SELECT * FROM ${this.statsTableName} `)
+			.all() as any[];
+
+		const results: Stat[] = unformattedResults.map((r) => ({
+			sl: Number(r.sl),
+			tp: Number(r.tp),
+			maxTradeLength: Number(r.maxTradeLength),
+			positions: JSON.parse(r.positions),
+			winningPairs: JSON.parse(r.winningPairs),
+			positionsWP: JSON.parse(r.positionsWP),
+			winRateWP: Number(r.winRateWP),
+			avPnlWP: Number(r.avPnlWP),
+			winRateAcc: Number(r.winRateAcc),
+			avPnlAcc: Number(r.avPnlAcc),
+			positionsAcc: JSON.parse(r.positionsAcc),
+		}));
 
 		console.table(
 			results.map((r) => ({
@@ -198,11 +206,9 @@ export class BacktestDataService {
 					tp REAL,
 					maxTradeLength INTEGER,
 
-					tradesQtyWP INTEGER,
 					winRateWP REAL,
 					avPnlWP REAL,
 					
-					tradesQtyAcc INTEGER,
 					winRateAcc REAL,
 					avPnlAcc REAL,
 					

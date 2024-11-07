@@ -8,10 +8,8 @@ export type Stat = {
 	winningPairs: string[];
 	positionsWP: PositionBT[];
 
-	tradesQtyWP: number;
 	winRateWP: number;
 	avPnlWP: number;
-	tradesQtyAcc: number;
 	winRateAcc: number;
 	avPnlAcc: number;
 

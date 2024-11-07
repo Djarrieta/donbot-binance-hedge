@@ -124,7 +124,6 @@ export class TradingStrategyTester {
 						});
 
 						positions.push(...snapPositions);
-						trades.push(...trades);
 						start += this.config.interval;
 						end += this.config.interval;
 						endCandlestick += this.config.interval;
@@ -275,8 +274,7 @@ export class TradingStrategyTester {
 	}) {
 		let winningPairs: string[] = [];
 
-		for (let symbolIndex = 0; symbolIndex < pairList.length; symbolIndex++) {
-			const pair = pairList[symbolIndex];
+		for (const pair of pairList) {
 			const closedPosForSymbol = positions.filter((pos) => pos.pair === pair);
 			const tradesQty = closedPosForSymbol.length;
 			const totalPnl = closedPosForSymbol.reduce((acc, a) => acc + a.pnl, 0);
@@ -320,10 +318,8 @@ export class TradingStrategyTester {
 			positions,
 			winningPairs,
 			positionsWP,
-			tradesQtyWP,
 			winRateWP,
 			avPnlWP,
-			tradesQtyAcc,
 			winRateAcc,
 			avPnlAcc,
 			positionsAcc,
