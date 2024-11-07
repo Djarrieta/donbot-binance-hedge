@@ -45,6 +45,35 @@ const fakeStat: Stat = {
 	sl: 1,
 	tp: 1,
 	maxTradeLength: 1,
+
+	winningPairs: ["XRPUSDT", "MANAUSDT"],
+
+	winRateWP: 1,
+	avPnlWP: 1,
+	winRateAcc: 1,
+	avPnlAcc: 1,
+	positionsWP: [
+		{
+			pair: "BTCUSDT",
+			startTime: 1,
+			pnl: 1,
+			tradeLength: 1,
+			entryPriceUSDT: 1,
+			positionSide: "LONG",
+			stgName: "stgName",
+		},
+	],
+	positionsAcc: [
+		{
+			pair: "MANAUSDT",
+			startTime: 1,
+			pnl: 1,
+			tradeLength: 1,
+			entryPriceUSDT: 1,
+			positionSide: "LONG",
+			stgName: "stgName",
+		},
+	],
 	positions: [
 		{
 			pair: "XRPUSDT",
@@ -56,13 +85,6 @@ const fakeStat: Stat = {
 			stgName: "stgName",
 		},
 	],
-	winningPairs: ["XRPUSDT", "MANAUSDT"],
-	positionsWP: [],
-	winRateWP: 1,
-	avPnlWP: 1,
-	winRateAcc: 1,
-	avPnlAcc: 1,
-	positionsAcc: [],
 };
 
 describe("Backtest Data Service", () => {
@@ -82,7 +104,7 @@ describe("Backtest Data Service", () => {
 		deletePreviousDB();
 	});
 
-	test("gets pair list", async () => {
+	test("gets pair list", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: TEST_DB_NAME,
 			tableName: "symbolsBT",
@@ -94,7 +116,7 @@ describe("Backtest Data Service", () => {
 		expect(pairList).toEqual(["MANAUSDT", "XRPUSDT"]);
 	});
 
-	test("get candlesticks in the range", async () => {
+	test("get candlesticks in the range", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: TEST_DB_NAME,
 			tableName: "symbolsBT",
@@ -108,7 +130,23 @@ describe("Backtest Data Service", () => {
 		expect(candlesticks).toEqual(fakeCandlestick.slice(0, 2));
 	});
 
-	test("get stats", async () => {
+	test("detele delete Candlestick Rows", () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+		backtestDataService.deleteCandlestickRows();
+
+		const candlesticks = backtestDataService.getCandlestick({
+			start: 1730736204001,
+			end: 1730736204002,
+		});
+
+		expect(candlesticks).toEqual([]);
+	});
+
+	test("get stats", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: TEST_DB_NAME,
 			tableName: "symbolsBT",
@@ -117,5 +155,65 @@ describe("Backtest Data Service", () => {
 
 		const stats = backtestDataService.getSavedStats();
 		expect(stats).toEqual([fakeStat]);
+	});
+
+	test("get positionsWP", () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+
+		const positionsWP = backtestDataService.getSavedStatsPositions({
+			sl: 1,
+			tp: 1,
+			maxTradeLength: 1,
+			column: "positionsWP",
+		});
+		expect(positionsWP).toEqual(fakeStat.positionsWP);
+	});
+
+	test("get positionsAcc", () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+
+		const positionsAcc = backtestDataService.getSavedStatsPositions({
+			sl: 1,
+			tp: 1,
+			maxTradeLength: 1,
+			column: "positionsAcc",
+		});
+		expect(positionsAcc).toEqual(fakeStat.positionsAcc);
+	});
+
+	test("get positions", () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+
+		const positions = backtestDataService.getSavedStatsPositions({
+			sl: 1,
+			tp: 1,
+			maxTradeLength: 1,
+			column: "positions",
+		});
+		expect(positions).toEqual(fakeStat.positions);
+	});
+
+	test("delete stats rows", () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+
+		backtestDataService.deleteStatsRows();
+		const stats = backtestDataService.getSavedStats();
+		expect(stats).toEqual([]);
 	});
 });

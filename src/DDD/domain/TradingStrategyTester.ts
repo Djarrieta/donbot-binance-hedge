@@ -40,14 +40,37 @@ export class TradingStrategyTester {
 	}
 
 	public async prepare(): Promise<void> {
-		console.log(`Preparing backtest`);
-
 		this.validateTimeRanges(
 			this.config.backtestStart,
 			this.config.backtestEnd,
 			this.config.forwardTestEnd
 		);
+
+		console.log("\n\n");
+		console.log(
+			"======================================================================================================="
+		);
+		console.log(
+			`Preparing backtest for  ${(
+				(this.config.forwardTestEnd - this.config.backtestStart) /
+				Interval["1d"]
+			).toFixed(1)} days`
+		);
 		console.log(`Interval: ${Interval[this.config.interval]}`);
+		console.log(
+			`Backtest: ${getDate(this.config.backtestStart).dateString} to ${
+				getDate(this.config.backtestEnd).dateString
+			} `
+		);
+		console.log(
+			`ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
+				getDate(this.config.forwardTestEnd).dateString
+			}`
+		);
+		console.log(
+			"======================================================================================================="
+		);
+		console.log("\n\n");
 
 		const pairList = await this.marketDataService.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
@@ -341,17 +364,6 @@ export class TradingStrategyTester {
 				"Backtest startTime should be < endTime should be < forwardEnd"
 			);
 		}
-
-		console.log(
-			`Backtest: ${getDate(backtestStartTime).dateString} to ${
-				getDate(backtestEndTime).dateString
-			} `
-		);
-		console.log(
-			`ForwardTest: ${getDate(backtestEndTime).dateString} to ${
-				getDate(forwardTestEndTime).dateString
-			}`
-		);
 	}
 
 	private fixCandlestick({
