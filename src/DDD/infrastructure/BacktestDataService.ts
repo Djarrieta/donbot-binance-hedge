@@ -230,9 +230,9 @@ export class BacktestDataService {
 			maxTradeLength,
 			column: "positions",
 		});
-		console.log("All Positions:");
+		console.log(`Showing last 100 possible Positions of ${positions.length}`);
 		console.table(
-			positions.map((p) => ({
+			positions.slice(-100).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),
@@ -253,24 +253,28 @@ export class BacktestDataService {
 			maxTradeLength,
 			column: "positionsWP",
 		});
-		console.log("Positions for winning pairs:");
+		console.log(
+			`Showing last 100 possible Positions for winning pairs: ${positionsWP.length}`
+		);
 		console.table(
-			positionsWP.map((p) => ({
+			positionsWP.slice(-100).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),
 			}))
 		);
 
-		console.log("Positions width accumulation for winning pairs:");
 		const positionsAcc = this.getSavedStatsPositions({
 			sl,
 			tp,
 			maxTradeLength,
 			column: "positionsAcc",
 		});
+		console.log(
+			`Showing last 100 possible Positions with accumulation for winning pairs: ${positionsAcc.length}`
+		);
 		console.table(
-			positionsAcc.map((p) => ({
+			positionsAcc.slice(-100).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),

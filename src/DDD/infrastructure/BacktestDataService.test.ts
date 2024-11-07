@@ -2,104 +2,120 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { unlinkSync } from "fs";
 import { BacktestDataService } from "./BacktestDataService";
 import type { Candle } from "../domain/Candle";
+import type { Stat } from "../domain/Stat";
 
-const DB_NAME = "TEST.db";
+const TEST_DB_NAME = "TEST.db";
 const deletePreviousDB = () => {
 	try {
-		unlinkSync(DB_NAME);
+		unlinkSync(TEST_DB_NAME);
 	} catch (e) {}
+};
+
+const fakeCandlestick: Candle[] = [
+	{
+		pair: "MANAUSDT",
+		open: 1,
+		high: 1,
+		low: 1,
+		close: 1,
+		volume: 1,
+		openTime: 1730736204001,
+	},
+	{
+		pair: "XRPUSDT",
+		open: 1,
+		high: 1,
+		low: 1,
+		close: 1,
+		volume: 1,
+		openTime: 1730736204002,
+	},
+	{
+		pair: "MANAUSDT",
+		open: 1,
+		high: 1,
+		low: 1,
+		close: 1,
+		volume: 1,
+		openTime: 1730736204003,
+	},
+];
+
+const fakeStat: Stat = {
+	sl: 1,
+	tp: 1,
+	maxTradeLength: 1,
+	positions: [
+		{
+			pair: "XRPUSDT",
+			startTime: 1,
+			pnl: 1,
+			tradeLength: 1,
+			entryPriceUSDT: 1,
+			positionSide: "LONG",
+			stgName: "stgName",
+		},
+	],
+	winningPairs: ["XRPUSDT", "MANAUSDT"],
+	positionsWP: [],
+	winRateWP: 1,
+	avPnlWP: 1,
+	winRateAcc: 1,
+	avPnlAcc: 1,
+	positionsAcc: [],
 };
 
 describe("Backtest Data Service", () => {
 	beforeAll(() => {
 		deletePreviousDB();
+
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+		backtestDataService.saveCandlestick(fakeCandlestick);
+		backtestDataService.saveStats(fakeStat);
 	});
+
 	afterAll(() => {
 		deletePreviousDB();
 	});
+
 	test("gets pair list", async () => {
 		const backtestDataService = new BacktestDataService({
-			databaseName: DB_NAME,
+			databaseName: TEST_DB_NAME,
 			tableName: "symbolsBT",
 			statsTableName: "statsBT",
 		});
-		const fakeCandlestick: Candle[] = [
-			{
-				pair: "XRPUSDT",
-				open: 1,
-				high: 1,
-				low: 1,
-				close: 1,
-				volume: 1,
-				openTime: 1,
-			},
-			{
-				pair: "MANAUSDT",
-				open: 1,
-				high: 1,
-				low: 1,
-				close: 1,
-				volume: 1,
-				openTime: 1,
-			},
-			{
-				pair: "XRPUSDT",
-				open: 1,
-				high: 1,
-				low: 1,
-				close: 1,
-				volume: 1,
-				openTime: 1,
-			},
-		];
 
-		backtestDataService.saveCandlestick(fakeCandlestick);
 		const pairList = backtestDataService.getPairList();
 
-		expect(pairList).toEqual(["XRPUSDT", "MANAUSDT"]);
+		expect(pairList).toEqual(["MANAUSDT", "XRPUSDT"]);
 	});
+
 	test("get candlesticks in the range", async () => {
 		const backtestDataService = new BacktestDataService({
-			databaseName: DB_NAME,
+			databaseName: TEST_DB_NAME,
 			tableName: "symbolsBT",
 			statsTableName: "statsBT",
 		});
-
-		const fakeCandlestick: Candle[] = [
-			{
-				pair: "GLMUSDT",
-				open: 1,
-				high: 1,
-				low: 1,
-				close: 1,
-				volume: 1,
-				openTime: 1730736204001,
-			},
-			{
-				pair: "XRPUSDT",
-				open: 1,
-				high: 1,
-				low: 1,
-				close: 1,
-				volume: 1,
-				openTime: 1730736204002,
-			},
-			{
-				pair: "MANAUSDT",
-				open: 1,
-				high: 1,
-				low: 1,
-				close: 1,
-				volume: 1,
-				openTime: 1730736204003,
-			},
-		];
-		backtestDataService.saveCandlestick(fakeCandlestick);
 
 		const candlesticks = backtestDataService.getCandlestick({
 			start: 1730736204001,
 			end: 1730736204002,
 		});
 		expect(candlesticks).toEqual(fakeCandlestick.slice(0, 2));
+	});
+
+	test("get stats", async () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+
+		const stats = backtestDataService.getSavedStats();
+		expect(stats).toEqual([fakeStat]);
 	});
 });
