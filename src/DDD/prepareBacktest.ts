@@ -6,6 +6,7 @@ import { MarketDataService } from "./infrastructure/MarketDataService";
 const backtestDataService = new BacktestDataService({
 	databaseName: "DB.db",
 	tableName: "BACKTEST_DATA",
+	statsTableName: "STATS_DATA",
 });
 const marketDataService = new MarketDataService();
 

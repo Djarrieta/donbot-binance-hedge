@@ -21,6 +21,7 @@ describe("Backtest Data Service", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: DB_NAME,
 			tableName: "symbolsBT",
+			statsTableName: "statsBT",
 		});
 		const fakeCandlestick: Candle[] = [
 			{
@@ -61,6 +62,7 @@ describe("Backtest Data Service", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: DB_NAME,
 			tableName: "symbolsBT",
+			statsTableName: "statsBT",
 		});
 
 		const fakeCandlestick: Candle[] = [

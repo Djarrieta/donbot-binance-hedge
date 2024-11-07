@@ -20,3 +20,10 @@ export type Position = {
 	sl: number;
 	tp: number;
 };
+
+export type PositionBT = Pick<
+	Position,
+	"pair" | "positionSide" | "startTime" | "entryPriceUSDT" | "pnl" | "stgName"
+> & {
+	tradeLength: number;
+};

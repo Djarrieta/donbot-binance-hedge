@@ -1,11 +1,11 @@
 import { getDate } from "../../utils/getDate";
 import type { BacktestDataService } from "../infrastructure/BacktestDataService";
 import type { MarketDataService } from "../infrastructure/MarketDataService";
-import cliProgress from "cli-progress";
-import type { Interval } from "./Interval";
-import type { Strategy, StrategyResponse } from "./Strategy";
 import type { Candle } from "./Candle";
-import type { Position, PositionSide } from "./Position";
+import { Interval } from "./Interval";
+import type { PositionBT, PositionSide } from "./Position";
+import type { Stat } from "./Stat";
+import type { Strategy, StrategyResponse } from "./Strategy";
 
 export type BacktestConfig = {
 	backtestStart: number;
@@ -26,12 +26,6 @@ type Trade = StrategyResponse & {
 	profitStick: Candle[];
 };
 
-type PositionBT = Pick<
-	Position,
-	"pair" | "positionSide" | "startTime" | "entryPriceUSDT" | "pnl" | "stgName"
-> & {
-	tradeLength: number;
-};
 export class TradingStrategyTester {
 	constructor(
 		private readonly config: BacktestConfig,
@@ -53,13 +47,14 @@ export class TradingStrategyTester {
 			this.config.backtestEnd,
 			this.config.forwardTestEnd
 		);
+		console.log(`Interval: ${Interval[this.config.interval]}`);
 
 		const pairList = await this.marketDataService.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
 		});
 		console.log("Available trading pairs:", pairList.length);
 
-		this.backtestDataService.deleteRows();
+		this.backtestDataService.deleteCandlestickRows();
 
 		for (const pair of pairList) {
 			console.log(`Downloading and processing candlestick data for ${pair}`);
@@ -83,11 +78,13 @@ export class TradingStrategyTester {
 			console.log(`Saved candlestick data for ${pair}`);
 		}
 
-		this.backtestDataService.showSavedInformation();
+		this.backtestDataService.showSavedCandlestick();
 	}
 
 	async backtest() {
-		this.backtestDataService.showSavedInformation();
+		this.backtestDataService.showSavedCandlestick();
+
+		this.backtestDataService.deleteStatsRows();
 
 		console.log(
 			"\nStarting backtest from " +
@@ -102,7 +99,6 @@ export class TradingStrategyTester {
 			for (const tp of this.config.tpArray) {
 				for (const maxTradeLength of this.config.maxTradeLengthArray) {
 					const positions: PositionBT[] = [];
-					const trades: Trade[] = [];
 
 					let start = this.config.backtestStart;
 					let end =
@@ -114,7 +110,7 @@ export class TradingStrategyTester {
 						this.config.lookBackLength * this.config.interval;
 
 					do {
-						const snapTrades = this.processBacktestTrades({
+						const trades = this.processBacktestTrades({
 							start,
 							end,
 							pairList,
@@ -128,7 +124,7 @@ export class TradingStrategyTester {
 						});
 
 						positions.push(...snapPositions);
-						trades.push(...snapTrades);
+						trades.push(...trades);
 						start += this.config.interval;
 						end += this.config.interval;
 						endCandlestick += this.config.interval;
@@ -136,12 +132,16 @@ export class TradingStrategyTester {
 					const stats = this.processStats({
 						positions,
 						pairList,
+						tp,
+						sl,
+						maxTradeLength,
 					});
-
-					console.log({ sl, tp, maxTradeLength, ...stats });
+					this.backtestDataService.saveStats(stats);
 				}
 			}
 		}
+
+		this.backtestDataService.showSavedStats();
 	}
 
 	private processBacktestTrades({
@@ -263,9 +263,15 @@ export class TradingStrategyTester {
 	private processStats({
 		positions,
 		pairList,
+		tp,
+		sl,
+		maxTradeLength,
 	}: {
 		positions: PositionBT[];
 		pairList: string[];
+		tp: number;
+		sl: number;
+		maxTradeLength: number;
 	}) {
 		let winningPairs: string[] = [];
 
@@ -281,43 +287,49 @@ export class TradingStrategyTester {
 			}
 		}
 
-		const closedPositionsWP = positions.filter((p) => {
+		const positionsWP = positions.filter((p) => {
 			return winningPairs.includes(p.pair);
 		});
 
-		const tradesQtyWP = closedPositionsWP.length;
-		const winningPositionsWP = closedPositionsWP.filter((p) => p.pnl > 0);
+		const tradesQtyWP = positionsWP.length;
+		const winningPositionsWP = positionsWP.filter((p) => p.pnl > 0);
 		const winRateWP = winningPositionsWP.length / tradesQtyWP;
-		const accPnlWP = closedPositionsWP.reduce((acc, p) => acc + p.pnl, 0);
+		const accPnlWP = positionsWP.reduce((acc, p) => acc + p.pnl, 0);
 		const avPnlWP = accPnlWP / tradesQtyWP || 0;
 
-		const closedPositionsAcc = [];
+		const positionsAcc = [];
 		let openPosTime = 0;
-		for (const position of closedPositionsWP) {
+		for (const position of positionsWP) {
 			if (position.startTime > openPosTime) {
-				closedPositionsAcc.push(position);
+				positionsAcc.push(position);
 				openPosTime =
 					position.startTime + position.tradeLength * this.config.interval;
 			}
 		}
 
-		const tradesQtyAcc = closedPositionsAcc.length;
-		const winningPositionsAcc = closedPositionsAcc.filter((p) => p.pnl > 0);
+		const tradesQtyAcc = positionsAcc.length;
+		const winningPositionsAcc = positionsAcc.filter((p) => p.pnl > 0);
 		const winRateAcc = winningPositionsAcc.length / tradesQtyAcc;
-		const accPnlAcc = closedPositionsAcc.reduce((acc, p) => acc + p.pnl, 0);
+		const accPnlAcc = positionsAcc.reduce((acc, p) => acc + p.pnl, 0);
 		const avPnlAcc = accPnlAcc / tradesQtyAcc || 0;
 
-		return {
+		const stats: Stat = {
+			sl,
+			tp,
+			maxTradeLength,
+			positions,
+			winningPairs,
+			positionsWP,
 			tradesQtyWP,
 			winRateWP,
 			avPnlWP,
 			tradesQtyAcc,
 			winRateAcc,
 			avPnlAcc,
-			winningPairs,
-			closedPositionsAcc,
-			closedPositionsWP,
+			positionsAcc,
 		};
+
+		return stats;
 	}
 
 	private validateTimeRanges(
@@ -344,7 +356,6 @@ export class TradingStrategyTester {
 				getDate(forwardTestEndTime).dateString
 			}`
 		);
-		console.log(`Interval: ${this.config.interval}`);
 	}
 
 	private fixCandlestick({
