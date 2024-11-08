@@ -1,3 +1,4 @@
+import cliProgress from "cli-progress";
 import { getDate } from "../../utils/getDate";
 import type { BacktestDataService } from "../infrastructure/BacktestDataService";
 import type { MarketDataService } from "../infrastructure/MarketDataService";
@@ -38,6 +39,10 @@ export class TradingStrategyTester {
 		this.marketDataService = marketDataService;
 		this.strategies = strategies;
 	}
+	private progressBar = new cliProgress.SingleBar(
+		{},
+		cliProgress.Presets.shades_classic
+	);
 
 	public async prepare(): Promise<void> {
 		if (
@@ -82,8 +87,9 @@ export class TradingStrategyTester {
 
 		this.backtestDataService.deleteCandlestickRows();
 
-		for (const pair of pairList) {
-			console.log(`Downloading and processing candlestick data for ${pair}`);
+		this.progressBar.start(pairList.length, 0);
+		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
+			const pair = pairList[pairIndex];
 
 			const rawCandlesticks = await this.marketDataService.getCandlestick({
 				pair,
@@ -101,8 +107,10 @@ export class TradingStrategyTester {
 			});
 
 			this.backtestDataService.saveCandlestick(fixedCandlesticks);
-			console.log(`Saved candlestick data for ${pair}`);
+			this.progressBar.update(pairIndex);
 		}
+		this.progressBar.update(pairList.length);
+		this.progressBar.stop();
 
 		this.backtestDataService.showSavedCandlestick();
 	}
@@ -120,6 +128,17 @@ export class TradingStrategyTester {
 				"..."
 		);
 		const pairList = this.backtestDataService.getPairList();
+		const totalIntervals =
+			(this.config.backtestEnd - this.config.backtestStart) /
+				this.config.interval -
+			this.config.lookBackLength;
+		const totalProgressBar =
+			totalIntervals *
+			this.config.slArray.length *
+			this.config.tpArray.length *
+			this.config.maxTradeLengthArray.length;
+
+		this.progressBar.start(totalProgressBar, 0);
 
 		for (const sl of this.config.slArray) {
 			for (const tp of this.config.tpArray) {
@@ -150,9 +169,11 @@ export class TradingStrategyTester {
 						});
 
 						positions.push(...snapPositions);
+
 						start += this.config.interval;
 						end += this.config.interval;
 						endCandlestick += this.config.interval;
+						this.progressBar.increment(1);
 					} while (end < this.config.backtestEnd);
 					const stats = this.processStats({
 						positions,
@@ -165,6 +186,8 @@ export class TradingStrategyTester {
 				}
 			}
 		}
+		this.progressBar.update(totalProgressBar);
+		this.progressBar.stop();
 
 		this.backtestDataService.showSavedStats();
 	}
@@ -354,6 +377,7 @@ export class TradingStrategyTester {
 		return stats;
 	}
 
+	//TODO Check
 	private fixCandlestick({
 		candlestick,
 		start,
