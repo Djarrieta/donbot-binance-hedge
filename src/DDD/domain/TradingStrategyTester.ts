@@ -54,31 +54,21 @@ export class TradingStrategyTester {
 			);
 		}
 
-		console.log("\n\n");
-		console.log(
-			"======================================================================================================="
-		);
-		console.log(
-			`Preparing backtest for  ${(
-				(this.config.forwardTestEnd - this.config.backtestStart) /
-				Interval["1d"]
-			).toFixed(1)} days`
-		);
-		console.log(`Interval: ${Interval[this.config.interval]}`);
-		console.log(
-			`Backtest: ${getDate(this.config.backtestStart).dateString} to ${
-				getDate(this.config.backtestEnd).dateString
-			} `
-		);
-		console.log(
-			`ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
-				getDate(this.config.forwardTestEnd).dateString
-			}`
-		);
-		console.log(
-			"======================================================================================================="
-		);
-		console.log("\n\n");
+		console.log(`	
+=======================================================================================================
+Preparing backtest for ${(
+			(this.config.forwardTestEnd - this.config.backtestStart) /
+			Interval["1d"]
+		).toFixed(1)} days
+Interval: ${Interval[this.config.interval]}
+Backtest: ${getDate(this.config.backtestStart).dateString} to ${
+			getDate(this.config.backtestEnd).dateString
+		}
+ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
+			getDate(this.config.forwardTestEnd).dateString
+		}
+=======================================================================================================
+`);
 
 		const pairList = await this.marketDataService.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
@@ -119,13 +109,13 @@ export class TradingStrategyTester {
 
 		this.backtestDataService.deleteStatsRows();
 
-		console.log(
-			"\nStarting backtest from " +
-				getDate(this.config.backtestStart).dateString +
-				" to " +
-				getDate(this.config.backtestEnd).dateString +
-				"..."
-		);
+		console.log(`	
+=======================================================================================================
+Starting backtest from ${getDate(this.config.backtestStart).dateString} to ${
+			getDate(this.config.backtestEnd).dateString
+		}...
+=======================================================================================================
+`);
 		const pairList = this.backtestDataService.getPairList();
 		const totalIntervals =
 			(this.config.backtestEnd - this.config.backtestStart) /
