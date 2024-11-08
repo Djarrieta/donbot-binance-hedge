@@ -107,15 +107,14 @@ export class TradingStrategyTester {
 			});
 
 			this.backtestDataService.saveCandlestick(fixedCandlesticks);
-			this.progressBar.update(pairIndex);
+			this.progressBar.update(pairIndex + 1);
 		}
-		this.progressBar.update(pairList.length);
 		this.progressBar.stop();
 
 		this.backtestDataService.showSavedCandlestick();
 	}
 
-	async backtest() {
+	backtest() {
 		this.backtestDataService.showSavedCandlestick();
 
 		this.backtestDataService.deleteStatsRows();

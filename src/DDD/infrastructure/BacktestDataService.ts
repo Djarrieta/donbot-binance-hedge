@@ -285,7 +285,7 @@ export class BacktestDataService {
 			stats.map((r) => ({
 				sl: formatPercent(r.sl),
 				tp: formatPercent(r.tp),
-				maxTradeLength: r.maxTradeLength,
+				maxLength: r.maxTradeLength,
 
 				positions: r.positions.length,
 				positionsWP: r.positionsWP.length,
