@@ -5,13 +5,17 @@ export type Stat = {
 	tp: number;
 	maxTradeLength: number;
 	positions: PositionBT[];
+
 	winningPairs: string[];
 	positionsWP: PositionBT[];
-
 	winRateWP: number;
 	avPnlWP: number;
+
+	positionsAcc: PositionBT[];
 	winRateAcc: number;
 	avPnlAcc: number;
 
-	positionsAcc: PositionBT[];
+	positionsFwd: PositionBT[];
+	winRateFwd: number;
+	avPnlFwd: number;
 };

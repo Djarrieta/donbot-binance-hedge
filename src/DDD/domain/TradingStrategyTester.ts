@@ -111,14 +111,19 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 
 		console.log(`	
 =======================================================================================================
-Starting backtest from ${getDate(this.config.backtestStart).dateString} to ${
+
+Backtest from ${getDate(this.config.backtestStart).dateString} to ${
 			getDate(this.config.backtestEnd).dateString
-		}...
+		}
+ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
+			getDate(this.config.forwardTestEnd).dateString
+		}
+
 =======================================================================================================
 `);
 		const pairList = this.backtestDataService.getPairList();
 		const totalIntervals =
-			(this.config.backtestEnd - this.config.backtestStart) /
+			(this.config.forwardTestEnd - this.config.backtestStart) /
 				this.config.interval -
 			this.config.lookBackLength;
 		const totalProgressBar =
@@ -310,10 +315,16 @@ Starting backtest from ${getDate(this.config.backtestStart).dateString} to ${
 		sl: number;
 		maxTradeLength: number;
 	}) {
+		const positionsBacktest = positions.filter(
+			(pos) => pos.startTime <= this.config.backtestEnd
+		);
+
 		let winningPairs: string[] = [];
 
 		for (const pair of pairList) {
-			const closedPosForSymbol = positions.filter((pos) => pos.pair === pair);
+			const closedPosForSymbol = positionsBacktest.filter(
+				(pos) => pos.pair === pair
+			);
 			const tradesQty = closedPosForSymbol.length;
 			const totalPnl = closedPosForSymbol.reduce((acc, a) => acc + a.pnl, 0);
 			const avPnl = totalPnl / tradesQty || 0;
@@ -323,7 +334,7 @@ Starting backtest from ${getDate(this.config.backtestStart).dateString} to ${
 			}
 		}
 
-		const positionsWP = positions.filter((p) => {
+		const positionsWP = positionsBacktest.filter((p) => {
 			return winningPairs.includes(p.pair);
 		});
 
@@ -349,6 +360,25 @@ Starting backtest from ${getDate(this.config.backtestStart).dateString} to ${
 		const accPnlAcc = positionsAcc.reduce((acc, p) => acc + p.pnl, 0);
 		const avPnlAcc = accPnlAcc / tradesQtyAcc || 0;
 
+		const positionsFwdFullList = positions.filter(
+			(p) =>
+				p.startTime > this.config.backtestEnd && winningPairs.includes(p.pair)
+		);
+		const positionsFwd = [];
+		let openPosFwdTime = 0;
+		for (const pos of positionsFwdFullList) {
+			if (pos.startTime > openPosFwdTime) {
+				positionsFwd.push(pos);
+				openPosFwdTime = pos.startTime + pos.tradeLength * this.config.interval;
+			}
+		}
+
+		const tradesQtyFwd = positionsFwd.length;
+		const winningPositionsFwd = positionsFwd.filter((p) => p.pnl > 0);
+		const winRateFwd = winningPositionsFwd.length / tradesQtyFwd;
+		const accPnlFwd = positionsFwd.reduce((acc, p) => acc + p.pnl, 0);
+		const avPnlFwd = accPnlFwd / tradesQtyFwd || 0;
+
 		const stats: Stat = {
 			sl,
 			tp,
@@ -358,9 +388,12 @@ Starting backtest from ${getDate(this.config.backtestStart).dateString} to ${
 			positionsWP,
 			winRateWP,
 			avPnlWP,
+			positionsAcc,
 			winRateAcc,
 			avPnlAcc,
-			positionsAcc,
+			positionsFwd,
+			winRateFwd,
+			avPnlFwd,
 		};
 
 		return stats;

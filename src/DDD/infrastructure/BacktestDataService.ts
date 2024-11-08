@@ -74,28 +74,35 @@ export class BacktestDataService {
 			sl,
 			tp,
 			maxTradeLength,
-			positions,
+
 			winningPairs,
+			positions,
 			positionsWP,
+			positionsAcc,
+
 			winRateWP,
-			avPnlWP,
 			winRateAcc,
-			avPnlAcc,
-			positionsAcc
+			
+			avPnlWP,
+			avPnlAcc
 		) VALUES (?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 		const values = [
 			stats.sl,
 			stats.tp,
 			stats.maxTradeLength,
-			JSON.stringify(stats.positions),
+
 			JSON.stringify(stats.winningPairs),
+			JSON.stringify(stats.positions),
 			JSON.stringify(stats.positionsWP),
-			stats.winRateWP,
-			stats.avPnlWP,
-			stats.winRateAcc,
-			stats.avPnlAcc,
 			JSON.stringify(stats.positionsAcc),
+
+			stats.winRateWP,
+			stats.winRateAcc,
+
+			stats.avPnlWP,
+			stats.avPnlAcc,
 		];
+
 		this.db.query(query).run(...values);
 		console.log("Stats saved successfully.");
 	}
@@ -114,9 +121,12 @@ export class BacktestDataService {
 			positionsWP: JSON.parse(r.positionsWP),
 			winRateWP: Number(r.winRateWP),
 			avPnlWP: Number(r.avPnlWP),
+			positionsAcc: JSON.parse(r.positionsAcc),
 			winRateAcc: Number(r.winRateAcc),
 			avPnlAcc: Number(r.avPnlAcc),
-			positionsAcc: JSON.parse(r.positionsAcc),
+			positionsFwd: JSON.parse(r.positionsFwd),
+			winRateFwd: Number(r.winRateFwd),
+			avPnlFwd: Number(r.avPnlFwd),
 		}));
 
 		return stats;
@@ -154,7 +164,7 @@ export class BacktestDataService {
 		sl: number;
 		tp: number;
 		maxTradeLength: number;
-		column: "positionsWP" | "positionsAcc" | "positions";
+		column: "positionsWP" | "positionsAcc" | "positionsFwd" | "positions";
 	}) {
 		const unformattedPositions = this.db
 			.query(
@@ -168,7 +178,8 @@ export class BacktestDataService {
 			)
 			.get() as any;
 
-		const positions: PositionBT[] = JSON.parse(unformattedPositions[column]);
+		const positions: PositionBT[] =
+			(unformattedPositions && JSON.parse(unformattedPositions[column])) || [];
 
 		return positions;
 	}
@@ -281,6 +292,23 @@ export class BacktestDataService {
 			}))
 		);
 
+		const positionsFwd = this.getSavedStatsPositions({
+			sl,
+			tp,
+			maxTradeLength,
+			column: "positionsFwd",
+		});
+		console.log(
+			`Showing last possible Positions in forward test: ${positionsFwd.length}`
+		);
+		console.table(
+			positionsFwd.map((p) => ({
+				...p,
+				startTime: getDate(p.startTime).dateString,
+				pnl: formatPercent(p.pnl),
+			}))
+		);
+
 		console.table(
 			stats.map((r) => ({
 				sl: formatPercent(r.sl),
@@ -288,14 +316,17 @@ export class BacktestDataService {
 				maxLength: r.maxTradeLength,
 
 				positions: r.positions.length,
-				positionsWP: r.positionsWP.length,
-				positionsAcc: r.positionsAcc.length,
+				positionsWP: r.positionsWP?.length || 0,
+				positionsAcc: r.positionsAcc?.length || 0,
+				positionsFwd: r.positionsFwd?.length || 0,
 
 				winRateWP: formatPercent(r.winRateWP),
 				winRateAcc: formatPercent(r.winRateAcc),
+				winRateFwd: formatPercent(r.winRateFwd),
 
 				avPnlWP: formatPercent(r.avPnlWP),
 				avPnlAcc: formatPercent(r.avPnlAcc),
+				avPnlFwd: formatPercent(r.avPnlFwd),
 
 				winningPairs: r.winningPairs.length,
 			}))
@@ -341,11 +372,15 @@ export class BacktestDataService {
 					
 					winRateAcc REAL,
 					avPnlAcc REAL,
+
+					winRateFwd REAL,
+					avPnlFwd REAL,
 					
 					winningPairs TEXT,
 					positions TEXT,
 					positionsWP TEXT,
-					positionsAcc TEXT
+					positionsAcc TEXT,
+					positionsFwd TEXT
 				)
 			`
 			)
