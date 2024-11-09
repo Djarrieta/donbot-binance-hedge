@@ -27,23 +27,37 @@ export class BacktestDataService {
 
 	saveCandlestick = (candlesticks: Candle[]) => {
 		if (candlesticks.length === 0) return;
-		const query = `INSERT INTO ${
-			this.candlestickTableName
-		} (pair, open, high, low, close, volume, openTime) VALUES ${candlesticks
-			.map(() => "(?, ?, ?, ?, ?, ?, ?)")
-			.join(", ")}`;
 
-		const params = candlesticks.map((c) => [
-			c.pair,
-			c.open,
-			c.high,
-			c.low,
-			c.close,
-			c.volume,
-			c.openTime,
-		]);
+		const batchSize = 500; // Adjust this as needed
+		for (let i = 0; i < candlesticks.length; i += batchSize) {
+			const batch = candlesticks.slice(i, i + batchSize);
+			const query = `
+				INSERT INTO ${this.candlestickTableName}
+				(pair, open, high, low, close, volume, openTime)
+				VALUES ${batch.map(() => "(?,?,?,?,?,?,?)").join(",")}
+			`;
 
-		this.db.query(query).run(...params.flat());
+			// Prepare parameters for the current batch
+			const params: (string | number)[] = [];
+			batch.forEach((c) => {
+				params.push(
+					c.pair,
+					c.open,
+					c.high,
+					c.low,
+					c.close,
+					c.volume,
+					c.openTime
+				);
+			});
+
+			// Execute the query with correctly structured parameters
+			try {
+				this.db.query(query).run(...params); // Use spread operator to pass params
+			} catch (error) {
+				console.error("Error saving candlestick data:", error);
+			}
+		}
 	};
 
 	getPairList = () => {
@@ -79,13 +93,16 @@ export class BacktestDataService {
 			positions,
 			positionsWP,
 			positionsAcc,
+			positionsFwd,
 
 			winRateWP,
 			winRateAcc,
+			winRateFwd,
 			
 			avPnlWP,
-			avPnlAcc
-		) VALUES (?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+			avPnlAcc,
+			avPnlFwd
+		) VALUES (?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? )`;
 		const values = [
 			stats.sl,
 			stats.tp,
@@ -95,12 +112,15 @@ export class BacktestDataService {
 			JSON.stringify(stats.positions),
 			JSON.stringify(stats.positionsWP),
 			JSON.stringify(stats.positionsAcc),
+			JSON.stringify(stats.positionsFwd),
 
 			stats.winRateWP,
 			stats.winRateAcc,
+			stats.winRateFwd,
 
 			stats.avPnlWP,
 			stats.avPnlAcc,
+			stats.avPnlFwd,
 		];
 
 		this.db.query(query).run(...values);
@@ -116,16 +136,19 @@ export class BacktestDataService {
 			sl: Number(r.sl),
 			tp: Number(r.tp),
 			maxTradeLength: Number(r.maxTradeLength),
-			positions: JSON.parse(r.positions),
+
 			winningPairs: JSON.parse(r.winningPairs),
-			positionsWP: JSON.parse(r.positionsWP),
-			winRateWP: Number(r.winRateWP),
-			avPnlWP: Number(r.avPnlWP),
+			positions: JSON.parse(r.positions),
 			positionsAcc: JSON.parse(r.positionsAcc),
-			winRateAcc: Number(r.winRateAcc),
-			avPnlAcc: Number(r.avPnlAcc),
 			positionsFwd: JSON.parse(r.positionsFwd),
+			positionsWP: JSON.parse(r.positionsWP),
+
+			winRateWP: Number(r.winRateWP),
+			winRateAcc: Number(r.winRateAcc),
 			winRateFwd: Number(r.winRateFwd),
+
+			avPnlWP: Number(r.avPnlWP),
+			avPnlAcc: Number(r.avPnlAcc),
 			avPnlFwd: Number(r.avPnlFwd),
 		}));
 

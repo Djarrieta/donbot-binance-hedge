@@ -49,9 +49,24 @@ const fakeStat: Stat = {
 	winningPairs: ["XRPUSDT", "MANAUSDT"],
 
 	winRateWP: 1,
-	avPnlWP: 1,
 	winRateAcc: 1,
+	winRateFwd: 1,
+
+	avPnlWP: 1,
+	avPnlFwd: 1,
 	avPnlAcc: 1,
+
+	positions: [
+		{
+			pair: "XRPUSDT",
+			startTime: 1,
+			pnl: 1,
+			tradeLength: 1,
+			entryPriceUSDT: 1,
+			positionSide: "LONG",
+			stgName: "stgName",
+		},
+	],
 	positionsWP: [
 		{
 			pair: "BTCUSDT",
@@ -74,9 +89,9 @@ const fakeStat: Stat = {
 			stgName: "stgName",
 		},
 	],
-	positions: [
+	positionsFwd: [
 		{
-			pair: "XRPUSDT",
+			pair: "MANAUSDT",
 			startTime: 1,
 			pnl: 1,
 			tradeLength: 1,
@@ -130,7 +145,7 @@ describe("Backtest Data Service", () => {
 		expect(candlesticks).toEqual(fakeCandlestick.slice(0, 2));
 	});
 
-	test("detele delete Candlestick Rows", () => {
+	test(" delete Candlestick Rows", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: TEST_DB_NAME,
 			tableName: "symbolsBT",
@@ -140,7 +155,7 @@ describe("Backtest Data Service", () => {
 
 		const candlesticks = backtestDataService.getCandlestick({
 			start: 1730736204001,
-			end: 1730736204002,
+			end: 1730736204003,
 		});
 
 		expect(candlesticks).toEqual([]);
