@@ -111,7 +111,10 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 
 		console.log(`	
 =======================================================================================================
-
+Running backtest and forwardtest for ${(
+			(this.config.forwardTestEnd - this.config.backtestStart) /
+			Interval["1d"]
+		).toFixed(1)} days in total.
 Backtest from ${getDate(this.config.backtestStart).dateString} to ${
 			getDate(this.config.backtestEnd).dateString
 		}
