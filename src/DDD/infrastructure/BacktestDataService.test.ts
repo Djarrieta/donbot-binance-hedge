@@ -56,6 +56,10 @@ const fakeStat: Stat = {
 	avPnlFwd: 1,
 	avPnlAcc: 1,
 
+	accPnlWP: 0,
+	accPnlFwd: 0,
+	accPnlAcc: 0,
+
 	positions: [
 		{
 			pair: "XRPUSDT",

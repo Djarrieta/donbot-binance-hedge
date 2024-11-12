@@ -150,6 +150,10 @@ export class BacktestDataService {
 			avPnlWP: Number(r.avPnlWP),
 			avPnlAcc: Number(r.avPnlAcc),
 			avPnlFwd: Number(r.avPnlFwd),
+
+			accPnlWP: Number(r.accPnlWP || 0),
+			accPnlAcc: Number(r.accPnlAcc || 0),
+			accPnlFwd: Number(r.accPnlFwd || 0),
 		}));
 
 		return stats;

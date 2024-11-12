@@ -174,10 +174,10 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 					} while (end < this.config.backtestEnd);
 					const stats = this.processStats({
 						positions,
-						pairList,
 						tp,
 						sl,
 						maxTradeLength,
+						backtestEnd: this.config.backtestEnd,
 					});
 					this.backtestDataService.saveStats(stats);
 				}
@@ -305,21 +305,23 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 		return closedPositions;
 	}
 
-	private processStats({
+	public processStats({
 		positions,
-		pairList,
 		tp,
 		sl,
 		maxTradeLength,
+		backtestEnd,
 	}: {
 		positions: PositionBT[];
-		pairList: string[];
 		tp: number;
 		sl: number;
 		maxTradeLength: number;
+		backtestEnd: number;
 	}) {
+		const pairList = new Set<string>(positions.map((p) => p.pair));
+
 		const positionsBacktest = positions.filter(
-			(pos) => pos.startTime <= this.config.backtestEnd
+			(pos) => pos.startTime <= backtestEnd
 		);
 
 		let winningPairs: string[] = [];
@@ -364,8 +366,7 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 		const avPnlAcc = accPnlAcc / tradesQtyAcc || 0;
 
 		const positionsFwdFullList = positions.filter(
-			(p) =>
-				p.startTime > this.config.backtestEnd && winningPairs.includes(p.pair)
+			(p) => winningPairs.includes(p.pair) && p.startTime > backtestEnd
 		);
 		const positionsFwd = [];
 		let openPosFwdTime = 0;
@@ -386,24 +387,29 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 			sl,
 			tp,
 			maxTradeLength,
-			positions,
 			winningPairs,
+			positions,
 			positionsWP,
-			winRateWP,
-			avPnlWP,
 			positionsAcc,
-			winRateAcc,
-			avPnlAcc,
 			positionsFwd,
+
+			winRateWP,
+			winRateAcc,
 			winRateFwd,
+
+			avPnlWP,
+			avPnlAcc,
 			avPnlFwd,
+
+			accPnlWP,
+			accPnlAcc,
+			accPnlFwd,
 		};
 
 		return stats;
 	}
 
-	//TODO Check
-	private fixCandlestick({
+	public fixCandlestick({
 		candlestick,
 		start,
 		end,
@@ -414,22 +420,31 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 		end: number;
 		interval: Interval;
 	}): Candle[] {
+		const firstCandle = candlestick[0];
 		const fixedCandlestick: Candle[] = [];
 		let time = start;
-		let prevCandle: Candle | undefined;
+		let prevCandle: Candle = {
+			pair: firstCandle.pair,
+			openTime: start,
+			open: 0,
+			close: 0,
+			high: 0,
+			low: 0,
+			volume: 0,
+		};
 		do {
 			const candle = candlestick.find((c) => c.openTime === time);
 			if (candle) {
 				fixedCandlestick.push(candle);
 				prevCandle = candle;
-			} else if (prevCandle) {
+			} else {
 				fixedCandlestick.push({
 					...prevCandle,
 					openTime: time,
 				});
 			}
 			time += interval;
-		} while (time < end);
+		} while (time <= end);
 		return fixedCandlestick;
 	}
 }
