@@ -171,7 +171,7 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 						end += this.config.interval;
 						endCandlestick += this.config.interval;
 						this.progressBar.increment(1);
-					} while (end < this.config.backtestEnd);
+					} while (end < this.config.forwardTestEnd);
 					const stats = this.processStats({
 						positions,
 						tp,
