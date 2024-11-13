@@ -5,9 +5,9 @@ import type { BacktestConfig } from "./domain/TradingStrategyTester";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
 
 export const backtestConfig: BacktestConfig = {
-	backtestStart: getDate("2024 10 29 00:00:00" as DateString).dateMs,
-	backtestEnd: getDate("2024 11 05 00:00:00" as DateString).dateMs,
-	forwardTestEnd: getDate("2024 11 08 00:00:00" as DateString).dateMs,
+	backtestStart: getDate("2024 08 02 00:00:00" as DateString).dateMs,
+	backtestEnd: getDate("2024 10 11 00:00:00" as DateString).dateMs,
+	forwardTestEnd: getDate("2024 11 10 00:00:00" as DateString).dateMs,
 	interval: Interval["5m"],
 	lookBackLength: 200,
 	minAmountToTradeUSDT: 6,

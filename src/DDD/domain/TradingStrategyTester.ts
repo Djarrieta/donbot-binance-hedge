@@ -61,12 +61,18 @@ Preparing backtest for ${(
 			Interval["1d"]
 		).toFixed(1)} days
 Interval: ${Interval[this.config.interval]}
-Backtest: ${getDate(this.config.backtestStart).dateString} to ${
+Backtest: ${(
+			(this.config.backtestEnd - this.config.backtestStart) /
+			Interval["1d"]
+		).toFixed(1)} days, from ${
+			getDate(this.config.backtestStart).dateString
+		} to ${getDate(this.config.backtestEnd).dateString}
+ForwardTest: ${(
+			(this.config.forwardTestEnd - this.config.backtestEnd) /
+			Interval["1d"]
+		).toFixed(1)} days, from ${
 			getDate(this.config.backtestEnd).dateString
-		}
-ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
-			getDate(this.config.forwardTestEnd).dateString
-		}
+		} to ${getDate(this.config.forwardTestEnd).dateString}
 =======================================================================================================
 `);
 
@@ -114,16 +120,23 @@ ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
 Running backtest and forwardtest for ${(
 			(this.config.forwardTestEnd - this.config.backtestStart) /
 			Interval["1d"]
-		).toFixed(1)} days in total.
-Backtest from ${getDate(this.config.backtestStart).dateString} to ${
+		).toFixed(1)} days
+Interval: ${Interval[this.config.interval]}
+Backtest: ${(
+			(this.config.backtestEnd - this.config.backtestStart) /
+			Interval["1d"]
+		).toFixed(1)} days, from ${
+			getDate(this.config.backtestStart).dateString
+		} to ${getDate(this.config.backtestEnd).dateString}
+ForwardTest: ${(
+			(this.config.forwardTestEnd - this.config.backtestEnd) /
+			Interval["1d"]
+		).toFixed(1)} days, from ${
 			getDate(this.config.backtestEnd).dateString
-		}
-ForwardTest: ${getDate(this.config.backtestEnd).dateString} to ${
-			getDate(this.config.forwardTestEnd).dateString
-		}
-
+		} to ${getDate(this.config.forwardTestEnd).dateString}
 =======================================================================================================
-`);
+
+			`);
 		const pairList = this.backtestDataService.getPairList();
 		const totalIntervals =
 			(this.config.forwardTestEnd - this.config.backtestStart) /
