@@ -4,7 +4,7 @@ import type {
 	Binance as IBinance,
 } from "binance-api-node";
 import Binance from "binance-api-node";
-import type { Candle } from "../domain/Candle";
+import type { CandleBt as Candle } from "../domain/Candle";
 import { Interval } from "../domain/Interval";
 
 export class MarketDataService {

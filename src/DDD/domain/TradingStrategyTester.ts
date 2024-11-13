@@ -2,7 +2,7 @@ import cliProgress from "cli-progress";
 import { getDate } from "../../utils/getDate";
 import type { BacktestDataService } from "../infrastructure/BacktestDataService";
 import type { MarketDataService } from "../infrastructure/MarketDataService";
-import type { Candle } from "./Candle";
+import type { CandleBt as Candle } from "./Candle";
 import { Interval } from "./Interval";
 import type { PositionBT, PositionSide } from "./Position";
 import type { Stat } from "./Stat";

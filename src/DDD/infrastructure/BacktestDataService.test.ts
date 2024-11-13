@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { unlinkSync } from "fs";
 import { BacktestDataService } from "./BacktestDataService";
-import type { Candle } from "../domain/Candle";
+import type { CandleBt as Candle } from "../domain/Candle";
 import type { Stat } from "../domain/Stat";
 
 const TEST_DB_NAME = "TEST.db";

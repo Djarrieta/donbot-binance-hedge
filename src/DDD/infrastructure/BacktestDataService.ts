@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 import { formatPercent } from "../../utils/formatPercent";
 import { getDate } from "../../utils/getDate";
-import type { Candle } from "../domain/Candle";
+import type { CandleBt as Candle } from "../domain/Candle";
 import type { PositionBT } from "../domain/Position";
 import type { Stat } from "../domain/Stat";
 

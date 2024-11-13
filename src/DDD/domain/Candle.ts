@@ -5,5 +5,6 @@ export type Candle = {
 	close: number;
 	volume: number;
 	openTime: number;
-	pair: string;
 };
+
+export type CandleBt = Candle & { pair: string };

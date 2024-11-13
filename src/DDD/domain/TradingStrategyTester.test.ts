@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { BacktestDataService } from "../infrastructure/BacktestDataService";
 import { MarketDataService } from "../infrastructure/MarketDataService";
-import type { Candle } from "./Candle";
+import type { CandleBt as Candle } from "./Candle";
 import { Interval } from "./Interval";
 import type { PositionBT } from "./Position";
 import type { Strategy } from "./Strategy";
