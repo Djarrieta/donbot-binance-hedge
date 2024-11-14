@@ -1,53 +1,45 @@
 import Binance from "binance-api-node";
 import { OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
-import { type Symbol } from "../../symbol/Symbol";
+import type { Symbol } from "../../symbolLegacy/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
 import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";
 
-interface SecurePositionServiceProps {
-	user: User;
-	symbol: Symbol;
-	bePrice: number;
-	positionSide: PositionSide;
-	coinQuantity: number;
-}
-export const securePositionService = async ({
-	symbol,
+export const quitPositionService = async ({
 	user,
 	positionSide,
+	symbol,
 	coinQuantity,
-	bePrice,
-}: SecurePositionServiceProps) => {
+}: {
+	user: User;
+	symbol: Symbol;
+	positionSide: PositionSide;
+	coinQuantity: number;
+}) => {
+	if (!coinQuantity) {
+		throw new Error("No coin quantity");
+	}
+	const quantity = fixPrecision({
+		value: Number(coinQuantity),
+		precision: symbol.quantityPrecision,
+	});
+
 	const authExchange = Binance({
 		apiKey: user.binanceApiKey,
 		apiSecret: user.binanceApiSecret || "",
 	});
-
-	const BEPrice = fixPrecision({
-		value: bePrice,
-		precision: symbol.pricePrecision,
-	});
-
-	const quantity = fixPrecision({
-		value: coinQuantity,
-		precision: symbol.quantityPrecision,
-	});
-
 	await authExchange.futuresOrder({
-		type: "STOP_MARKET",
+		type: "MARKET",
 		side: positionSide === "LONG" ? "SELL" : "BUY",
 		positionSide,
 		symbol: symbol.pair,
 		quantity,
-		stopPrice: BEPrice,
-		recvWindow: 59999,
 		newClientOrderId: orderIdNameGenerator({
-			orderType: OrderType.BREAK,
+			orderType: OrderType.QUIT,
 			positionSide,
-			price: BEPrice,
+			price: symbol.currentPrice.toString(),
 		}).fullIdName,
-		timeInForce: "GTC",
+		recvWindow: 59999,
 	});
 };

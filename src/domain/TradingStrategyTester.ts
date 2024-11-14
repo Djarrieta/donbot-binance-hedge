@@ -1,5 +1,5 @@
 import cliProgress from "cli-progress";
-import { getDate } from "../../utils/getDate";
+import { getDate } from "../utils/getDate";
 import type { BacktestDataService } from "../infrastructure/BacktestDataService";
 import type { MarketDataService } from "../infrastructure/MarketDataService";
 import type { CandleBt as Candle } from "./Candle";

@@ -1,4 +1,4 @@
-import { getDate, type DateString } from "../utils/getDate";
+import { getDate, type DateString } from "./utils/getDate";
 import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
 import type { BacktestConfig } from "./domain/TradingStrategyTester";

@@ -1,7 +1,7 @@
 import cliProgress from "cli-progress";
 
 import { params } from "../../Params";
-import { getPairList } from "../../symbol/services/getPairList";
+import { getPairList } from "../../symbolLegacy/services/getPairList";
 import { userSeedList } from "../../userSeed";
 import Binance from "binance-api-node";
 

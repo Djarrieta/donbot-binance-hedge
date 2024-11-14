@@ -1,7 +1,7 @@
 import Binance from "binance-api-node";
 import { OrderType } from "../../sharedModels/Order";
 import type { PositionSide } from "../../sharedModels/Position";
-import { type Symbol } from "../../symbol/Symbol";
+import { type Symbol } from "../../symbolLegacy/Symbol";
 import { fixPrecision } from "../../utils/fixPrecision";
 import { orderIdNameGenerator } from "../../utils/orderIdNameGenerator";
 import type { User } from "../User";

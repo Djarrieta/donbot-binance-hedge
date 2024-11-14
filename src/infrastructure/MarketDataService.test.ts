@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
 import { MarketDataService } from "./MarketDataService";
-import { getDate, type DateString } from "../../utils/getDate";
+import { getDate, type DateString } from "../utils/getDate";
 import { Interval } from "../domain/Interval";
 
 describe("Market Data Service", () => {
