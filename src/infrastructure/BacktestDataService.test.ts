@@ -208,6 +208,22 @@ describe("Backtest Data Service", () => {
 		expect(positionsAcc).toEqual(fakeStat.positionsAcc);
 	});
 
+	test("get positionsFwd", () => {
+		const backtestDataService = new BacktestDataService({
+			databaseName: TEST_DB_NAME,
+			tableName: "symbolsBT",
+			statsTableName: "statsBT",
+		});
+
+		const positionsFwd = backtestDataService.getSavedStatsPositions({
+			sl: 1,
+			tp: 1,
+			maxTradeLength: 1,
+			column: "positionsFwd",
+		});
+		expect(positionsFwd).toEqual(fakeStat.positionsFwd);
+	});
+
 	test("get positions", () => {
 		const backtestDataService = new BacktestDataService({
 			databaseName: TEST_DB_NAME,
