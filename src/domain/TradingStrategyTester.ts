@@ -22,6 +22,7 @@ export type BacktestConfig = {
 	maxTradeLengthArray: number[];
 	minAmountToTradeUSDT: number;
 	apiLimit: number;
+	deletePrevAlerts: boolean;
 };
 
 export class TradingStrategyTester {

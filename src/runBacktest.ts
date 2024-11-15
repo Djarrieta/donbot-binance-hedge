@@ -24,4 +24,6 @@ const tradingStrategyTester = new TradingStrategyTester(
 	strategies
 );
 
-tradingStrategyTester.backtest({ deleteAlerts: true });
+tradingStrategyTester.backtest({
+	deleteAlerts: backtestConfig.deletePrevAlerts,
+});
