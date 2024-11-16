@@ -11,11 +11,12 @@ export type Position = {
 	pair: string;
 	positionSide: PositionSide;
 	startTime: number;
+	tradeLength?: number;
 	entryPriceUSDT: number;
 	pnl: number;
 	coinQuantity: number;
 	status: PositionStatus;
-	isHedgeUnbalance: boolean;
+	isHedgeUnbalance?: boolean;
 	stgName: string;
 	sl: number;
 	tp: number;

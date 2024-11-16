@@ -1,74 +1,47 @@
-import type { MarketDataService } from "../infrastructure/MarketDataService";
-import type { Interval } from "./Interval";
-import type { PositionSide } from "./Position";
-import type { Strategy } from "./Strategy";
 import type { User } from "./User";
 import type { Symbol } from "./Symbol";
-
-export type TradeConfig = {
-	interval: Interval;
-	lookBackLength: number;
-	sl: number;
-	tp: number;
-	riskPt: number;
-	feePt: number;
-	maxTradeLength: number;
-	minAmountToTradeUSDT: number;
-	apiLimit: number;
-	maxProtectedPositions: number;
-	maxHedgePositions: number;
-};
+import type { Strategy, StrategyResponse } from "./Strategy";
+import type { MarketDataService } from "../infrastructure/MarketDataService";
+import type { TradeConfig } from "./TradeConfig";
+import type { PositionSide } from "./Position";
+import type { IExchange } from "./IExchange";
+import type { Alert } from "./Alert";
+import { getVolatility } from "../utils/getVolatility";
+import { getDate } from "../utils/getDate";
+import { OrderType } from "./Order";
+import type { Candle } from "./Candle";
 
 export class Trade {
-	private constructor(
-		private readonly userList: User[],
+	constructor(
+		private userList: User[],
 		private readonly symbolList: Symbol[],
 		private readonly strategies: Strategy[],
 		private readonly marketDataService: MarketDataService,
+		private readonly exchange: IExchange,
 		private readonly config: TradeConfig
 	) {
 		this.userList = userList;
 		this.symbolList = symbolList;
 		this.strategies = strategies;
 		this.marketDataService = marketDataService;
+		this.exchange = exchange;
 		this.config = config;
 	}
-	private static instance: Trade | null = null;
-	public static async getInstance(props?: {
-		userList: User[];
-		symbolList: Symbol[];
-		strategies: Strategy[];
-		config: TradeConfig;
-		marketDataService: MarketDataService;
-	}) {
-		if (Trade.instance === null && props) {
-			Trade.instance = new Trade(
-				props.userList,
-				props.symbolList,
-				props.strategies,
-				props.marketDataService,
-				props.config
-			);
-		}
-		if (Trade.instance) {
-			return Trade.instance;
-		}
-	}
-	public static async resetInstance() {
-		Trade.instance = null;
-	}
+
 	async handleNewPosition({
 		userName,
 		pair,
 		positionSide,
 		sl,
 		tp,
+		stgName,
 	}: {
 		userName: string;
 		pair: string;
 		positionSide: PositionSide;
 		sl: number;
 		tp: number;
+		stgName: string;
 	}) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
@@ -120,21 +93,23 @@ export class Trade {
 		if (!symbol) {
 			return;
 		}
+
 		await this.openPosition({
 			userName,
 			pair,
 			positionSide,
 			sl,
 			tp,
+			stgName,
 		});
 	}
 
 	async handleExistingPositions({
 		userName,
-		trades,
+		alerts,
 	}: {
 		userName: string;
-		trades?: StrategyResponse[];
+		alerts?: Alert[];
 	}) {
 		console.log("Handling existing positions for " + userName);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
@@ -225,7 +200,7 @@ export class Trade {
 		].openPositions.filter(
 			(p) =>
 				(p.status === "PROTECTED" || p.status === "SECURED") &&
-				Number(p.tradeLength) >= params.maxTradeLength
+				Number(p.tradeLength) >= this.config.maxTradeLength
 		);
 		for (const {
 			positionSide,
@@ -281,7 +256,7 @@ export class Trade {
 		const securedPositionsReverting = this.userList[
 			userIndex
 		].openPositions.filter((p) => {
-			const tradesSamePairOppositeSide = trades?.filter(
+			const tradesSamePairOppositeSide = alerts?.filter(
 				(t) =>
 					t.pair === p.pair &&
 					t.positionSide !== null &&
@@ -312,6 +287,7 @@ export class Trade {
 			});
 		}
 	}
+
 	checkForTrades({
 		logs = true,
 		checkSymbols = true,
@@ -321,8 +297,8 @@ export class Trade {
 	}) {
 		const response: {
 			text: string;
-			trades: StrategyResponse[];
-		} = { text: "", trades: [] };
+			alerts: StrategyResponse[];
+		} = { text: "", alerts: [] };
 		if (checkSymbols) {
 			this.checkSymbols();
 		}
@@ -365,31 +341,32 @@ export class Trade {
 					pair: symbol.pair,
 				});
 				if (stgResponse.positionSide) {
-					response.trades.push(stgResponse);
+					response.alerts.push(stgResponse);
 				}
 			}
 		}
 
-		if (response.trades.length > 4) {
+		if (response.alerts.length > 4) {
 			response.text =
 				"+ Should trade " +
-				response.trades[0].pair +
+				response.alerts[0].pair +
 				", " +
-				response.trades[1].pair +
+				response.alerts[1].pair +
 				", ...(" +
-				(response.trades.length - 2) +
+				(response.alerts.length - 2) +
 				" more) ";
 		}
-		if (response.trades.length && response.trades.length <= 4) {
+		if (response.alerts.length && response.alerts.length <= 4) {
 			response.text =
 				"+ Should trade " +
-				response.trades.map(
+				response.alerts.map(
 					(t) => " " + t.positionSide + " in " + t.pair + " with " + t.stgName
 				);
 		}
 
 		return response;
 	}
+
 	async quitPosition({
 		userName,
 		pair,
@@ -408,7 +385,7 @@ export class Trade {
 		if (symbolIndex === -1) return;
 
 		try {
-			await quitPositionService({
+			await this.exchange.quitPosition({
 				user: this.userList[userIndex],
 				symbol: this.symbolList[symbolIndex],
 				positionSide,
@@ -427,7 +404,10 @@ export class Trade {
 			"Canceling orders for " + this.userList[userIndex].name + " in " + pair
 		);
 		try {
-			await cancelOrdersService({ user: this.userList[userIndex], pair });
+			await this.exchange.cancelOrders({
+				user: this.userList[userIndex],
+				pair,
+			});
 			this.clearOrders({ userName, pair });
 		} catch (e) {
 			console.error(e);
@@ -439,12 +419,14 @@ export class Trade {
 		positionSide,
 		sl,
 		tp,
+		stgName,
 	}: {
 		userName: string;
 		pair: string;
 		positionSide: PositionSide;
 		sl: number;
 		tp: number;
+		stgName: string;
 	}) {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) {
@@ -480,7 +462,7 @@ export class Trade {
 			"Opening position for " + userName + " " + pair + " " + positionSide
 		);
 		try {
-			await openPositionService({
+			await this.exchange.openPosition({
 				symbol: this.symbolList[symbolIndex],
 				user: this.userList[userIndex],
 				positionSide,
@@ -492,10 +474,13 @@ export class Trade {
 				pair,
 				positionSide,
 				coinQuantity,
-				startTime: getDate().date,
+				startTime: getDate().dateMs,
 				status: "PROTECTED",
 				pnl: 0,
 				entryPriceUSDT: this.symbolList[symbolIndex].currentPrice,
+				stgName,
+				sl,
+				tp,
 			});
 		} catch (e) {
 			console.error(e);
@@ -525,18 +510,18 @@ export class Trade {
 		await this.cancelOrders({ userName, pair });
 		const slPrice =
 			openPos.positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 - params.defaultSL)
-				: this.symbolList[symbolIndex].currentPrice * (1 + params.defaultSL);
+				? this.symbolList[symbolIndex].currentPrice * (1 - this.config.sl)
+				: this.symbolList[symbolIndex].currentPrice * (1 + this.config.sl);
 
 		const tpPrice =
 			openPos.positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 + params.defaultTP)
-				: this.symbolList[symbolIndex].currentPrice * (1 - params.defaultTP);
+				? this.symbolList[symbolIndex].currentPrice * (1 + this.config.tp)
+				: this.symbolList[symbolIndex].currentPrice * (1 - this.config.tp);
 		console.log(
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
 		try {
-			await protectPositionService({
+			await this.exchange.protectPosition({
 				symbol: this.symbolList[symbolIndex],
 				user: this.userList[userIndex],
 				positionSide,
@@ -583,10 +568,10 @@ export class Trade {
 						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
 				for (
 					let alertIndex = 0;
-					alertIndex < params.breakEventAlerts.length;
+					alertIndex < this.config.breakEventAlerts.length;
 					alertIndex++
 				) {
-					const alert = params.breakEventAlerts[alertIndex];
+					const alert = this.config.breakEventAlerts[alertIndex];
 					if (
 						pnlGraph > alert.alert &&
 						Number(pos.tradeLength) >= alert.len &&
@@ -605,7 +590,7 @@ export class Trade {
 								pos.positionSide
 						);
 						try {
-							await securePositionService({
+							await this.exchange.securePosition({
 								symbol,
 								user: this.userList[userIndex],
 								positionSide:
@@ -689,7 +674,8 @@ export class Trade {
 			const lastOpenTime =
 				symbol.candlestick[symbol.candlestick.length - 1].openTime;
 			const lastDiff =
-				(getDate().dateMs - getDate(lastOpenTime).dateMs) / params.interval;
+				(getDate().dateMs - getDate(lastOpenTime).dateMs) /
+				this.config.interval;
 
 			if (lastDiff > 2) {
 				this.symbolList[symbolIndex].isReady = false;
@@ -703,7 +689,7 @@ export class Trade {
 				const candlesDifference =
 					(getDate(nextCandle.openTime).dateMs -
 						getDate(currentCandle.openTime).dateMs) /
-					params.interval;
+					this.config.interval;
 
 				if (candlesDifference !== 1) {
 					this.symbolList[symbolIndex].isReady = false;
