@@ -1,7 +1,6 @@
 import type { User } from "./User";
 import type { Symbol } from "./Symbol";
 import type { Strategy, StrategyResponse } from "./Strategy";
-import type { MarketDataService } from "../infrastructure/MarketDataService";
 import type { TradeConfig } from "./TradeConfig";
 import type { PositionSide } from "./Position";
 import type { IExchange } from "./IExchange";
@@ -16,14 +15,12 @@ export class Trade {
 		private userList: User[],
 		private readonly symbolList: Symbol[],
 		private readonly strategies: Strategy[],
-		private readonly marketDataService: MarketDataService,
 		private readonly exchange: IExchange,
 		private readonly config: TradeConfig
 	) {
 		this.userList = userList;
 		this.symbolList = symbolList;
 		this.strategies = strategies;
-		this.marketDataService = marketDataService;
 		this.exchange = exchange;
 		this.config = config;
 	}

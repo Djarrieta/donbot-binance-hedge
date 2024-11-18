@@ -29,4 +29,11 @@ export type IExchange = {
 		positionSide: import("./Position").PositionSide;
 		coinQuantity: number;
 	}): unknown;
+
+	subscribeToSymbolUpdates(arg0: {
+		pair: string;
+		interval: import("./Interval").Interval;
+	}): unknown;
+
+	subscribeToUserUpdates(arg0: { user: import("./User").User }): unknown;
 };

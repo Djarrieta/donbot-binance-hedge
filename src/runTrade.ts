@@ -1,5 +1,5 @@
-import cron from "node-cron";
-import { Trade } from "./domain/Trade";
+// import cron from "node-cron";
+// import { Trade } from "./domain/Trade";
 
 // const runSubscribers = async () => {
 // 	console.log("Running subscribers");
@@ -8,9 +8,9 @@ import { Trade } from "./domain/Trade";
 
 // 	for (const symbol of trade.symbolList) {
 // 		try {
-// 			subscribeToSymbolUpdates({
+// 			trade.subscribeToSymbolUpdates({
 // 				pair: symbol.pair,
-// 				interval: params.interval,
+// 				interval: trade.config.interval,
 // 			});
 // 		} catch (e) {
 // 			console.error(e);
