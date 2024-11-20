@@ -5,11 +5,9 @@
   "scripts": {
     "start": "bun ./src/main.ts",
     "lint": "bunx oxlint && tsc ",
-    "prepareBacktest": "bun ./src/prepareBacktest.ts",
     "runTrade": "bun ./src/runTrade.ts",
     "runBacktest": "bun ./src/runBacktest.ts",
     "showSavedStats": "bun ./src/showSavedStats.ts"
-    
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -9,15 +9,6 @@ import { Interval } from "../domain/Interval";
 import type { PositionSide } from "../domain/Position";
 
 export class MarketDataService {
-	openPosition(arg0: {
-		userName: string;
-		pair: string;
-		positionSide: PositionSide;
-		sl: number;
-		tp: number;
-	}) {
-		throw new Error("Method not implemented.");
-	}
 	private exchange: IBinance;
 
 	constructor() {
@@ -146,5 +137,15 @@ export class MarketDataService {
 				volume: Number(volume),
 			})
 		);
+	}
+
+	openPosition(arg0: {
+		userName: string;
+		pair: string;
+		positionSide: PositionSide;
+		sl: number;
+		tp: number;
+	}) {
+		throw new Error("Method not implemented.");
 	}
 }

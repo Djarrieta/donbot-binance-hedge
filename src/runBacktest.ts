@@ -1,16 +1,16 @@
-import { backtestConfig, strategies } from "./config";
+import { backtestConfig, DATA_BASE_NAME, strategies } from "./config";
 import { TradingStrategyTester } from "./domain/TradingStrategyTester";
 import { AlertService } from "./infrastructure/AlertService";
 import { BacktestDataService } from "./infrastructure/BacktestDataService";
 import { MarketDataService } from "./infrastructure/MarketDataService";
 
 const backtestDataService = new BacktestDataService({
-	databaseName: "DB.db",
+	databaseName: DATA_BASE_NAME,
 	tableName: "BACKTEST_DATA",
 	statsTableName: "STATS_DATA",
 });
 const alertService = new AlertService({
-	databaseName: "DB.db",
+	databaseName: DATA_BASE_NAME,
 	tableName: "ALERT_DATA",
 });
 
@@ -24,6 +24,4 @@ const tradingStrategyTester = new TradingStrategyTester(
 	strategies
 );
 
-tradingStrategyTester.backtest({
-	deleteAlerts: backtestConfig.deletePrevAlerts,
-});
+tradingStrategyTester.backtest();

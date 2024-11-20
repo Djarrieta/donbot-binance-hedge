@@ -2,14 +2,14 @@ export type IExchange = {
 	securePosition(arg0: {
 		symbol: import("./Symbol").Symbol;
 		user: import("./User").User;
-		positionSide: import("./Position").PositionSide;
+		positionSide: import("../Position").PositionSide;
 		coinQuantity: number;
 		bePrice: number;
 	}): unknown;
 	protectPosition(arg0: {
 		symbol: import("./Symbol").Symbol;
 		user: import("./User").User;
-		positionSide: import("./Position").PositionSide;
+		positionSide: import("../Position").PositionSide;
 		coinQuantity: number;
 		slPrice: number;
 		tpPrice: number;
@@ -17,7 +17,7 @@ export type IExchange = {
 	openPosition(arg0: {
 		symbol: import("./Symbol").Symbol;
 		user: import("./User").User;
-		positionSide: import("./Position").PositionSide;
+		positionSide: import("../Position").PositionSide;
 		coinQuantity: number;
 		slPrice: number;
 		tpPrice: number;
@@ -26,13 +26,13 @@ export type IExchange = {
 	quitPosition(arg0: {
 		user: import("./User").User;
 		symbol: import("./Symbol").Symbol;
-		positionSide: import("./Position").PositionSide;
+		positionSide: import("../Position").PositionSide;
 		coinQuantity: number;
 	}): unknown;
 
 	subscribeToSymbolUpdates(arg0: {
 		pair: string;
-		interval: import("./Interval").Interval;
+		interval: import("../Interval").Interval;
 	}): unknown;
 
 	subscribeToUserUpdates(arg0: { user: import("./User").User }): unknown;

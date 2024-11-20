@@ -1,4 +1,4 @@
-import type { Interval } from "./Interval";
+import type { Interval } from "../Interval";
 
 export type TradeConfig = {
 	interval: Interval;

@@ -1,4 +1,4 @@
-import type { Candle } from "./Candle";
+import type { Candle } from "../Candle";
 
 export type Symbol = {
 	pair: string;

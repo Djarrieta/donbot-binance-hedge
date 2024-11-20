@@ -124,12 +124,11 @@ export class BacktestDataService {
 		];
 
 		this.db.query(query).run(...values);
-		console.log("Stats saved successfully.");
 	}
 
 	getSavedStats() {
 		const unformattedResults = this.db
-			.query(`SELECT * FROM ${this.statsTableName} `)
+			.query(`SELECT * FROM ${this.statsTableName} ORDER BY avPnlFwd DESC`)
 			.all() as any[];
 
 		const stats: Stat[] = unformattedResults.map((r) => ({
@@ -253,9 +252,9 @@ export class BacktestDataService {
 			"======================================================================================================="
 		);
 		console.log(
-			`Stats for sl=${formatPercent(sl)}, tp=${formatPercent(
-				tp
-			)}, maxTradeLength=${maxTradeLength}`
+			`Stats for the best combination sl=${formatPercent(
+				sl
+			)}, tp=${formatPercent(tp)}, maxTradeLength=${maxTradeLength}`
 		);
 		console.log(
 			"======================================================================================================="

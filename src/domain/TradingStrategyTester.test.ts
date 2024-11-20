@@ -9,6 +9,7 @@ import {
 	TradingStrategyTester,
 	type BacktestConfig,
 } from "./TradingStrategyTester";
+import { AlertService } from "../infrastructure/AlertService";
 
 const backtestDataService = new BacktestDataService({
 	databaseName: "TEST.db",
@@ -29,13 +30,20 @@ const backtestConfig: BacktestConfig = {
 	maxTradeLengthArray: [0],
 	minAmountToTradeUSDT: 0,
 	apiLimit: 0,
+	deletePrevAlerts: false,
 };
 const strategies: Strategy[] = [];
+
+const alertService = new AlertService({
+	databaseName: "TEST.db",
+	tableName: "ALERT_DATA",
+});
 
 const tradingStrategyTester = new TradingStrategyTester(
 	backtestConfig,
 	backtestDataService,
 	marketDataService,
+	alertService,
 	strategies
 );
 

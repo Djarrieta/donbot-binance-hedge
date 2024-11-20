@@ -1,13 +1,14 @@
 import cliProgress from "cli-progress";
-import { getDate } from "../utils/getDate";
 import type { BacktestDataService } from "../infrastructure/BacktestDataService";
 import type { MarketDataService } from "../infrastructure/MarketDataService";
+import { formatPercent } from "../utils/formatPercent";
+import { getDate } from "../utils/getDate";
+import type { Alert, AlertRepository } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
 import { Interval } from "./Interval";
 import type { PositionBT, PositionSide } from "./Position";
 import type { Stat } from "./Stat";
 import type { Strategy } from "./Strategy";
-import type { Alert, AlertRepository } from "./Alert";
 
 export type BacktestConfig = {
 	backtestStart: number;
@@ -22,7 +23,10 @@ export type BacktestConfig = {
 	maxTradeLengthArray: number[];
 	minAmountToTradeUSDT: number;
 	apiLimit: number;
-	deletePrevAlerts: boolean;
+	steps: {
+		overrideHistoricalRecords: boolean;
+		overrideAlerts: boolean;
+	};
 };
 
 export class TradingStrategyTester {
@@ -44,7 +48,47 @@ export class TradingStrategyTester {
 		cliProgress.Presets.shades_classic
 	);
 
-	public async saveHistoricalRecords(): Promise<void> {
+	private showConfig() {
+		console.log(`	
+			=======================================================================================================
+			Running backtest and forwardtest for ${(
+				(this.config.forwardTestEnd - this.config.backtestStart) /
+				Interval["1d"]
+			).toFixed(1)} days
+			Interval: ${Interval[this.config.interval]}, ${
+			1 +
+			(this.config.forwardTestEnd - this.config.backtestStart) /
+				this.config.interval
+		} candles
+			Backtest: ${(
+				(this.config.backtestEnd - this.config.backtestStart) /
+				Interval["1d"]
+			).toFixed(1)} days, from ${
+			getDate(this.config.backtestStart).dateString
+		} to ${getDate(this.config.backtestEnd).dateString}
+			ForwardTest: ${(
+				(this.config.forwardTestEnd - this.config.backtestEnd) /
+				Interval["1d"]
+			).toFixed(1)} days, from ${
+			getDate(this.config.backtestEnd).dateString
+		} to ${getDate(this.config.forwardTestEnd).dateString}
+
+			StopLoss array: ${this.config.slArray.map((x) => formatPercent(x)).join(", ")}
+			TakeProfit array: ${this.config.tpArray.map((x) => formatPercent(x)).join(", ")}
+			MaxTradeLength array: ${this.config.maxTradeLengthArray.join(", ")}
+			
+			Steps: 
+				OverrideHistoricalRecords: ${
+					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
+				}
+				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
+			=======================================================================================================
+						
+		
+			`);
+	}
+
+	async backtest() {
 		if (
 			this.config.backtestStart >= this.config.backtestEnd ||
 			this.config.backtestEnd >= this.config.forwardTestEnd
@@ -54,34 +98,62 @@ export class TradingStrategyTester {
 			);
 		}
 
-		console.log(`	
-=======================================================================================================
-Preparing backtest for ${(
-			(this.config.forwardTestEnd - this.config.backtestStart) /
-			Interval["1d"]
-		).toFixed(1)} days
-Interval: ${Interval[this.config.interval]}
-Backtest: ${(
-			(this.config.backtestEnd - this.config.backtestStart) /
-			Interval["1d"]
-		).toFixed(1)} days, from ${
-			getDate(this.config.backtestStart).dateString
-		} to ${getDate(this.config.backtestEnd).dateString}
-ForwardTest: ${(
-			(this.config.forwardTestEnd - this.config.backtestEnd) /
-			Interval["1d"]
-		).toFixed(1)} days, from ${
-			getDate(this.config.backtestEnd).dateString
-		} to ${getDate(this.config.forwardTestEnd).dateString}
-=======================================================================================================
-`);
+		this.showConfig();
+
+		if (this.config.steps.overrideHistoricalRecords) {
+			await this.saveHistoricalRecords();
+		} else {
+			this.backtestDataService.showSavedCandlestick();
+		}
+
+		const alerts = this.config.steps.overrideAlerts
+			? this.saveAlerts({
+					start: this.config.backtestStart,
+					end: this.config.forwardTestEnd,
+					lookBackLength: this.config.lookBackLength,
+					maxTradeLength: Math.max(...this.config.maxTradeLengthArray),
+					interval: this.config.interval,
+			  })
+			: await this.alertService.getAlerts({
+					start: this.config.backtestStart,
+					end: this.config.forwardTestEnd,
+			  });
+
+		this.backtestDataService.deleteStatsRows();
+
+		for (const sl of this.config.slArray) {
+			for (const tp of this.config.tpArray) {
+				for (const maxTradeLength of this.config.maxTradeLengthArray) {
+					const positions = this.processPositions({
+						alerts,
+						sl,
+						tp,
+						maxTradeLength,
+					});
+
+					const stats = this.processStats({
+						positions,
+						tp,
+						sl,
+						maxTradeLength,
+						backtestEnd: this.config.backtestEnd,
+					});
+					this.backtestDataService.saveStats(stats);
+				}
+			}
+		}
+
+		this.backtestDataService.showSavedStats();
+	}
+
+	public async saveHistoricalRecords(): Promise<void> {
+		console.log("Saving historical records...");
+		this.backtestDataService.deleteCandlestickRows();
 
 		const pairList = await this.marketDataService.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
 		});
 		console.log("Available trading pairs:", pairList.length);
-
-		this.backtestDataService.deleteCandlestickRows();
 
 		this.progressBar.start(pairList.length, 0);
 		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
@@ -110,7 +182,7 @@ ForwardTest: ${(
 		this.backtestDataService.showSavedCandlestick();
 	}
 
-	private processAlerts({
+	private saveAlerts({
 		start,
 		end,
 		lookBackLength,
@@ -124,6 +196,7 @@ ForwardTest: ${(
 		interval: Interval;
 	}) {
 		console.log(`Processing alerts...`);
+		this.alertService.deleteAlerts();
 		const alerts: Alert[] = [];
 		let startSnap = start;
 		let endSnap = start + (lookBackLength + maxTradeLength - 1) * interval;
@@ -168,71 +241,6 @@ ForwardTest: ${(
 		this.alertService.saveAlerts(alerts);
 		this.progressBar.stop();
 		return alerts;
-	}
-
-	async backtest({ deleteAlerts = false }: { deleteAlerts: boolean }) {
-		this.backtestDataService.showSavedCandlestick();
-		this.backtestDataService.deleteStatsRows();
-		deleteAlerts && this.alertService.deleteAlerts();
-
-		console.log(`	
-=======================================================================================================
-Running backtest and forwardtest for ${(
-			(this.config.forwardTestEnd - this.config.backtestStart) /
-			Interval["1d"]
-		).toFixed(1)} days
-Interval: ${Interval[this.config.interval]}
-Backtest: ${(
-			(this.config.backtestEnd - this.config.backtestStart) /
-			Interval["1d"]
-		).toFixed(1)} days, from ${
-			getDate(this.config.backtestStart).dateString
-		} to ${getDate(this.config.backtestEnd).dateString}
-ForwardTest: ${(
-			(this.config.forwardTestEnd - this.config.backtestEnd) /
-			Interval["1d"]
-		).toFixed(1)} days, from ${
-			getDate(this.config.backtestEnd).dateString
-		} to ${getDate(this.config.forwardTestEnd).dateString}
-=======================================================================================================
-			`);
-
-		const alerts = deleteAlerts
-			? this.processAlerts({
-					start: this.config.backtestStart,
-					end: this.config.forwardTestEnd,
-					lookBackLength: this.config.lookBackLength,
-					maxTradeLength: Math.max(...this.config.maxTradeLengthArray),
-					interval: this.config.interval,
-			  })
-			: await this.alertService.getAlerts({
-					start: this.config.backtestStart,
-					end: this.config.forwardTestEnd,
-			  });
-
-		for (const sl of this.config.slArray) {
-			for (const tp of this.config.tpArray) {
-				for (const maxTradeLength of this.config.maxTradeLengthArray) {
-					const positions = this.processPositions({
-						alerts,
-						sl,
-						tp,
-						maxTradeLength,
-					});
-
-					const stats = this.processStats({
-						positions,
-						tp,
-						sl,
-						maxTradeLength,
-						backtestEnd: this.config.backtestEnd,
-					});
-					this.backtestDataService.saveStats(stats);
-				}
-			}
-		}
-
-		this.backtestDataService.showSavedStats();
 	}
 
 	private processPositions({
@@ -353,11 +361,11 @@ ForwardTest: ${(
 			return winningPairs.includes(p.pair);
 		});
 
-		const tradesQtyWP = positionsWP.length;
-		const winningPositionsWP = positionsWP.filter((p) => p.pnl > 0);
-		const winRateWP = winningPositionsWP.length / tradesQtyWP;
-		const accPnlWP = positionsWP.reduce((acc, p) => acc + p.pnl, 0);
-		const avPnlWP = accPnlWP / tradesQtyWP || 0;
+		const {
+			winRate: winRateWP,
+			accPnl: accPnlWP,
+			avPnl: avPnlWP,
+		} = this.getStats(positionsWP);
 
 		const positionsAcc = [];
 		let openPosTime = 0;
@@ -369,11 +377,11 @@ ForwardTest: ${(
 			}
 		}
 
-		const tradesQtyAcc = positionsAcc.length;
-		const winningPositionsAcc = positionsAcc.filter((p) => p.pnl > 0);
-		const winRateAcc = winningPositionsAcc.length / tradesQtyAcc;
-		const accPnlAcc = positionsAcc.reduce((acc, p) => acc + p.pnl, 0);
-		const avPnlAcc = accPnlAcc / tradesQtyAcc || 0;
+		const {
+			winRate: winRateAcc,
+			accPnl: accPnlAcc,
+			avPnl: avPnlAcc,
+		} = this.getStats(positionsAcc);
 
 		const positionsFwdFullList = positions.filter(
 			(p) => winningPairs.includes(p.pair) && p.startTime > backtestEnd
@@ -387,11 +395,11 @@ ForwardTest: ${(
 			}
 		}
 
-		const tradesQtyFwd = positionsFwd.length;
-		const winningPositionsFwd = positionsFwd.filter((p) => p.pnl > 0);
-		const winRateFwd = winningPositionsFwd.length / tradesQtyFwd;
-		const accPnlFwd = positionsFwd.reduce((acc, p) => acc + p.pnl, 0);
-		const avPnlFwd = accPnlFwd / tradesQtyFwd || 0;
+		const {
+			winRate: winRateFwd,
+			accPnl: accPnlFwd,
+			avPnl: avPnlFwd,
+		} = this.getStats(positionsFwd);
 
 		const stats: Stat = {
 			sl,
@@ -417,6 +425,23 @@ ForwardTest: ${(
 		};
 
 		return stats;
+	}
+
+	private getStats(positions: PositionBT[]) {
+		const tradesQty = positions.length;
+		const winningPositions = positions.filter((p) => p.pnl > 0);
+		const lostPositions = positions.filter((p) => p.pnl < 0);
+		const winRate =
+			winningPositions.length /
+			(winningPositions.length + lostPositions.length);
+		const accPnl = positions.reduce((acc, p) => acc + p.pnl, 0);
+		const avPnl = accPnl / tradesQty || 0;
+
+		return {
+			winRate,
+			accPnl,
+			avPnl,
+		};
 	}
 
 	public fixCandlestick({
