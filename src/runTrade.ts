@@ -4,47 +4,49 @@ import type { Symbol } from "./domain/Trade/Symbol";
 import type { TradeConfig } from "./domain/Trade/TradeConfig";
 import { getDate } from "./utils/getDate";
 import { delay } from "./utils/delay";
+import { Interval } from "./domain/Interval";
 
 type Exchange = {
-	getUsersData(): unknown;
-	getSymbolsData(): unknown;
-	subscribeToUserUpdates(arg0: { user: User }): unknown;
+	getUsersData(): Promise<unknown>;
+	getSymbolsData(): Promise<unknown>;
+	subscribeToUserUpdates(arg0: { user: User }): Promise<void>;
 	subscribeToSymbolUpdates(arg0: {
 		pair: string;
 		interval: any;
 	}): Promise<void>;
 };
 
-const exchange = {
-	subscribeToSymbolUpdates: async (arg0: { pair: string; interval: any }) => {},
-	subscribeToUserUpdates: async (arg0: { user: User }) => {},
-	getUsersData: async () => {},
-	getSymbolsData: async () => {},
-};
-
-//TRADE FILE, DOMAIN FOLDER
-
 class Trade {
-	async start() {
-		trade.showConfig();
+	exchange: Exchange;
+	symbolList: Symbol[] = [];
+	userList: User[] = [];
+	config: TradeConfig;
 
-		await trade.exchange.getSymbolsData();
-		await trade.exchange.getUsersData();
+	constructor(exchange: Exchange, config: TradeConfig) {
+		this.exchange = exchange;
+		this.config = config;
+	}
 
-		for (const user of trade.userList) {
-			trade.handleExistingPositions({ userName: user.name });
+	async initialize() {
+		this.showConfig();
+		await Promise.all([
+			this.exchange.getSymbolsData(),
+			this.exchange.getUsersData(),
+		]);
+
+		for (const user of this.userList) {
+			this.handleExistingPositions({ userName: user.name });
 		}
 
-		trade.securePositions();
+		this.securePositions();
 		this.runSubscribers();
 	}
+
 	async loop() {
 		await delay(5000);
 		console.log(getDate().dateString);
 
-		const { alertText, alerts } = this.checkForTrades({
-			logs: true,
-		});
+		const { alertText, alerts } = this.checkForTrades({ logs: true });
 
 		if (alerts.length) {
 			console.log(alertText);
@@ -64,36 +66,44 @@ class Trade {
 		} else {
 			console.log("No trades found");
 		}
+
 		await delay(5000);
-		trade.exchange.getUsersData();
-		for (const user of trade.userList) {
-			trade.handleExistingPositions({ userName: user.name });
+		await this.exchange.getUsersData();
+
+		for (const user of this.userList) {
+			this.handleExistingPositions({ userName: user.name });
 		}
-		trade.exchange.getUsersData();
-		trade.securePositions();
+
+		await this.exchange.getUsersData();
+		this.securePositions();
 		this.runSubscribers();
 	}
-	runSubscribers() {
+
+	private runSubscribers() {
 		console.log("Running subscribers");
-		for (const symbol of trade.symbolList) {
+
+		// Subscribe to symbol updates
+		for (const symbol of this.symbolList) {
 			try {
-				trade.exchange.subscribeToSymbolUpdates({
+				this.exchange.subscribeToSymbolUpdates({
 					pair: symbol.pair,
-					interval: trade.config.interval,
+					interval: this.config.interval,
 				});
 			} catch (e) {
 				console.error(e);
 			}
 		}
 
-		for (const user of trade.userList) {
+		// Subscribe to user updates
+		for (const user of this.userList) {
 			try {
-				trade.exchange.subscribeToUserUpdates({ user });
+				this.exchange.subscribeToUserUpdates({ user });
 			} catch (e) {
 				console.error(e);
 			}
 		}
 	}
+
 	handleNewPosition(arg0: {
 		userName: string;
 		pair: any;
@@ -103,33 +113,52 @@ class Trade {
 	}) {
 		throw new Error("Method not implemented.");
 	}
+
 	checkForTrades(arg0: { logs: boolean }): { alertText: any; alerts: any } {
 		throw new Error("Method not implemented.");
 	}
+
 	securePositions() {
 		throw new Error("Method not implemented.");
 	}
+
 	handleExistingPositions(arg0: { userName: string }) {
 		throw new Error("Method not implemented.");
 	}
+
 	showConfig() {
 		throw new Error("Method not implemented.");
 	}
-	exchange: Exchange;
-	constructor(exchange: Exchange) {
-		this.exchange = exchange;
-	}
-
-	symbolList: Symbol[] = [];
-	userList: User[] = [];
-	config: TradeConfig = {} as TradeConfig;
 }
 
-const trade = new Trade(exchange);
+const exchangeService: Exchange = {
+	subscribeToSymbolUpdates: async (arg0) => {},
+	subscribeToUserUpdates: async (arg0) => {},
+	getUsersData: async () => {},
+	getSymbolsData: async () => {},
+};
 
-//MAIN.TS
+//main.ts
 
-trade.start();
+const config: TradeConfig = {
+	interval: Interval["1m"],
+	lookBackLength: 200,
+	sl: 0.02,
+	tp: 0.05,
+	riskPt: 0.5 / 100,
+	feePt: 0.0005,
+	maxTradeLength: 100,
+	minAmountToTradeUSDT: 6,
+	apiLimit: 500,
+	maxProtectedPositions: 10,
+	maxHedgePositions: 5,
+	breakEventAlerts: [],
+};
+
+const trade = new Trade(exchangeService, config);
+
+trade.initialize();
+
 cron.schedule("* * * * *", async () => {
 	await trade.loop();
 });
