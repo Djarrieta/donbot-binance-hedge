@@ -71,8 +71,6 @@ const stg: Strategy = {
 		const volatility = getVolatility({ candlestick });
 
 		if (
-			volatility > MIN_VOL &&
-			volatility < MAX_VOL &&
 			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
 			rsiArray[rsiArray.length - 2] <= MIN_RSI &&
 			rsiArray[rsiArray.length - 1] > rsiArray[rsiArray.length - 2]
@@ -100,8 +98,6 @@ const stg: Strategy = {
 		}
 
 		if (
-			volatility > MIN_VOL &&
-			volatility < MAX_VOL &&
 			rsiArray[rsiArray.length - 1] >= 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 2] >= 100 - MIN_RSI &&
 			rsiArray[rsiArray.length - 1] < rsiArray[rsiArray.length - 2]
