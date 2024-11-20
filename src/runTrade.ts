@@ -1,122 +1,135 @@
-// import cron from "node-cron";
-// import { Trade } from "./domain/Trade";
+import cron from "node-cron";
+import type { User } from "./userLegacy/User";
+import type { Symbol } from "./domain/Trade/Symbol";
+import type { TradeConfig } from "./domain/Trade/TradeConfig";
+import { getDate } from "./utils/getDate";
+import { delay } from "./utils/delay";
 
-// const runSubscribers = async () => {
-// 	console.log("Running subscribers");
-// 	const trade = await Trade.getInstance();
-// 	if (!trade) return;
+type Exchange = {
+	getUsersData(): unknown;
+	getSymbolsData(): unknown;
+	subscribeToUserUpdates(arg0: { user: User }): unknown;
+	subscribeToSymbolUpdates(arg0: {
+		pair: string;
+		interval: any;
+	}): Promise<void>;
+};
 
-// 	for (const symbol of trade.symbolList) {
-// 		try {
-// 			trade.subscribeToSymbolUpdates({
-// 				pair: symbol.pair,
-// 				interval: trade.config.interval,
-// 			});
-// 		} catch (e) {
-// 			console.error(e);
-// 		}
-// 	}
+const exchange = {
+	subscribeToSymbolUpdates: async (arg0: { pair: string; interval: any }) => {},
+	subscribeToUserUpdates: async (arg0: { user: User }) => {},
+	getUsersData: async () => {},
+	getSymbolsData: async () => {},
+};
 
-// 	for (const user of context.userList) {
-// 		try {
-// 			subscribeToUserUpdates({ user });
-// 		} catch (e) {
-// 			console.error(e);
-// 		}
-// 	}
-// };
+//TRADE FILE, DOMAIN FOLDER
 
-// const startModel = async () => {
-// 	console.log(getDate().dateString);
-// 	console.table({
-// 		Interval: params.interval / Interval["1m"] + "m",
-// 		"Lookback Length": params.lookBackLength,
-// 		"Default SL": formatPercent(params.defaultSL),
-// 		"Default TP": formatPercent(params.defaultTP),
-// 		"Break Even": params.breakEventAlerts
-// 			.map((a) => formatPercent(a.value))
-// 			.join(", "),
+class Trade {
+	async start() {
+		trade.showConfig();
 
-// 		"Risk per trade": formatPercent(params.riskPt),
-// 		"Max Trade Length": params.maxTradeLength,
-// 		"Max Protected Positions": params.maxProtectedPositions,
-// 		"Max Hedge Positions": params.maxHedgePositions,
-// 	});
-// 	console.log(
-// 		"Strategies: ",
-// 		chosenStrategies.map((s) => s.stgName).join(", ")
-// 	);
-// 	Context.resetInstance();
-// 	const symbolList = await getSymbolsData();
-// 	const userList = await getUsersData();
-// 	const context = await Context.getInstance({
-// 		symbolList,
-// 		userList,
-// 		strategies: chosenStrategies,
-// 	});
-// 	console.log("...Starting model");
+		await trade.exchange.getSymbolsData();
+		await trade.exchange.getUsersData();
 
-// 	if (!context) return;
+		for (const user of trade.userList) {
+			trade.handleExistingPositions({ userName: user.name });
+		}
 
-// 	console.log(context.text());
-// 	for (const user of context.userList) {
-// 		await context.handleExistingPositions({ userName: user.name });
-// 	}
-// 	context.securePositions();
+		trade.securePositions();
+		this.runSubscribers();
+	}
+	async loop() {
+		await delay(5000);
+		console.log(getDate().dateString);
 
-// 	runSubscribers();
-// };
+		const { alertText, alerts } = this.checkForTrades({
+			logs: true,
+		});
 
-// const trade = async () => {
-// 	await startModel();
+		if (alerts.length) {
+			console.log(alertText);
+			for (const user of this.userList) {
+				for (const alert of alerts) {
+					if (alert.positionSide) {
+						this.handleNewPosition({
+							userName: user.name,
+							pair: alert.pair,
+							positionSide: alert.positionSide,
+							sl: alert.sl,
+							tp: alert.tp,
+						});
+					}
+				}
+			}
+		} else {
+			console.log("No trades found");
+		}
+		await delay(5000);
+		trade.exchange.getUsersData();
+		for (const user of trade.userList) {
+			trade.handleExistingPositions({ userName: user.name });
+		}
+		trade.exchange.getUsersData();
+		trade.securePositions();
+		this.runSubscribers();
+	}
+	runSubscribers() {
+		console.log("Running subscribers");
+		for (const symbol of trade.symbolList) {
+			try {
+				trade.exchange.subscribeToSymbolUpdates({
+					pair: symbol.pair,
+					interval: trade.config.interval,
+				});
+			} catch (e) {
+				console.error(e);
+			}
+		}
 
-// 	cron.schedule(CronInterval["5m"], async () => {
-// 		const context = await Context.getInstance();
-// 		if (!context) return;
-// 		await delay(1000);
-// 		console.log("");
-// 		console.log(getDate().dateString);
-// 		console.log(context.text());
+		for (const user of trade.userList) {
+			try {
+				trade.exchange.subscribeToUserUpdates({ user });
+			} catch (e) {
+				console.error(e);
+			}
+		}
+	}
+	handleNewPosition(arg0: {
+		userName: string;
+		pair: any;
+		positionSide: any;
+		sl: any;
+		tp: any;
+	}) {
+		throw new Error("Method not implemented.");
+	}
+	checkForTrades(arg0: { logs: boolean }): { alertText: any; alerts: any } {
+		throw new Error("Method not implemented.");
+	}
+	securePositions() {
+		throw new Error("Method not implemented.");
+	}
+	handleExistingPositions(arg0: { userName: string }) {
+		throw new Error("Method not implemented.");
+	}
+	showConfig() {
+		throw new Error("Method not implemented.");
+	}
+	exchange: Exchange;
+	constructor(exchange: Exchange) {
+		this.exchange = exchange;
+	}
 
-// 		const { text: tradesText, trades } = context.checkForTrades({
-// 			logs: true,
-// 		});
+	symbolList: Symbol[] = [];
+	userList: User[] = [];
+	config: TradeConfig = {} as TradeConfig;
+}
 
-// 		if (trades.length) {
-// 			console.log(tradesText);
-// 			for (const user of context.userList) {
-// 				for (const trade of trades) {
-// 					if (trade.positionSide) {
-// 						context.handleNewPosition({
-// 							userName: user.name,
-// 							pair: trade.pair,
-// 							positionSide: trade.positionSide,
-// 							sl: trade.sl,
-// 							tp: trade.tp,
-// 						});
-// 					}
-// 				}
-// 			}
-// 		} else {
-// 			console.log("No trades found");
-// 		}
-// 		await delay(5000);
-// 		context.updateUsers({ userList: await getUsersData() });
-// 		for (const user of context.userList) {
-// 			await context.handleExistingPositions({ userName: user.name, trades });
-// 		}
-// 		context.updateUsers({ userList: await getUsersData() });
-// 		context.securePositions();
-// 	});
+const trade = new Trade(exchange);
 
-// 	do {
-// 		await delay(Interval["15m"]);
-// 		try {
-// 			runSubscribers();
-// 		} catch (e) {
-// 			console.error(e);
-// 		}
-// 	} while (true);
-// };
+//MAIN.TS
 
-// trade();
+trade.start();
+cron.schedule("* * * * *", async () => {
+	await trade.loop();
+});
