@@ -7,7 +7,8 @@
     "lint": "bunx oxlint && tsc ",
     "runTrade": "bun ./src/runTrade.ts",
     "runBacktest": "bun ./src/runBacktest.ts",
-    "showSavedStats": "bun ./src/showSavedStats.ts"
+    "showSavedStats": "bun ./src/showSavedStats.ts",
+    "suggestBacktestDates": "bun ./src/suggestBacktestDates.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
