@@ -17,7 +17,7 @@ const suggestedBacktestEndPercent = 0.75;
 
 const forwardTestEnd = getDate(yesterdayMidNight).dateMs;
 const backtestStart =
-	forwardTestEnd - suggestedCandleCount * backtestConfig.interval;
+	forwardTestEnd - (suggestedCandleCount - 1) * backtestConfig.interval;
 
 const backtestEnd =
 	backtestStart +

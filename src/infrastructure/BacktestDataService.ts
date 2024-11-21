@@ -334,27 +334,30 @@ export class BacktestDataService {
 				pnl: formatPercent(p.pnl),
 			}))
 		);
-
+		console.log("WinningParis Accumulation ForwardTest");
 		console.table(
 			stats.map((r) => ({
-				sl: formatPercent(r.sl),
-				tp: formatPercent(r.tp),
-				maxLength: r.maxTradeLength,
+				"sl tp maxLen": `${formatPercent(r.sl)} ${formatPercent(r.tp)} ${
+					r.maxTradeLength
+				}`,
 
-				positions: r.positions.length,
-				positionsWP: r.positionsWP?.length || 0,
-				positionsAcc: r.positionsAcc?.length || 0,
-				positionsFwd: r.positionsFwd?.length || 0,
+				positions: `${r.positions?.length || 0} ${r.positionsWP?.length || 0} ${
+					r.positionsAcc?.length || 0
+				} ${r.positionsFwd?.length || 0}`,
 
-				winRateWP: formatPercent(r.winRateWP),
-				winRateAcc: formatPercent(r.winRateAcc),
-				winRateFwd: formatPercent(r.winRateFwd),
+				winRate: `${formatPercent(r.winRateWP)} ${formatPercent(
+					r.winRateAcc
+				)} ${formatPercent(r.winRateFwd)}`,
 
-				avPnlWP: formatPercent(r.avPnlWP),
-				avPnlAcc: formatPercent(r.avPnlAcc),
-				avPnlFwd: formatPercent(r.avPnlFwd),
+				avPnl: `${formatPercent(r.avPnlWP)} ${formatPercent(
+					r.avPnlAcc
+				)} ${formatPercent(r.avPnlFwd)}`,
 
-				winningPairs: r.winningPairs.length,
+				accPnl: `${formatPercent(r.accPnlWP)} ${formatPercent(
+					r.accPnlAcc
+				)} ${formatPercent(r.accPnlFwd)}`,
+
+				pairs: r.winningPairs.length,
 			}))
 		);
 	}

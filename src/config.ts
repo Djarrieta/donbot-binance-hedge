@@ -7,9 +7,9 @@ import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
 export const DATA_BASE_NAME = "DB.db";
 
 export const backtestConfig: BacktestConfig = {
-	backtestStart: getDate("2024 08 10 00:00:00" as DateString).dateMs,
-	backtestEnd: getDate("2024 10 20 00:00:00" as DateString).dateMs,
-	forwardTestEnd: getDate("2024 11 20 00:00:00" as DateString).dateMs,
+	backtestStart: getDate("2024 11 17 12:45:00" as DateString).dateMs,
+	backtestEnd: getDate("2024 11 20 03:10:00" as DateString).dateMs,
+	forwardTestEnd: getDate("2024 11 21 00:00:00" as DateString).dateMs,
 	interval: Interval["5m"],
 	lookBackLength: 200,
 	minAmountToTradeUSDT: 6,
@@ -20,8 +20,8 @@ export const backtestConfig: BacktestConfig = {
 	riskPt: 0.5 / 100,
 	feePt: 0.0005,
 	steps: {
-		overrideHistoricalRecords: false,
-		overrideAlerts: false,
+		overrideHistoricalRecords: true,
+		overrideAlerts: true,
 	},
 };
 
