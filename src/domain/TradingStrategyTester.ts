@@ -197,6 +197,12 @@ export class TradingStrategyTester {
 	}) {
 		console.log(`Processing alerts...`);
 		this.alertService.deleteAlerts();
+
+		const candlesticksAllSymbols = this.backtestDataService.getCandlestick({
+			start,
+			end,
+		});
+
 		const alerts: Alert[] = [];
 		let startSnap = start;
 		let endSnap = start + (lookBackLength + maxTradeLength - 1) * interval;
@@ -204,21 +210,23 @@ export class TradingStrategyTester {
 		const totalLoop = (end - start) / interval;
 		this.progressBar.start(totalLoop, 0);
 		do {
-			const candlesticksAllSymbols = this.backtestDataService.getCandlestick({
-				start: startSnap,
-				end: endSnap,
-			});
 			const pairList = new Set<string>(
 				candlesticksAllSymbols.map((c) => c.pair)
 			);
 
 			for (const pair of pairList) {
 				const candlestick = candlesticksAllSymbols.filter(
-					(c) => c.pair === pair && c.openTime < endCandlestick
+					(c) =>
+						c.pair === pair &&
+						c.openTime < endCandlestick &&
+						c.openTime >= startSnap
 				);
 
 				const profitStick = candlesticksAllSymbols.filter(
-					(c) => c.pair === pair && c.openTime >= endCandlestick
+					(c) =>
+						c.pair === pair &&
+						c.openTime >= endCandlestick &&
+						c.openTime <= endSnap
 				);
 
 				for (const strategy of this.strategies) {

@@ -6,11 +6,51 @@ import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
 
 export const DATA_BASE_NAME = "DB.db";
 
+const getSuggestedDates = ({
+	candleCount,
+	interval,
+	backtestPercent,
+}: {
+	candleCount: number;
+	interval: Interval;
+	backtestPercent: number;
+}) => {
+	const today = new Date();
+	const yesterdayMidNight = new Date(
+		today.getFullYear(),
+		today.getMonth(),
+		today.getDate(),
+		0,
+		0,
+		0,
+		0
+	);
+
+	const forwardTestEnd = getDate(yesterdayMidNight).dateMs;
+	const backtestStart = forwardTestEnd - (candleCount - 1) * interval;
+
+	const backtestEnd =
+		backtestStart + (forwardTestEnd - backtestStart) * backtestPercent;
+
+	return {
+		backtestStart,
+		backtestEnd,
+		forwardTestEnd,
+	};
+};
+
+const interval = Interval["5m"];
+const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
+	candleCount: 20000,
+	backtestPercent: 0.75,
+	interval,
+});
+
 export const backtestConfig: BacktestConfig = {
-	backtestStart: getDate("2024 11 17 12:45:00" as DateString).dateMs,
-	backtestEnd: getDate("2024 11 20 03:10:00" as DateString).dateMs,
-	forwardTestEnd: getDate("2024 11 21 00:00:00" as DateString).dateMs,
-	interval: Interval["5m"],
+	backtestStart,
+	backtestEnd,
+	forwardTestEnd,
+	interval,
 	lookBackLength: 200,
 	minAmountToTradeUSDT: 6,
 	apiLimit: 500,
