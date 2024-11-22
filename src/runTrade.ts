@@ -7,6 +7,10 @@ import { delay } from "./utils/delay";
 import { Interval } from "./domain/Interval";
 import type { PositionSide } from "./domain/Position";
 import type { Alert } from "./domain/Alert";
+import type { Strategy, StrategyResponse } from "./domain/Strategy";
+import { getVolatility } from "./utils/getVolatility";
+import { strategies } from "./config";
+import { OrderType } from "./domain/Order";
 
 type Exchange = {
 	quitPosition(arg0: {
@@ -37,11 +41,13 @@ class Trade {
 	exchange: Exchange;
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
+	strategies: Strategy[];
 	config: TradeConfig;
 
-	constructor(exchange: Exchange, config: TradeConfig) {
+	constructor(exchange: Exchange, config: TradeConfig, strategies: Strategy[]) {
 		this.exchange = exchange;
 		this.config = config;
+		this.strategies = strategies;
 	}
 
 	async initialize() {
@@ -66,9 +72,9 @@ class Trade {
 		await delay(5000);
 		console.log(getDate().dateString);
 
-		const { alertText, alerts } = this.checkForTrades({ logs: true });
+		const { text: alertText, alerts } = this.checkForTrades();
 
-		if (alerts.length) {
+		if (!!alerts.length) {
 			console.log(alertText);
 			for (const user of this.userList) {
 				for (const alert of alerts) {
@@ -77,8 +83,8 @@ class Trade {
 							user,
 							pair: alert.pair,
 							positionSide: alert.positionSide,
-							sl: alert.sl,
-							tp: alert.tp,
+							sl: this.config.sl,
+							tp: this.config.tp,
 							stgName: alert.stgName,
 						});
 					}
@@ -456,7 +462,7 @@ class Trade {
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
 		try {
-			// await this.exchange.protectPosition({
+			// await protectPositionService({
 			// 	symbol: this.symbolList[symbolIndex],
 			// 	user: this.userList[userIndex],
 			// 	positionSide,
@@ -486,12 +492,154 @@ class Trade {
 		].openOrders.filter((p) => p.pair !== pair);
 		return;
 	}
-	checkForTrades(arg0: { logs: boolean }): { alertText: any; alerts: any } {
-		throw new Error("Method not implemented.");
+	checkForTrades() {
+		const response: {
+			text: string;
+			alerts: StrategyResponse[];
+		} = { text: "", alerts: [] };
+
+		for (
+			let symbolIndex = 0;
+			symbolIndex < this.symbolList.length;
+			symbolIndex++
+		) {
+			const symbol = this.symbolList[symbolIndex];
+			this.symbolList[symbolIndex].volatility = getVolatility({
+				candlestick: symbol.candlestick,
+			});
+		}
+
+		const readySymbols = [...this.symbolList]
+			.filter((s) => s.isReady)
+			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
+
+		if (readySymbols.length) {
+			readySymbols.length > 4
+				? console.log(
+						"Checking for trades in  " +
+							readySymbols[0].pair +
+							", " +
+							readySymbols[1].pair +
+							", ...(" +
+							(readySymbols.length - 2) +
+							" more) "
+				  )
+				: console.log(
+						"Checking for trades in  " +
+							readySymbols.map((s) => s.pair).join(", ")
+				  );
+		}
+
+		for (const strategy of this.strategies) {
+			for (const symbol of readySymbols) {
+				const stgResponse = strategy?.validate({
+					candlestick: symbol.candlestick,
+					pair: symbol.pair,
+				});
+				if (stgResponse.positionSide) {
+					response.alerts.push(stgResponse);
+				}
+			}
+		}
+
+		if (response.alerts.length > 4) {
+			response.text =
+				"+ Should trade " +
+				response.alerts[0].pair +
+				", " +
+				response.alerts[1].pair +
+				", ...(" +
+				(response.alerts.length - 2) +
+				" more) ";
+		}
+		if (response.alerts.length && response.alerts.length <= 4) {
+			response.text =
+				"+ Should trade " +
+				response.alerts.map(
+					(t) => " " + t.positionSide + " in " + t.pair + " with " + t.stgName
+				);
+		}
+
+		return response;
 	}
 
-	securePositions() {
-		throw new Error("Method not implemented.");
+	async securePositions() {
+		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
+			for (
+				let posIndex = 0;
+				posIndex < this.userList[userIndex].openPositions.length;
+				posIndex++
+			) {
+				const pos = this.userList[userIndex].openPositions[posIndex];
+
+				if (pos.status !== "PROTECTED" && pos.status !== "SECURED") continue;
+
+				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
+
+				if (!symbol || !symbol.currentPrice) continue;
+				const breakOrdersSameSymbol = this.userList[
+					userIndex
+				].openOrders.filter(
+					(order) =>
+						order.pair === pos.pair && order.orderType === OrderType.BREAK
+				);
+
+				const pnlGraph =
+					pos.positionSide === "LONG"
+						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
+						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
+				for (
+					let alertIndex = 0;
+					alertIndex < this.config.breakEventAlerts.length;
+					alertIndex++
+				) {
+					const alert = this.config.breakEventAlerts[alertIndex];
+					if (
+						pnlGraph > alert.alert &&
+						Number(pos.tradeLength) >= alert.len &&
+						breakOrdersSameSymbol.length <= alertIndex
+					) {
+						const bePrice =
+							pos.positionSide === "LONG"
+								? pos.entryPriceUSDT * (1 + alert.value)
+								: pos.entryPriceUSDT * (1 - alert.value);
+						console.log(
+							"Securing position for " +
+								this.userList[userIndex].name +
+								" " +
+								pos.pair +
+								" " +
+								pos.positionSide
+						);
+						try {
+							// await securePositionService({
+							// 	symbol,
+							// 	user: this.userList[userIndex],
+							// 	positionSide:
+							// 		this.userList[userIndex].openPositions[posIndex].positionSide,
+							// 	coinQuantity: Number(
+							// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
+							// 	),
+							// 	bePrice,
+							// });
+
+							this.userList[userIndex].openPositions[posIndex].status =
+								"SECURED";
+							breakOrdersSameSymbol.push({
+								pair: pos.pair,
+								orderType: OrderType.BREAK,
+								price: bePrice,
+								coinQuantity: 0,
+								orderId: 0,
+								clientOrderId: "",
+							});
+						} catch (e) {
+							console.error(e);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	showConfig() {
@@ -526,7 +674,7 @@ const config: TradeConfig = {
 	breakEventAlerts: [],
 };
 
-const trade = new Trade(exchangeService, config);
+const trade = new Trade(exchangeService, config, strategies);
 
 trade.initialize();
 
