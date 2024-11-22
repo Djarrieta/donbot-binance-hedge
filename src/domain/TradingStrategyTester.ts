@@ -204,19 +204,20 @@ export class TradingStrategyTester {
 		console.log(`Processing alerts...`);
 		this.alertService.deleteAlerts();
 
-		const candlesticksAllSymbols = this.backtestDataService.getCandlestick({
-			start,
-			end,
-		});
-		const pairList = new Set<string>(candlesticksAllSymbols.map((c) => c.pair));
-
 		const alerts: Alert[] = [];
 		let startSnap = start;
 		let endSnap = start + (lookBackLength + maxTradeLength - 1) * interval;
 		let endCandlestick = start + lookBackLength * interval;
-		const totalLoop = (end - start) / interval;
+		const totalLoop = (end - start) / interval + 1;
 		this.progressBar.start(totalLoop, 0);
 		do {
+			const candlesticksAllSymbols = this.backtestDataService.getCandlestick({
+				start: startSnap,
+				end: endSnap,
+			});
+			const pairList = new Set<string>(
+				candlesticksAllSymbols.map((c) => c.pair)
+			);
 			for (const pair of pairList) {
 				const candlestick = candlesticksAllSymbols.filter(
 					(c) =>
@@ -246,7 +247,10 @@ export class TradingStrategyTester {
 			startSnap += interval;
 			endSnap += interval;
 			endCandlestick += interval;
-			this.progressBar.update((endSnap - start) / interval);
+			this.progressBar.update(
+				(endSnap - start - (maxTradeLength + lookBackLength) * interval) /
+					interval
+			);
 		} while (endSnap < end);
 
 		this.alertService.saveAlerts(alerts);
