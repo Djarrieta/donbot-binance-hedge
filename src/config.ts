@@ -1,8 +1,8 @@
-import { getDate, type DateString } from "./utils/getDate";
 import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
 import type { BacktestConfig } from "./domain/TradingStrategyTester";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
+import { getDate } from "./utils/getDate";
 
 export const DATA_BASE_NAME = "DB.db";
 
@@ -41,7 +41,7 @@ const getSuggestedDates = ({
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 20000,
+	candleCount: 200000,
 	backtestPercent: 0.75,
 	interval,
 });
@@ -60,7 +60,7 @@ export const backtestConfig: BacktestConfig = {
 	riskPt: 0.5 / 100,
 	feePt: 0.0005,
 	steps: {
-		overrideHistoricalRecords: false,
+		overrideHistoricalRecords: true,
 		overrideAlerts: true,
 	},
 };
