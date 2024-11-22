@@ -100,11 +100,15 @@ export class TradingStrategyTester {
 
 		this.showConfig();
 
+		console.log(getDate().dateString);
+
 		if (this.config.steps.overrideHistoricalRecords) {
 			await this.saveHistoricalRecords();
 		} else {
 			this.backtestDataService.showSavedCandlestick();
 		}
+
+		console.log(getDate().dateString);
 
 		const alerts = this.config.steps.overrideAlerts
 			? this.saveAlerts({
@@ -118,6 +122,8 @@ export class TradingStrategyTester {
 					start: this.config.backtestStart,
 					end: this.config.forwardTestEnd,
 			  });
+
+		console.log(getDate().dateString);
 
 		this.backtestDataService.deleteStatsRows();
 
@@ -202,6 +208,7 @@ export class TradingStrategyTester {
 			start,
 			end,
 		});
+		const pairList = new Set<string>(candlesticksAllSymbols.map((c) => c.pair));
 
 		const alerts: Alert[] = [];
 		let startSnap = start;
@@ -210,10 +217,6 @@ export class TradingStrategyTester {
 		const totalLoop = (end - start) / interval;
 		this.progressBar.start(totalLoop, 0);
 		do {
-			const pairList = new Set<string>(
-				candlesticksAllSymbols.map((c) => c.pair)
-			);
-
 			for (const pair of pairList) {
 				const candlestick = candlesticksAllSymbols.filter(
 					(c) =>

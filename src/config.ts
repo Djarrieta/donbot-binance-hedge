@@ -60,7 +60,7 @@ export const backtestConfig: BacktestConfig = {
 	riskPt: 0.5 / 100,
 	feePt: 0.0005,
 	steps: {
-		overrideHistoricalRecords: true,
+		overrideHistoricalRecords: false,
 		overrideAlerts: true,
 	},
 };
