@@ -1,65 +1,141 @@
+import type { Exchange } from "./Exchange";
+import type { Symbol } from "./Symbol";
+import type { User } from "./User";
+import type { TradeConfig } from "./TradeConfig";
+import type { Strategy, StrategyResponse } from "../Strategy";
+import { delay } from "../../utils/delay";
 import { getDate } from "../../utils/getDate";
 import { getVolatility } from "../../utils/getVolatility";
-import type { Alert } from "../Alert";
-import type { Candle } from "../Candle";
-import { OrderType } from "../Order";
 import type { PositionSide } from "../Position";
-import type { Strategy, StrategyResponse } from "../Strategy";
-
-import type { IExchange } from "./IExchange";
-import type { Symbol } from "./Symbol";
-import type { TradeConfig } from "./TradeConfig";
-import type { User } from "./User";
+import type { Alert } from "../Alert";
+import { OrderType } from "../Order";
 
 export class Trade {
-	constructor(
-		private userList: User[],
-		private readonly symbolList: Symbol[],
-		private readonly strategies: Strategy[],
-		private readonly exchange: IExchange,
-		private readonly config: TradeConfig
-	) {
-		this.userList = userList;
-		this.symbolList = symbolList;
-		this.strategies = strategies;
+	exchange: Exchange;
+	symbolList: Symbol[] = [];
+	userList: User[] = [];
+	strategies: Strategy[];
+	config: TradeConfig;
+
+	constructor(exchange: Exchange, config: TradeConfig, strategies: Strategy[]) {
 		this.exchange = exchange;
 		this.config = config;
+		this.strategies = strategies;
+	}
+
+	async initialize() {
+		this.showConfig();
+		const [symbolList, userList] = await Promise.all([
+			this.exchange.getSymbolsData(),
+			this.exchange.getUsersData(),
+		]);
+
+		this.symbolList = symbolList;
+		this.userList = userList;
+
+		for (const user of this.userList) {
+			this.handleExistingPositions({ userName: user.name });
+		}
+
+		this.securePositions();
+		this.runSubscribers();
+	}
+
+	async loop() {
+		await delay(5000);
+		console.log(getDate().dateString);
+
+		const { text: alertText, alerts } = this.checkForTrades();
+
+		if (!!alerts.length) {
+			console.log(alertText);
+			for (const user of this.userList) {
+				for (const alert of alerts) {
+					if (alert.positionSide) {
+						this.handleNewPosition({
+							user,
+							pair: alert.pair,
+							positionSide: alert.positionSide,
+							sl: this.config.sl,
+							tp: this.config.tp,
+							stgName: alert.stgName,
+						});
+					}
+				}
+			}
+		} else {
+			console.log("No trades found");
+		}
+
+		await delay(5000);
+		await this.exchange.getUsersData();
+
+		for (const user of this.userList) {
+			this.handleExistingPositions({ userName: user.name });
+		}
+
+		await this.exchange.getUsersData();
+		this.securePositions();
+		this.runSubscribers();
+	}
+
+	private runSubscribers() {
+		console.log("Running subscribers");
+
+		// Subscribe to symbol updates
+		for (const symbol of this.symbolList) {
+			try {
+				this.exchange.subscribeToSymbolUpdates({
+					pair: symbol.pair,
+					interval: this.config.interval,
+				});
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		// Subscribe to user updates
+		for (const user of this.userList) {
+			try {
+				this.exchange.subscribeToUserUpdates({ user });
+			} catch (e) {
+				console.error(e);
+			}
+		}
 	}
 
 	async handleNewPosition({
-		userName,
+		user,
 		pair,
 		positionSide,
 		sl,
 		tp,
 		stgName,
 	}: {
-		userName: string;
+		user: User;
 		pair: string;
 		positionSide: PositionSide;
 		sl: number;
 		tp: number;
 		stgName: string;
 	}) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
-		if (this.userList[userIndex].isAddingPosition) return;
+		if (user.isAddingPosition) return;
 
 		const hedgedPosUniquePairs = Array.from(
 			new Set(
-				this.userList[userIndex].openPositions
+				user.openPositions
 					.filter((p) => p.status === "HEDGED")
 					.map((x) => x.pair)
 			)
 		);
 
 		const openPosUniquePairs = Array.from(
-			new Set(this.userList[userIndex].openPositions.map((x) => x.pair))
+			new Set(user.openPositions.map((x) => x.pair))
 		);
 
 		const openPosUnsecuredUniquePairs = Array.from(
 			new Set(
-				this.userList[userIndex].openPositions
+				user.openPositions
 					.filter((p) => p.status !== "SECURED")
 					.map((x) => x.pair)
 			)
@@ -81,7 +157,7 @@ export class Trade {
 			tooManyOpenWithoutHedge ||
 			tooManyOpenWithHedge ||
 			tooManyHedge ||
-			this.userList[userIndex].isAddingPosition ||
+			user.isAddingPosition ||
 			openPosUniquePairs.includes(pair)
 		) {
 			return;
@@ -92,8 +168,8 @@ export class Trade {
 			return;
 		}
 
-		await this.openPosition({
-			userName,
+		await this.exchange.openPosition({
+			user,
 			pair,
 			positionSide,
 			sl,
@@ -111,6 +187,7 @@ export class Trade {
 	}) {
 		console.log("Handling existing positions for " + userName);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		const user = this.userList[userIndex];
 		if (userIndex === -1) return;
 
 		const openOrdersUniquePairs = Array.from(
@@ -130,7 +207,8 @@ export class Trade {
 		//Cancel orders when no open positions
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
-			await this.cancelOrders({ userName, pair });
+			await this.exchange.cancelOrders({ user, pair });
+			this.clearOrders({ userName, pair });
 		}
 
 		//Cancel orders for Hedge positions
@@ -138,10 +216,11 @@ export class Trade {
 			.filter((o) => hedgePosUniquePairs.includes(o.pair))
 			.map((o) => o.pair);
 		for (const pair of pairWithOpenOrderForHedgePos) {
-			await this.cancelOrders({
-				userName: this.userList[userIndex].name,
+			await this.exchange.cancelOrders({
+				user,
 				pair,
 			});
+			this.clearOrders({ userName, pair });
 		}
 
 		//Protect unprotected positions
@@ -182,7 +261,7 @@ export class Trade {
 							symbol.pair
 					);
 					await this.quitPosition({
-						userName,
+						user,
 						positionSide: pos.positionSide,
 						pair,
 						coinQuantity: pos.coinQuantity,
@@ -216,7 +295,7 @@ export class Trade {
 					symbol.pair
 			);
 			this.quitPosition({
-				userName,
+				user,
 				positionSide,
 				pair,
 				coinQuantity,
@@ -243,7 +322,7 @@ export class Trade {
 					symbol.pair
 			);
 			this.quitPosition({
-				userName,
+				user,
 				positionSide,
 				pair,
 				coinQuantity,
@@ -278,28 +357,120 @@ export class Trade {
 					symbol.pair
 			);
 			this.quitPosition({
-				userName,
+				user,
 				positionSide,
 				pair,
 				coinQuantity,
 			});
 		}
 	}
-
-	checkForTrades({
-		logs = true,
-		checkSymbols = true,
+	async quitPosition({
+		user,
+		pair,
+		positionSide,
+		coinQuantity,
 	}: {
-		logs?: boolean;
-		checkSymbols?: boolean;
+		user: User;
+		pair: string;
+		positionSide: PositionSide;
+		coinQuantity: number;
 	}) {
+		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
+		if (symbolIndex === -1) return;
+
+		const userIndex = this.userList.findIndex((u) => u.name === user.name);
+		if (userIndex === -1) return;
+
+		try {
+			await this.exchange.quitPosition({
+				user,
+				symbol: this.symbolList[symbolIndex],
+				positionSide,
+				coinQuantity,
+			});
+
+			this.userList[userIndex].openPositions = this.userList[
+				userIndex
+			].openPositions.filter((p) => p.pair !== pair);
+
+			this.clearOrders({ userName: user.name, pair });
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	async protectPosition({
+		userName,
+		pair,
+		positionSide,
+	}: {
+		userName: string;
+		pair: string;
+		positionSide: PositionSide;
+	}) {
+		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		if (userIndex === -1) return;
+		const user = this.userList[userIndex];
+
+		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
+		if (symbolIndex === -1) return;
+
+		const openPosIndex = this.userList[userIndex].openPositions.findIndex(
+			(p) => p.pair === pair
+		);
+		if (openPosIndex === -1) return;
+		const openPos = this.userList[userIndex].openPositions[openPosIndex];
+
+		await this.exchange.cancelOrders({ user, pair });
+		const slPrice =
+			openPos.positionSide === "LONG"
+				? this.symbolList[symbolIndex].currentPrice * (1 - this.config.sl)
+				: this.symbolList[symbolIndex].currentPrice * (1 + this.config.sl);
+
+		const tpPrice =
+			openPos.positionSide === "LONG"
+				? this.symbolList[symbolIndex].currentPrice * (1 + this.config.tp)
+				: this.symbolList[symbolIndex].currentPrice * (1 - this.config.tp);
+		console.log(
+			"Protecting position for " + userName + " " + pair + " " + positionSide
+		);
+		try {
+			// await protectPositionService({
+			// 	symbol: this.symbolList[symbolIndex],
+			// 	user: this.userList[userIndex],
+			// 	positionSide,
+			// 	coinQuantity: Number(openPos.coinQuantity),
+			// 	slPrice,
+			// 	tpPrice,
+			// });
+
+			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
+		} catch (e) {
+			console.error(e);
+			await this.quitPosition({
+				user,
+				pair,
+				positionSide,
+				coinQuantity: Number(openPos.coinQuantity),
+			});
+		}
+	}
+
+	clearOrders({ userName, pair }: { userName: string; pair: string }) {
+		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		if (userIndex === -1) return;
+
+		this.userList[userIndex].openOrders = this.userList[
+			userIndex
+		].openOrders.filter((p) => p.pair !== pair);
+		return;
+	}
+	checkForTrades() {
 		const response: {
 			text: string;
 			alerts: StrategyResponse[];
 		} = { text: "", alerts: [] };
-		if (checkSymbols) {
-			this.checkSymbols();
-		}
+
 		for (
 			let symbolIndex = 0;
 			symbolIndex < this.symbolList.length;
@@ -315,7 +486,7 @@ export class Trade {
 			.filter((s) => s.isReady)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
 
-		if (logs && readySymbols.length) {
+		if (readySymbols.length) {
 			readySymbols.length > 4
 				? console.log(
 						"Checking for trades in  " +
@@ -365,180 +536,6 @@ export class Trade {
 		return response;
 	}
 
-	async quitPosition({
-		userName,
-		pair,
-		positionSide,
-		coinQuantity,
-	}: {
-		userName: string;
-		pair: string;
-		positionSide: PositionSide;
-		coinQuantity: number;
-	}) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
-
-		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
-		if (symbolIndex === -1) return;
-
-		try {
-			await this.exchange.quitPosition({
-				user: this.userList[userIndex],
-				symbol: this.symbolList[symbolIndex],
-				positionSide,
-				coinQuantity,
-			});
-
-			this.clearPositions({ userName, pair });
-		} catch (e) {
-			console.error(e);
-		}
-	}
-	async cancelOrders({ userName, pair }: { userName: string; pair: string }) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
-		console.log(
-			"Canceling orders for " + this.userList[userIndex].name + " in " + pair
-		);
-		try {
-			await this.exchange.cancelOrders({
-				user: this.userList[userIndex],
-				pair,
-			});
-			this.clearOrders({ userName, pair });
-		} catch (e) {
-			console.error(e);
-		}
-	}
-	async openPosition({
-		userName,
-		pair,
-		positionSide,
-		sl,
-		tp,
-		stgName,
-	}: {
-		userName: string;
-		pair: string;
-		positionSide: PositionSide;
-		sl: number;
-		tp: number;
-		stgName: string;
-	}) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) {
-			return;
-		}
-
-		const symbolIndex = this.symbolList.findIndex((p) => p.pair === pair);
-		if (symbolIndex === -1) {
-			return;
-		}
-		this.userList[userIndex].isAddingPosition = true;
-
-		await this.cancelOrders({ userName, pair });
-
-		const slPrice =
-			positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 - sl)
-				: this.symbolList[symbolIndex].currentPrice * (1 + sl);
-
-		const tpPrice =
-			positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 + tp)
-				: this.symbolList[symbolIndex].currentPrice * (1 - tp);
-
-		const quantityUSDT = this.amountToTradeUSDT({ userName, sl });
-
-		const coinQuantity = Math.max(
-			quantityUSDT / this.symbolList[symbolIndex].currentPrice,
-			quantityUSDT / tpPrice,
-			quantityUSDT / slPrice
-		);
-		console.log(
-			"Opening position for " + userName + " " + pair + " " + positionSide
-		);
-		try {
-			await this.exchange.openPosition({
-				symbol: this.symbolList[symbolIndex],
-				user: this.userList[userIndex],
-				positionSide,
-				coinQuantity,
-				slPrice,
-				tpPrice,
-			});
-			this.userList[userIndex].openPositions.push({
-				pair,
-				positionSide,
-				coinQuantity,
-				startTime: getDate().dateMs,
-				status: "PROTECTED",
-				pnl: 0,
-				entryPriceUSDT: this.symbolList[symbolIndex].currentPrice,
-				stgName,
-				sl,
-				tp,
-			});
-		} catch (e) {
-			console.error(e);
-		}
-	}
-	async protectPosition({
-		userName,
-		pair,
-		positionSide,
-	}: {
-		userName: string;
-		pair: string;
-		positionSide: PositionSide;
-	}) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
-
-		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
-		if (symbolIndex === -1) return;
-
-		const openPosIndex = this.userList[userIndex].openPositions.findIndex(
-			(p) => p.pair === pair
-		);
-		if (openPosIndex === -1) return;
-		const openPos = this.userList[userIndex].openPositions[openPosIndex];
-
-		await this.cancelOrders({ userName, pair });
-		const slPrice =
-			openPos.positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 - this.config.sl)
-				: this.symbolList[symbolIndex].currentPrice * (1 + this.config.sl);
-
-		const tpPrice =
-			openPos.positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 + this.config.tp)
-				: this.symbolList[symbolIndex].currentPrice * (1 - this.config.tp);
-		console.log(
-			"Protecting position for " + userName + " " + pair + " " + positionSide
-		);
-		try {
-			await this.exchange.protectPosition({
-				symbol: this.symbolList[symbolIndex],
-				user: this.userList[userIndex],
-				positionSide,
-				coinQuantity: Number(openPos.coinQuantity),
-				slPrice,
-				tpPrice,
-			});
-
-			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
-		} catch (e) {
-			console.error(e);
-			await this.quitPosition({
-				userName,
-				pair,
-				positionSide,
-				coinQuantity: Number(openPos.coinQuantity),
-			});
-		}
-	}
 	async securePositions() {
 		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
 			for (
@@ -588,16 +585,16 @@ export class Trade {
 								pos.positionSide
 						);
 						try {
-							await this.exchange.securePosition({
-								symbol,
-								user: this.userList[userIndex],
-								positionSide:
-									this.userList[userIndex].openPositions[posIndex].positionSide,
-								coinQuantity: Number(
-									this.userList[userIndex].openPositions[posIndex].coinQuantity
-								),
-								bePrice,
-							});
+							// await securePositionService({
+							// 	symbol,
+							// 	user: this.userList[userIndex],
+							// 	positionSide:
+							// 		this.userList[userIndex].openPositions[posIndex].positionSide,
+							// 	coinQuantity: Number(
+							// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
+							// 	),
+							// 	bePrice,
+							// });
 
 							this.userList[userIndex].openPositions[posIndex].status =
 								"SECURED";
@@ -617,123 +614,8 @@ export class Trade {
 			}
 		}
 	}
-	updateSymbol({
-		pair,
-		candlestick,
-		currentPrice,
-	}: {
-		pair: string;
-		candlestick?: Candle[];
-		currentPrice?: number;
-	}) {
-		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
-		if (symbolIndex === -1) {
-			return;
-		}
 
-		if (!candlestick?.length && currentPrice) {
-			this.symbolList[symbolIndex].currentPrice = currentPrice;
-			return;
-		}
-		if (!this.symbolList[symbolIndex].candlestick.length) return;
-
-		const prevOpenTime = getDate(
-			this.symbolList[symbolIndex].candlestick[
-				this.symbolList[symbolIndex].candlestick.length - 1
-			].openTime
-		).dateString;
-		const newOpenTime = getDate(
-			candlestick?.[candlestick?.length - 1]?.openTime
-		).dateString;
-
-		if (
-			!currentPrice &&
-			candlestick?.length === this.symbolList[symbolIndex].candlestick.length &&
-			newOpenTime !== prevOpenTime
-		) {
-			this.symbolList[symbolIndex].candlestick = candlestick;
-			this.symbolList[symbolIndex].currentPrice =
-				candlestick[candlestick.length - 1].close;
-		}
-	}
-	checkSymbols() {
-		for (
-			let symbolIndex = 0;
-			symbolIndex < this.symbolList.length;
-			symbolIndex++
-		) {
-			const symbol = this.symbolList[symbolIndex];
-
-			if (!symbol.candlestick.length) {
-				this.symbolList[symbolIndex].isReady = false;
-				continue;
-			}
-
-			const lastOpenTime =
-				symbol.candlestick[symbol.candlestick.length - 1].openTime;
-			const lastDiff =
-				(getDate().dateMs - getDate(lastOpenTime).dateMs) /
-				this.config.interval;
-
-			if (lastDiff > 2) {
-				this.symbolList[symbolIndex].isReady = false;
-				continue;
-			}
-
-			for (let index = 0; index < symbol.candlestick.length - 1; index++) {
-				const currentCandle = symbol.candlestick[index];
-				const nextCandle = symbol.candlestick[index + 1];
-
-				const candlesDifference =
-					(getDate(nextCandle.openTime).dateMs -
-						getDate(currentCandle.openTime).dateMs) /
-					this.config.interval;
-
-				if (candlesDifference !== 1) {
-					this.symbolList[symbolIndex].isReady = false;
-					continue;
-				}
-			}
-			this.symbolList[symbolIndex].isReady = true;
-		}
-	}
-	clearPositions({ userName, pair }: { userName: string; pair?: string }) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
-		if (pair) {
-			this.userList[userIndex].openPositions = this.userList[
-				userIndex
-			].openPositions.filter((p) => p.pair !== pair);
-			return;
-		}
-		this.userList[userIndex].openPositions = [];
-	}
-	clearOrders({ userName, pair }: { userName: string; pair?: string }) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return;
-		if (pair) {
-			this.userList[userIndex].openOrders = this.userList[
-				userIndex
-			].openOrders.filter((p) => p.pair !== pair);
-			return;
-		}
-		this.userList[userIndex].openOrders = [];
-	}
-	updateUsers({ userList }: { userList?: User[] }) {
-		if (!userList) return;
-		this.userList = userList;
-	}
-	amountToTradeUSDT({ userName, sl }: { userName: string; sl: number }) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
-		if (userIndex === -1) return 0;
-
-		return Math.max(
-			(this.userList[userIndex].balanceUSDT * this.config.riskPt) / sl,
-			this.config.minAmountToTradeUSDT
-		);
-	}
-
-	text() {
+	showConfig() {
 		const userText = `${this.userList.map((u) => u.text).join(`\n`)}`;
 		const symbolText = `Symbols: ${
 			this.symbolList.filter((s) => s.isReady).length
@@ -743,6 +625,6 @@ export class Trade {
 			.map((s) => s.stgName)
 			.join(", ")}`;
 
-		return `${userText}\n${symbolText}\n${strategiesText}`;
+		console.log(`${userText}\n${symbolText}\n${strategiesText}`);
 	}
 }
