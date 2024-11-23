@@ -5,27 +5,28 @@ import Binance, {
 } from "binance-api-node";
 import OldBinance from "node-binance-api";
 import type { Candle } from "../domain/Candle";
-import { Interval } from "../domain/Interval";
-import { OrderType, type Order } from "../domain/Order";
-import type { PositionSide } from "../domain/Position";
-import { type Position } from "../domain/Position";
 import type {
 	Exchange,
 	GetSymbolsDataProps,
 	HistoricalPnl,
 	openPositionProps,
+	SubscribeToUserUpdatesProps,
 	UpdateSymbolProps,
-} from "../domain/Trade/Exchange";
-import type { Symbol } from "../domain/Trade/Symbol";
-import type { User, UserSeedDTO } from "../domain/Trade/User";
+} from "../domain/Exchange";
+import { Interval } from "../domain/Interval";
+import { OrderType, type Order } from "../domain/Order";
+import type { PositionSide } from "../domain/Position";
+import { type Position } from "../domain/Position";
+import type { Symbol } from "../domain/Symbol";
+import type { User, UserSeedDTO } from "../domain/User";
+import { userSeedList } from "../userSeedList";
 import { fixPrecision } from "../utils/fixPrecision";
+import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import {
 	ORDER_ID_DIV,
 	orderIdNameGenerator,
 } from "../utils/orderIdNameGenerator";
-import { formatPercent } from "../utils/formatPercent";
-import { userSeedList } from "../userSeedList";
 
 export class ExchangeService implements Exchange {
 	subscribeToSymbolUpdates({
@@ -64,7 +65,10 @@ export class ExchangeService implements Exchange {
 			}
 		);
 	}
-	async subscribeToUserUpdates({ user }: { user: User }) {
+	async subscribeToUserUpdates({
+		user,
+		handleClearOrders,
+	}: SubscribeToUserUpdatesProps) {
 		const oldExchange = new OldBinance().options({
 			APIKEY: user.binanceApiKey,
 			APISECRET: user.binanceApiSecret || "",
@@ -99,15 +103,10 @@ export class ExchangeService implements Exchange {
 				) {
 					console.log("orderType", orderType);
 
-					// context.cancelOrders({ userName: user.name, pair });
-
-					// if (!context.userList.length) return;
-
-					// context.clearPositions({
-					//     userName: user.name,
-					//     pair,
-					// });
-					// context.clearOrders({ userName: user.name, pair });
+					handleClearOrders({
+						pair,
+						user,
+					});
 
 					return;
 				}
@@ -119,9 +118,10 @@ export class ExchangeService implements Exchange {
 				).filter((x) => Number(x.positionAmt) && x.symbol === pair);
 
 				if (!positionRisk.length) {
-					// const context = await Context.getInstance();
-					// if (!context) return;
-					// context.cancelOrders({ userName: user.name, pair });
+					handleClearOrders({
+						pair,
+						user,
+					});
 
 					return;
 				}
@@ -190,7 +190,6 @@ export class ExchangeService implements Exchange {
 		coinQuantity,
 		sl,
 		tp,
-		stgName,
 	}: openPositionProps) {
 		const authExchange = Binance({
 			apiKey: user.binanceApiKey,

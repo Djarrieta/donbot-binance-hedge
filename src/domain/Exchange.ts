@@ -1,8 +1,8 @@
-import type { PositionSide } from "../Position";
+import type { Candle } from "./Candle";
+import type { Interval } from "./Interval";
+import type { PositionSide } from "./Position";
 import type { User } from "./User";
 import type { Symbol } from "./Symbol";
-import type { Interval } from "../Interval";
-import type { Candle } from "../Candle";
 
 export type Exchange = {
 	getPairList(props: GetPairListProps): Promise<string[]>;
@@ -12,7 +12,7 @@ export type Exchange = {
 	quitPosition(props: QuitPositionProps): Promise<void>;
 	cancelOrders(props: { user: User; pair: string }): Promise<void>;
 	openPosition(props: openPositionProps): Promise<void>;
-	subscribeToUserUpdates(props: { user: User }): Promise<void>;
+	subscribeToUserUpdates(props: SubscribeToUserUpdatesProps): Promise<void>;
 };
 
 export type GetSymbolsDataProps = {
@@ -30,6 +30,14 @@ export type UpdateSymbolProps = {
 	price?: number;
 	newCandle?: Candle;
 };
+export type HandleClearOrdersProps = {
+	user: User;
+	pair?: string;
+};
+export type SubscribeToUserUpdatesProps = {
+	user: User;
+	handleClearOrders: (props: HandleClearOrdersProps) => void;
+};
 export type openPositionProps = {
 	user: User;
 	symbol: Symbol;
@@ -37,7 +45,6 @@ export type openPositionProps = {
 	coinQuantity: number;
 	sl: number;
 	tp: number;
-	stgName: string;
 };
 
 export type HistoricalPnl = {

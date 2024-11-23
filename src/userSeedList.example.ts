@@ -1,4 +1,4 @@
-import type { UserSeedDTO } from "./domain/Trade/User";
+import type { UserSeedDTO } from "./domain/User";
 import { getDate, type DateString } from "./utils/getDate";
 
 export const users: UserSeedDTO[] = [

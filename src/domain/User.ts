@@ -1,5 +1,5 @@
-import type { Order } from "../Order";
-import type { Position } from "../Position";
+import type { Order } from "./Order";
+import type { Position } from "./Position";
 
 export type User = {
 	name: string;

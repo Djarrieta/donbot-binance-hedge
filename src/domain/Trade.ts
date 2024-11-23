@@ -1,14 +1,14 @@
 import type { Exchange, UpdateSymbolProps } from "./Exchange";
 import type { Symbol } from "./Symbol";
+import type { Strategy, StrategyResponse } from "./Strategy";
+import { delay } from "../utils/delay";
+import { getDate } from "../utils/getDate";
+import { getVolatility } from "../utils/getVolatility";
+import type { PositionSide } from "./Position";
+import type { Alert } from "./Alert";
+import { OrderType } from "./Order";
 import type { User } from "./User";
 import type { TradeConfig } from "./TradeConfig";
-import type { Strategy, StrategyResponse } from "../Strategy";
-import { delay } from "../../utils/delay";
-import { getDate } from "../../utils/getDate";
-import { getVolatility } from "../../utils/getVolatility";
-import type { PositionSide } from "../Position";
-import type { Alert } from "../Alert";
-import { OrderType } from "../Order";
 
 export class Trade {
 	exchange: Exchange;
@@ -55,7 +55,7 @@ export class Trade {
 
 		const { text: alertText, alerts } = this.checkForTrades();
 
-		if (!!alerts.length) {
+		if (alerts.length) {
 			console.log(alertText);
 			const symbol = this.symbolList.find((s) => s.pair === alerts[0].pair);
 			if (!symbol) {
@@ -71,7 +71,6 @@ export class Trade {
 							positionSide: alert.positionSide,
 							sl: this.config.sl,
 							tp: this.config.tp,
-							stgName: alert.stgName,
 						});
 					}
 				}
@@ -104,11 +103,8 @@ export class Trade {
 
 		if (newCandle) {
 			this.symbolList[symbolIndex].candlestick = [
+				...this.symbolList[symbolIndex].candlestick.slice(1),
 				newCandle,
-				...this.symbolList[symbolIndex].candlestick.slice(
-					0,
-					this.config.lookBackLength - 1
-				),
 			];
 		}
 	}
@@ -131,7 +127,10 @@ export class Trade {
 		// Subscribe to user updates
 		for (const user of this.userList) {
 			try {
-				this.exchange.subscribeToUserUpdates({ user });
+				this.exchange.subscribeToUserUpdates({
+					user,
+					handleClearOrders: this.clearOrders,
+				});
 			} catch (e) {
 				console.error(e);
 			}
@@ -144,14 +143,12 @@ export class Trade {
 		positionSide,
 		sl,
 		tp,
-		stgName,
 	}: {
 		user: User;
 		symbol: Symbol;
 		positionSide: PositionSide;
 		sl: number;
 		tp: number;
-		stgName: string;
 	}) {
 		if (user.isAddingPosition) return;
 
@@ -203,7 +200,6 @@ export class Trade {
 			positionSide,
 			sl,
 			tp,
-			stgName,
 			coinQuantity: 0, //TODO get coin quantity
 		});
 	}
@@ -237,8 +233,8 @@ export class Trade {
 		//Cancel orders when no open positions
 		for (const pair of openOrdersUniquePairs) {
 			if (openPosUniquePairs.includes(pair)) continue;
-			await this.exchange.cancelOrders({ user, pair });
-			this.clearOrders({ userName, pair });
+
+			this.clearOrders({ user, pair });
 		}
 
 		//Cancel orders for Hedge positions
@@ -246,11 +242,7 @@ export class Trade {
 			.filter((o) => hedgePosUniquePairs.includes(o.pair))
 			.map((o) => o.pair);
 		for (const pair of pairWithOpenOrderForHedgePos) {
-			await this.exchange.cancelOrders({
-				user,
-				pair,
-			});
-			this.clearOrders({ userName, pair });
+			this.clearOrders({ user, pair });
 		}
 
 		//Protect unprotected positions
@@ -423,7 +415,7 @@ export class Trade {
 				userIndex
 			].openPositions.filter((p) => p.pair !== pair);
 
-			this.clearOrders({ userName: user.name, pair });
+			this.clearOrders({ user, pair });
 		} catch (e) {
 			console.error(e);
 		}
@@ -465,14 +457,11 @@ export class Trade {
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
 		try {
-			// await protectPositionService({
-			// 	symbol: this.symbolList[symbolIndex],
-			// 	user: this.userList[userIndex],
+			// await this.protectPosition({
+			// 	userName,
+			// 	pair,
 			// 	positionSide,
-			// 	coinQuantity: Number(openPos.coinQuantity),
-			// 	slPrice,
-			// 	tpPrice,
-			// });
+			// })
 
 			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
 		} catch (e) {
@@ -486,9 +475,16 @@ export class Trade {
 		}
 	}
 
-	clearOrders({ userName, pair }: { userName: string; pair: string }) {
-		const userIndex = this.userList.findIndex((u) => u.name === userName);
+	async clearOrders({ user, pair }: { user: User; pair?: string }) {
+		const userIndex = this.userList.findIndex((u) => u.name === user.name);
 		if (userIndex === -1) return;
+
+		if (!pair) {
+			this.userList[userIndex].openOrders = [];
+			return;
+		}
+
+		await this.exchange.cancelOrders({ user, pair });
 
 		this.userList[userIndex].openOrders = this.userList[
 			userIndex

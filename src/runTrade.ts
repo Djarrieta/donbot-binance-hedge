@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { strategies, tradeConfig } from "./config";
-import { Trade } from "./domain/Trade/Trade";
+import { Trade } from "./domain/Trade";
 import { ExchangeService } from "./infrastructure/ExchangeService";
 
 const exchangeService = new ExchangeService();

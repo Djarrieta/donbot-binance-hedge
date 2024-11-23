@@ -1,6 +1,6 @@
 import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
-import type { TradeConfig } from "./domain/Trade/TradeConfig";
+import type { TradeConfig } from "./domain/TradeConfig";
 import type { BacktestConfig } from "./domain/TradingStrategyTester";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
 import { getDate } from "./utils/getDate";
