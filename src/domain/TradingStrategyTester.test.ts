@@ -30,7 +30,10 @@ const backtestConfig: BacktestConfig = {
 	maxTradeLengthArray: [0],
 	minAmountToTradeUSDT: 0,
 	apiLimit: 0,
-	deletePrevAlerts: false,
+	steps: {
+		overrideHistoricalRecords: true,
+		overrideAlerts: true,
+	},
 };
 const strategies: Strategy[] = [];
 

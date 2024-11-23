@@ -16,3 +16,8 @@ export type User = {
 	isAddingPosition: boolean;
 	text: string;
 };
+
+export type UserSeedDTO = Pick<
+	User,
+	"name" | "binanceApiKey" | "binanceApiSecret" | "startDate"
+>;

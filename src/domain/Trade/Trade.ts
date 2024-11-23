@@ -26,8 +26,16 @@ export class Trade {
 	async initialize() {
 		this.showConfig();
 		const [symbolList, userList] = await Promise.all([
-			this.exchange.getSymbolsData(),
-			this.exchange.getUsersData(),
+			this.exchange.getSymbolsData({
+				apiLimit: this.config.apiLimit,
+				lookBackLength: this.config.lookBackLength,
+				interval: this.config.interval,
+				minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
+				candlestickAPILimit: this.config.apiLimit,
+			}),
+			this.exchange.getUsersData({
+				interval: this.config.interval,
+			}),
 		]);
 
 		this.symbolList = symbolList;
@@ -49,12 +57,17 @@ export class Trade {
 
 		if (!!alerts.length) {
 			console.log(alertText);
+			const symbol = this.symbolList.find((s) => s.pair === alerts[0].pair);
+			if (!symbol) {
+				console.log("Symbol not found");
+				return;
+			}
 			for (const user of this.userList) {
 				for (const alert of alerts) {
 					if (alert.positionSide) {
 						this.handleNewPosition({
 							user,
-							pair: alert.pair,
+							symbol,
 							positionSide: alert.positionSide,
 							sl: this.config.sl,
 							tp: this.config.tp,
@@ -68,13 +81,17 @@ export class Trade {
 		}
 
 		await delay(5000);
-		await this.exchange.getUsersData();
+		await this.exchange.getUsersData({
+			interval: this.config.interval,
+		});
 
 		for (const user of this.userList) {
 			this.handleExistingPositions({ userName: user.name });
 		}
 
-		await this.exchange.getUsersData();
+		await this.exchange.getUsersData({
+			interval: this.config.interval,
+		});
 		this.securePositions();
 		this.runSubscribers();
 	}
@@ -106,14 +123,14 @@ export class Trade {
 
 	async handleNewPosition({
 		user,
-		pair,
+		symbol,
 		positionSide,
 		sl,
 		tp,
 		stgName,
 	}: {
 		user: User;
-		pair: string;
+		symbol: Symbol;
 		positionSide: PositionSide;
 		sl: number;
 		tp: number;
@@ -158,23 +175,19 @@ export class Trade {
 			tooManyOpenWithHedge ||
 			tooManyHedge ||
 			user.isAddingPosition ||
-			openPosUniquePairs.includes(pair)
+			openPosUniquePairs.includes(symbol.pair)
 		) {
-			return;
-		}
-		const symbol = this.symbolList.find((s) => s.pair === pair);
-
-		if (!symbol) {
 			return;
 		}
 
 		await this.exchange.openPosition({
 			user,
-			pair,
+			symbol,
 			positionSide,
 			sl,
 			tp,
 			stgName,
+			coinQuantity: 0, //TODO get coin quantity
 		});
 	}
 
