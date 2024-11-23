@@ -1,4 +1,4 @@
-import type { Exchange } from "./Exchange";
+import type { Exchange, UpdateSymbolProps } from "./Exchange";
 import type { Symbol } from "./Symbol";
 import type { User } from "./User";
 import type { TradeConfig } from "./TradeConfig";
@@ -95,7 +95,23 @@ export class Trade {
 		this.securePositions();
 		this.runSubscribers();
 	}
+	handleSymbolUpdate({ pair, price, newCandle }: UpdateSymbolProps) {
+		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
+		if (symbolIndex === -1) return;
+		if (price) {
+			this.symbolList[symbolIndex].currentPrice = price;
+		}
 
+		if (newCandle) {
+			this.symbolList[symbolIndex].candlestick = [
+				newCandle,
+				...this.symbolList[symbolIndex].candlestick.slice(
+					0,
+					this.config.lookBackLength - 1
+				),
+			];
+		}
+	}
 	private runSubscribers() {
 		console.log("Running subscribers");
 
@@ -105,6 +121,7 @@ export class Trade {
 				this.exchange.subscribeToSymbolUpdates({
 					pair: symbol.pair,
 					interval: this.config.interval,
+					updateSymbol: this.handleSymbolUpdate,
 				});
 			} catch (e) {
 				console.error(e);

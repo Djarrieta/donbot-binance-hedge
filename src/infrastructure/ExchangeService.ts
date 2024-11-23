@@ -44,7 +44,7 @@ export class ExchangeService implements Exchange {
 			pair.toLocaleLowerCase() + "@kline_" + intervalText,
 			(data) => {
 				if (!data.k.x) {
-					updateSymbol({ pair: data?.s, price: Number(data.k.c), interval });
+					updateSymbol({ pair: data?.s, price: Number(data.k.c) });
 					return;
 				}
 
@@ -59,7 +59,6 @@ export class ExchangeService implements Exchange {
 
 				updateSymbol({
 					pair: data?.s,
-					interval,
 					newCandle,
 				});
 			}

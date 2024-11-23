@@ -29,7 +29,6 @@ export type UpdateSymbolProps = {
 	pair: string;
 	price?: number;
 	newCandle?: Candle;
-	interval: Interval;
 };
 export type openPositionProps = {
 	user: User;
