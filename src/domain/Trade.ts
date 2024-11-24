@@ -202,8 +202,41 @@ export class Trade {
 			positionSide,
 			sl: this.config.sl,
 			tp: this.config.tp,
-			coinQuantity: 0, //TODO get coin quantity
+			coinQuantity: this.coinQuantityUSDT({ user, symbol, positionSide }),
 		});
+	}
+
+	coinQuantityUSDT({
+		user,
+		symbol,
+		positionSide,
+	}: {
+		user: User;
+		symbol: Symbol;
+		positionSide: PositionSide;
+	}) {
+		const slPrice =
+			positionSide === "LONG"
+				? symbol.currentPrice * (1 - this.config.sl)
+				: symbol.currentPrice * (1 + this.config.sl);
+
+		const tpPrice =
+			positionSide === "LONG"
+				? symbol.currentPrice * (1 + this.config.tp)
+				: symbol.currentPrice * (1 - this.config.tp);
+
+		const quantityUSDT = Math.max(
+			(user.balanceUSDT * this.config.riskPt) / this.config.sl,
+			this.config.minAmountToTradeUSDT
+		);
+
+		const coinQuantity = Math.max(
+			quantityUSDT / symbol.currentPrice,
+			quantityUSDT / tpPrice,
+			quantityUSDT / slPrice
+		);
+
+		return coinQuantity;
 	}
 
 	async handleExistingPositions({
@@ -446,15 +479,7 @@ export class Trade {
 		const openPos = this.userList[userIndex].openPositions[openPosIndex];
 
 		await this.authExchange.cancelOrders({ user, pair });
-		const slPrice =
-			openPos.positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 - this.config.sl)
-				: this.symbolList[symbolIndex].currentPrice * (1 + this.config.sl);
 
-		const tpPrice =
-			openPos.positionSide === "LONG"
-				? this.symbolList[symbolIndex].currentPrice * (1 + this.config.tp)
-				: this.symbolList[symbolIndex].currentPrice * (1 - this.config.tp);
 		console.log(
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
