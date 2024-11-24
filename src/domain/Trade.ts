@@ -1,4 +1,4 @@
-import type { Exchange, UpdateSymbolProps } from "./Exchange";
+import type { AuthExchange } from "./AuthExchange";
 import type { Symbol } from "./Symbol";
 import type { Strategy, StrategyResponse } from "./Strategy";
 import { delay } from "../utils/delay";
@@ -9,16 +9,24 @@ import type { Alert } from "./Alert";
 import { OrderType } from "./Order";
 import type { User } from "./User";
 import type { TradeConfig } from "./TradeConfig";
+import type { Exchange, UpdateSymbolProps } from "./Exchange";
 
 export class Trade {
 	exchange: Exchange;
+	authExchange: AuthExchange;
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
 	strategies: Strategy[];
 	config: TradeConfig;
 
-	constructor(exchange: Exchange, config: TradeConfig, strategies: Strategy[]) {
+	constructor(
+		exchange: Exchange,
+		authExchange: AuthExchange,
+		config: TradeConfig,
+		strategies: Strategy[]
+	) {
 		this.exchange = exchange;
+		this.authExchange = authExchange;
 		this.config = config;
 		this.strategies = strategies;
 	}
@@ -33,7 +41,7 @@ export class Trade {
 				minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
 				candlestickAPILimit: this.config.apiLimit,
 			}),
-			this.exchange.getUsersData({
+			this.authExchange.getUsersData({
 				interval: this.config.interval,
 			}),
 		]);
@@ -80,7 +88,7 @@ export class Trade {
 		}
 
 		await delay(5000);
-		await this.exchange.getUsersData({
+		await this.authExchange.getUsersData({
 			interval: this.config.interval,
 		});
 
@@ -88,7 +96,7 @@ export class Trade {
 			this.handleExistingPositions({ userName: user.name });
 		}
 
-		await this.exchange.getUsersData({
+		await this.authExchange.getUsersData({
 			interval: this.config.interval,
 		});
 		this.securePositions();
@@ -127,7 +135,7 @@ export class Trade {
 		// Subscribe to user updates
 		for (const user of this.userList) {
 			try {
-				this.exchange.subscribeToUserUpdates({
+				this.authExchange.subscribeToUserUpdates({
 					user,
 					handleClearOrders: this.clearOrders,
 				});
@@ -194,7 +202,7 @@ export class Trade {
 			return;
 		}
 
-		await this.exchange.openPosition({
+		await this.authExchange.openPosition({
 			user,
 			symbol,
 			positionSide,
@@ -404,7 +412,7 @@ export class Trade {
 		if (userIndex === -1) return;
 
 		try {
-			await this.exchange.quitPosition({
+			await this.authExchange.quitPosition({
 				user,
 				symbol: this.symbolList[symbolIndex],
 				positionSide,
@@ -443,7 +451,7 @@ export class Trade {
 		if (openPosIndex === -1) return;
 		const openPos = this.userList[userIndex].openPositions[openPosIndex];
 
-		await this.exchange.cancelOrders({ user, pair });
+		await this.authExchange.cancelOrders({ user, pair });
 		const slPrice =
 			openPos.positionSide === "LONG"
 				? this.symbolList[symbolIndex].currentPrice * (1 - this.config.sl)
@@ -484,7 +492,7 @@ export class Trade {
 			return;
 		}
 
-		await this.exchange.cancelOrders({ user, pair });
+		await this.authExchange.cancelOrders({ user, pair });
 
 		this.userList[userIndex].openOrders = this.userList[
 			userIndex
