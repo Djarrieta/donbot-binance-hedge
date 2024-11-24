@@ -8,6 +8,7 @@ export type AuthExchange = {
 	quitPosition(props: QuitPositionProps): Promise<void>;
 	cancelOrders(props: { user: User; pair: string }): Promise<void>;
 	openPosition(props: openPositionProps): Promise<void>;
+	protectPosition(props: openPositionProps): Promise<void>;
 	subscribeToUserUpdates(props: SubscribeToUserUpdatesProps): Promise<void>;
 };
 
@@ -31,8 +32,8 @@ export type openPositionProps = {
 	symbol: Symbol;
 	positionSide: PositionSide;
 	coinQuantity: number;
-	sl: number;
-	tp: number;
+	slPrice: number;
+	tpPrice: number;
 };
 export type SubscribeToUserUpdatesProps = {
 	user: User;

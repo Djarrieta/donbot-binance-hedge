@@ -196,17 +196,23 @@ export class Trade {
 			return;
 		}
 
+		const { coinQuantity, slPrice, tpPrice } = this.transactionProps({
+			user,
+			symbol,
+			positionSide,
+		});
+
 		await this.authExchange.openPosition({
 			user,
 			symbol,
 			positionSide,
-			sl: this.config.sl,
-			tp: this.config.tp,
-			coinQuantity: this.coinQuantityUSDT({ user, symbol, positionSide }),
+			slPrice,
+			tpPrice,
+			coinQuantity,
 		});
 	}
 
-	coinQuantityUSDT({
+	transactionProps({
 		user,
 		symbol,
 		positionSide,
@@ -236,7 +242,7 @@ export class Trade {
 			quantityUSDT / slPrice
 		);
 
-		return coinQuantity;
+		return { coinQuantity, slPrice, tpPrice };
 	}
 
 	async handleExistingPositions({
@@ -471,6 +477,7 @@ export class Trade {
 
 		const symbolIndex = this.symbolList.findIndex((s) => s.pair === pair);
 		if (symbolIndex === -1) return;
+		const symbol = this.symbolList[symbolIndex];
 
 		const openPosIndex = this.userList[userIndex].openPositions.findIndex(
 			(p) => p.pair === pair
@@ -483,12 +490,21 @@ export class Trade {
 		console.log(
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
+		const { slPrice, tpPrice } = this.transactionProps({
+			user,
+			symbol,
+			positionSide,
+		});
+
 		try {
-			// await this.protectPosition({
-			// 	userName,
-			// 	pair,
-			// 	positionSide,
-			// })
+			this.authExchange.protectPosition({
+				user,
+				symbol,
+				positionSide,
+				coinQuantity: Number(openPos.coinQuantity),
+				slPrice,
+				tpPrice,
+			});
 
 			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
 		} catch (e) {

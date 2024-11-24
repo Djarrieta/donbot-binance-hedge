@@ -145,22 +145,22 @@ export class AuthExchangeService implements AuthExchange {
 		symbol,
 		positionSide,
 		coinQuantity,
-		sl,
-		tp,
+		slPrice,
+		tpPrice,
 	}: openPositionProps) {
 		const authExchange = Binance({
 			apiKey: user.binanceApiKey,
 			apiSecret: user.binanceApiSecret || "",
 		});
 
-		const HEPrice = fixPrecision({
-			value: sl, //price fix not percent
-			precision: symbol.pricePrecision,
-		});
-
 		const quantity = fixPrecision({
 			value: coinQuantity,
 			precision: symbol.quantityPrecision,
+		});
+
+		const HEPrice = fixPrecision({
+			value: slPrice,
+			precision: symbol.pricePrecision,
 		});
 
 		await authExchange.futuresOrder({
@@ -180,7 +180,7 @@ export class AuthExchangeService implements AuthExchange {
 		});
 
 		const TPPrice = fixPrecision({
-			value: tp, //price fix not percent
+			value: tpPrice,
 			precision: symbol.pricePrecision,
 		});
 
@@ -211,6 +211,66 @@ export class AuthExchangeService implements AuthExchange {
 				positionSide,
 				price: symbol.currentPrice.toString(),
 			}).fullIdName,
+		});
+	}
+	async protectPosition({
+		user,
+		symbol,
+		positionSide,
+		coinQuantity,
+		slPrice,
+		tpPrice,
+	}: openPositionProps): Promise<void> {
+		const authExchange = Binance({
+			apiKey: user.binanceApiKey,
+			apiSecret: user.binanceApiSecret || "",
+		});
+
+		const quantity = fixPrecision({
+			value: coinQuantity,
+			precision: symbol.quantityPrecision,
+		});
+
+		const HEPrice = fixPrecision({
+			value: slPrice,
+			precision: symbol.pricePrecision,
+		});
+
+		await authExchange.futuresOrder({
+			type: "STOP_MARKET",
+			side: positionSide === "LONG" ? "SELL" : "BUY",
+			positionSide: positionSide === "LONG" ? "SHORT" : "LONG",
+			symbol: symbol.pair,
+			quantity,
+			stopPrice: HEPrice,
+			recvWindow: 59999,
+			newClientOrderId: orderIdNameGenerator({
+				orderType: OrderType.HEDGE,
+				positionSide,
+				price: HEPrice,
+			}).fullIdName,
+			timeInForce: "GTC",
+		});
+
+		const TPPrice = fixPrecision({
+			value: tpPrice,
+			precision: symbol.pricePrecision,
+		});
+
+		await authExchange.futuresOrder({
+			type: "STOP_MARKET",
+			side: positionSide === "LONG" ? "BUY" : "SELL",
+			positionSide: positionSide === "LONG" ? "SHORT" : "LONG",
+			symbol: symbol.pair,
+			quantity,
+			stopPrice: TPPrice,
+			recvWindow: 59999,
+			newClientOrderId: orderIdNameGenerator({
+				orderType: OrderType.HEDGE,
+				positionSide,
+				price: TPPrice,
+			}).fullIdName,
+			timeInForce: "GTC",
 		});
 	}
 	async getUsersData({ interval }: { interval: Interval }): Promise<User[]> {
