@@ -77,8 +77,6 @@ export class Trade {
 							user,
 							symbol,
 							positionSide: alert.positionSide,
-							sl: this.config.sl,
-							tp: this.config.tp,
 						});
 					}
 				}
@@ -149,14 +147,10 @@ export class Trade {
 		user,
 		symbol,
 		positionSide,
-		sl,
-		tp,
 	}: {
 		user: User;
 		symbol: Symbol;
 		positionSide: PositionSide;
-		sl: number;
-		tp: number;
 	}) {
 		if (user.isAddingPosition) return;
 
@@ -206,8 +200,8 @@ export class Trade {
 			user,
 			symbol,
 			positionSide,
-			sl,
-			tp,
+			sl: this.config.sl,
+			tp: this.config.tp,
 			coinQuantity: 0, //TODO get coin quantity
 		});
 	}
