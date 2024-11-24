@@ -8,7 +8,9 @@ const TEST_DB_NAME = "TEST.db";
 const deletePreviousDB = () => {
 	try {
 		unlinkSync(TEST_DB_NAME);
-	} catch (e) {}
+	} catch (e) {
+		console.log(e);
+	}
 };
 
 const fakeCandlestick: CandleBt[] = [

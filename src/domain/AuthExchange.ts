@@ -9,7 +9,16 @@ export type AuthExchange = {
 	cancelOrders(props: { user: User; pair: string }): Promise<void>;
 	openPosition(props: openPositionProps): Promise<void>;
 	protectPosition(props: openPositionProps): Promise<void>;
+	securePosition(props: securePositionProps): Promise<void>;
 	subscribeToUserUpdates(props: SubscribeToUserUpdatesProps): Promise<void>;
+};
+
+export type securePositionProps = {
+	user: User;
+	symbol: Symbol;
+	positionSide: PositionSide;
+	coinQuantity: number;
+	bePrice: number;
 };
 
 export type HistoricalPnl = {

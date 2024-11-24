@@ -6,7 +6,6 @@ import type {
 import Binance from "binance-api-node";
 import type { CandleBt as Candle } from "../domain/Candle";
 import { Interval } from "../domain/Interval";
-import type { PositionSide } from "../domain/Position";
 
 export class MarketDataService {
 	private exchange: IBinance;
@@ -137,15 +136,5 @@ export class MarketDataService {
 				volume: Number(volume),
 			})
 		);
-	}
-
-	openPosition(arg0: {
-		userName: string;
-		pair: string;
-		positionSide: PositionSide;
-		sl: number;
-		tp: number;
-	}) {
-		throw new Error("Method not implemented.");
 	}
 }

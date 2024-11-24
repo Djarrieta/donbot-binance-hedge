@@ -4,6 +4,7 @@ import type {
 	AuthExchange,
 	HistoricalPnl,
 	openPositionProps,
+	securePositionProps,
 	SubscribeToUserUpdatesProps,
 } from "../domain/AuthExchange";
 import { Interval } from "../domain/Interval";
@@ -269,6 +270,44 @@ export class AuthExchangeService implements AuthExchange {
 				orderType: OrderType.HEDGE,
 				positionSide,
 				price: TPPrice,
+			}).fullIdName,
+			timeInForce: "GTC",
+		});
+	}
+	async securePosition({
+		user,
+		symbol,
+		positionSide,
+		coinQuantity,
+		bePrice,
+	}: securePositionProps) {
+		const authExchange = Binance({
+			apiKey: user.binanceApiKey,
+			apiSecret: user.binanceApiSecret || "",
+		});
+
+		const BEPriceFixed = fixPrecision({
+			value: bePrice,
+			precision: symbol.pricePrecision,
+		});
+
+		const quantity = fixPrecision({
+			value: coinQuantity,
+			precision: symbol.quantityPrecision,
+		});
+
+		await authExchange.futuresOrder({
+			type: "STOP_MARKET",
+			side: positionSide === "LONG" ? "SELL" : "BUY",
+			positionSide,
+			symbol: symbol.pair,
+			quantity,
+			stopPrice: BEPriceFixed,
+			recvWindow: 59999,
+			newClientOrderId: orderIdNameGenerator({
+				orderType: OrderType.BREAK,
+				positionSide,
+				price: BEPriceFixed,
 			}).fullIdName,
 			timeInForce: "GTC",
 		});

@@ -7,7 +7,9 @@ const TEST_DB_NAME = "TEST_ALERT.db";
 const deletePreviousDB = () => {
 	try {
 		unlinkSync(TEST_DB_NAME);
-	} catch (e) {}
+	} catch (e) {
+		console.log(e);
+	}
 };
 
 const fakeProfitStick: Alert["profitStick"] = [
