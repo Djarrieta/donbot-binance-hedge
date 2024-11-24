@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { unlinkSync } from "fs";
-import { BacktestDataService } from "./BacktestDataService";
-import type { CandleBt as Candle } from "../domain/Candle";
-import type { Stat } from "../domain/Stat";
+import type { CandleBt } from "../../domain/Candle";
+import type { Stat } from "../../domain/Stat";
+import { BacktestDataService } from "../BacktestDataService";
 
 const TEST_DB_NAME = "TEST.db";
 const deletePreviousDB = () => {
@@ -11,7 +11,7 @@ const deletePreviousDB = () => {
 	} catch (e) {}
 };
 
-const fakeCandlestick: Candle[] = [
+const fakeCandlestick: CandleBt[] = [
 	{
 		pair: "MANAUSDT",
 		open: 1,

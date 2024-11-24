@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { unlinkSync } from "fs";
-import type { Alert } from "../domain/Alert";
-import { AlertService } from "./AlertService";
+import type { Alert } from "../../domain/Alert";
+import { AlertService } from "../AlertService";
 
 const TEST_DB_NAME = "TEST_ALERT.db";
 const deletePreviousDB = () => {

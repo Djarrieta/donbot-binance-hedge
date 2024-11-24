@@ -1,12 +1,12 @@
 import { expect, test, describe } from "bun:test";
-import { MarketDataService } from "./MarketDataService";
-import { getDate, type DateString } from "../utils/getDate";
-import { Interval } from "../domain/Interval";
+import { getDate, type DateString } from "../../utils/getDate";
+import { Interval } from "../../domain/Interval";
+import { ExchangeService } from "../ExchangeService";
 
-describe("Market Data Service", () => {
+describe("Exchange Service", () => {
 	test("gets pair list", async () => {
-		const marketDataService = new MarketDataService();
-		const pairList = await marketDataService.getPairList({
+		const exchange = new ExchangeService();
+		const pairList = await exchange.getPairList({
 			minAmountToTradeUSDT: 6,
 		});
 
@@ -16,13 +16,13 @@ describe("Market Data Service", () => {
 	});
 
 	test("gets candlesticks under api limit", async () => {
-		const marketDataService = new MarketDataService();
-		const candlestick = await marketDataService.getCandlestick({
+		const exchange = new ExchangeService();
+		const candlestick = await exchange.getCandlestick({
 			pair: "XRPUSDT",
 			start: getDate("2024-11-01" as DateString).dateMs,
 			end: getDate("2024-11-03" as DateString).dateMs,
 			interval: Interval["1h"],
-			apiLimit: 100,
+			candlestickAPILimit: 100,
 		});
 
 		expect(candlestick[0].openTime).toBe(
@@ -38,13 +38,13 @@ describe("Market Data Service", () => {
 	});
 
 	test("gets candlesticks over api limit", async () => {
-		const marketDataService = new MarketDataService();
-		const candlestick = await marketDataService.getCandlestick({
+		const exchange = new ExchangeService();
+		const candlestick = await exchange.getCandlestick({
 			pair: "XRPUSDT",
 			start: getDate("2024-11-01" as DateString).dateMs,
 			end: getDate("2024-11-03" as DateString).dateMs,
 			interval: Interval["1h"],
-			apiLimit: 20,
+			candlestickAPILimit: 20,
 		});
 
 		expect(candlestick[0].openTime).toBe(
