@@ -32,7 +32,6 @@ export class Trade {
 	}
 
 	async initialize() {
-		this.showConfig();
 		const [symbolList, userList] = await Promise.all([
 			this.exchange.getSymbolsData({
 				apiLimit: this.config.apiLimit,
@@ -48,6 +47,8 @@ export class Trade {
 
 		this.symbolList = symbolList;
 		this.userList = userList;
+
+		this.showConfig();
 
 		for (const user of this.userList) {
 			this.handleExistingPositions({ userName: user.name });
