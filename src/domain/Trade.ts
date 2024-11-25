@@ -124,7 +124,7 @@ export class Trade {
 				this.exchange.subscribeToSymbolUpdates({
 					pair: symbol.pair,
 					interval: this.config.interval,
-					updateSymbol: this.handleSymbolUpdate,
+					updateSymbol: this.handleSymbolUpdate.bind(this),
 				});
 			} catch (e) {
 				console.error(e);
