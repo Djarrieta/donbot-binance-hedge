@@ -74,7 +74,7 @@ export class Trade {
 			for (const user of this.userList) {
 				for (const alert of alerts) {
 					if (alert.positionSide) {
-						this.handleNewPosition({
+						this.openPosition({
 							user,
 							symbol,
 							positionSide: alert.positionSide,
@@ -142,76 +142,7 @@ export class Trade {
 		}
 	}
 
-	async handleNewPosition({
-		user,
-		symbol,
-		positionSide,
-	}: {
-		user: User;
-		symbol: Symbol;
-		positionSide: PositionSide;
-	}) {
-		if (user.isAddingPosition) return;
-
-		const hedgedPosUniquePairs = Array.from(
-			new Set(
-				user.openPositions
-					.filter((p) => p.status === "HEDGED")
-					.map((x) => x.pair)
-			)
-		);
-
-		const openPosUniquePairs = Array.from(
-			new Set(user.openPositions.map((x) => x.pair))
-		);
-
-		const openPosUnsecuredUniquePairs = Array.from(
-			new Set(
-				user.openPositions
-					.filter((p) => p.status !== "SECURED")
-					.map((x) => x.pair)
-			)
-		);
-
-		const tooManyOpenWithoutHedge =
-			!hedgedPosUniquePairs.length &&
-			openPosUnsecuredUniquePairs.length >= this.config.maxProtectedPositions;
-
-		const tooManyOpenWithHedge =
-			hedgedPosUniquePairs.length &&
-			openPosUnsecuredUniquePairs.length - hedgedPosUniquePairs.length >=
-				this.config.maxProtectedPositions;
-
-		const tooManyHedge =
-			hedgedPosUniquePairs.length >= this.config.maxHedgePositions;
-
-		if (
-			tooManyOpenWithoutHedge ||
-			tooManyOpenWithHedge ||
-			tooManyHedge ||
-			user.isAddingPosition ||
-			openPosUniquePairs.includes(symbol.pair)
-		) {
-			return;
-		}
-
-		const { coinQuantity, slPrice, tpPrice } = this.transactionProps({
-			user,
-			symbol,
-			positionSide,
-		});
-
-		await this.authExchange.openPosition({
-			user,
-			symbol,
-			positionSide,
-			slPrice,
-			tpPrice,
-			coinQuantity,
-		});
-	}
-
-	transactionProps({
+	getTransactionProps({
 		user,
 		symbol,
 		positionSide,
@@ -426,6 +357,75 @@ export class Trade {
 			});
 		}
 	}
+
+	async openPosition({
+		user,
+		symbol,
+		positionSide,
+	}: {
+		user: User;
+		symbol: Symbol;
+		positionSide: PositionSide;
+	}) {
+		if (user.isAddingPosition) return;
+
+		const hedgedPosUniquePairs = Array.from(
+			new Set(
+				user.openPositions
+					.filter((p) => p.status === "HEDGED")
+					.map((x) => x.pair)
+			)
+		);
+
+		const openPosUniquePairs = Array.from(
+			new Set(user.openPositions.map((x) => x.pair))
+		);
+
+		const openPosUnsecuredUniquePairs = Array.from(
+			new Set(
+				user.openPositions
+					.filter((p) => p.status !== "SECURED")
+					.map((x) => x.pair)
+			)
+		);
+
+		const tooManyOpenWithoutHedge =
+			!hedgedPosUniquePairs.length &&
+			openPosUnsecuredUniquePairs.length >= this.config.maxProtectedPositions;
+
+		const tooManyOpenWithHedge =
+			hedgedPosUniquePairs.length &&
+			openPosUnsecuredUniquePairs.length - hedgedPosUniquePairs.length >=
+				this.config.maxProtectedPositions;
+
+		const tooManyHedge =
+			hedgedPosUniquePairs.length >= this.config.maxHedgePositions;
+
+		if (
+			tooManyOpenWithoutHedge ||
+			tooManyOpenWithHedge ||
+			tooManyHedge ||
+			user.isAddingPosition ||
+			openPosUniquePairs.includes(symbol.pair)
+		) {
+			return;
+		}
+
+		const { coinQuantity, slPrice, tpPrice } = this.getTransactionProps({
+			user,
+			symbol,
+			positionSide,
+		});
+
+		await this.authExchange.openPosition({
+			user,
+			symbol,
+			positionSide,
+			slPrice,
+			tpPrice,
+			coinQuantity,
+		});
+	}
 	async quitPosition({
 		user,
 		pair,
@@ -489,7 +489,7 @@ export class Trade {
 		console.log(
 			"Protecting position for " + userName + " " + pair + " " + positionSide
 		);
-		const { slPrice, tpPrice } = this.transactionProps({
+		const { slPrice, tpPrice } = this.getTransactionProps({
 			user,
 			symbol,
 			positionSide,
@@ -514,6 +514,85 @@ export class Trade {
 				positionSide,
 				coinQuantity: Number(openPos.coinQuantity),
 			});
+		}
+	}
+
+	async securePositions() {
+		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
+			for (
+				let posIndex = 0;
+				posIndex < this.userList[userIndex].openPositions.length;
+				posIndex++
+			) {
+				const pos = this.userList[userIndex].openPositions[posIndex];
+
+				if (pos.status !== "PROTECTED" && pos.status !== "SECURED") continue;
+
+				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
+
+				if (!symbol || !symbol.currentPrice) continue;
+				const breakOrdersSameSymbol = this.userList[
+					userIndex
+				].openOrders.filter(
+					(order) =>
+						order.pair === pos.pair && order.orderType === OrderType.BREAK
+				);
+
+				const pnlGraph =
+					pos.positionSide === "LONG"
+						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
+						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
+				for (
+					let alertIndex = 0;
+					alertIndex < this.config.breakEventAlerts.length;
+					alertIndex++
+				) {
+					const alert = this.config.breakEventAlerts[alertIndex];
+					if (
+						pnlGraph > alert.alert &&
+						Number(pos.tradeLength) >= alert.len &&
+						breakOrdersSameSymbol.length <= alertIndex
+					) {
+						const bePrice =
+							pos.positionSide === "LONG"
+								? pos.entryPriceUSDT * (1 + alert.value)
+								: pos.entryPriceUSDT * (1 - alert.value);
+						console.log(
+							"Securing position for " +
+								this.userList[userIndex].name +
+								" " +
+								pos.pair +
+								" " +
+								pos.positionSide
+						);
+						try {
+							// await securePositionService({
+							// 	symbol,
+							// 	user: this.userList[userIndex],
+							// 	positionSide:
+							// 		this.userList[userIndex].openPositions[posIndex].positionSide,
+							// 	coinQuantity: Number(
+							// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
+							// 	),
+							// 	bePrice,
+							// });
+
+							this.userList[userIndex].openPositions[posIndex].status =
+								"SECURED";
+							breakOrdersSameSymbol.push({
+								pair: pos.pair,
+								orderType: OrderType.BREAK,
+								price: bePrice,
+								coinQuantity: 0,
+								orderId: 0,
+								clientOrderId: "",
+							});
+						} catch (e) {
+							console.error(e);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -602,85 +681,6 @@ export class Trade {
 		}
 
 		return response;
-	}
-
-	async securePositions() {
-		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
-			for (
-				let posIndex = 0;
-				posIndex < this.userList[userIndex].openPositions.length;
-				posIndex++
-			) {
-				const pos = this.userList[userIndex].openPositions[posIndex];
-
-				if (pos.status !== "PROTECTED" && pos.status !== "SECURED") continue;
-
-				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
-
-				if (!symbol || !symbol.currentPrice) continue;
-				const breakOrdersSameSymbol = this.userList[
-					userIndex
-				].openOrders.filter(
-					(order) =>
-						order.pair === pos.pair && order.orderType === OrderType.BREAK
-				);
-
-				const pnlGraph =
-					pos.positionSide === "LONG"
-						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
-						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
-				for (
-					let alertIndex = 0;
-					alertIndex < this.config.breakEventAlerts.length;
-					alertIndex++
-				) {
-					const alert = this.config.breakEventAlerts[alertIndex];
-					if (
-						pnlGraph > alert.alert &&
-						Number(pos.tradeLength) >= alert.len &&
-						breakOrdersSameSymbol.length <= alertIndex
-					) {
-						const bePrice =
-							pos.positionSide === "LONG"
-								? pos.entryPriceUSDT * (1 + alert.value)
-								: pos.entryPriceUSDT * (1 - alert.value);
-						console.log(
-							"Securing position for " +
-								this.userList[userIndex].name +
-								" " +
-								pos.pair +
-								" " +
-								pos.positionSide
-						);
-						try {
-							// await securePositionService({
-							// 	symbol,
-							// 	user: this.userList[userIndex],
-							// 	positionSide:
-							// 		this.userList[userIndex].openPositions[posIndex].positionSide,
-							// 	coinQuantity: Number(
-							// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
-							// 	),
-							// 	bePrice,
-							// });
-
-							this.userList[userIndex].openPositions[posIndex].status =
-								"SECURED";
-							breakOrdersSameSymbol.push({
-								pair: pos.pair,
-								orderType: OrderType.BREAK,
-								price: bePrice,
-								coinQuantity: 0,
-								orderId: 0,
-								clientOrderId: "",
-							});
-						} catch (e) {
-							console.error(e);
-						}
-					}
-				}
-			}
-		}
 	}
 
 	showConfig() {
