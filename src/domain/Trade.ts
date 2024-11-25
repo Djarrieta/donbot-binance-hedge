@@ -118,7 +118,6 @@ export class Trade {
 	private runSubscribers() {
 		console.log("Running subscribers");
 
-		// Subscribe to symbol updates
 		for (const symbol of this.symbolList) {
 			try {
 				this.exchange.subscribeToSymbolUpdates({
@@ -131,12 +130,11 @@ export class Trade {
 			}
 		}
 
-		// Subscribe to user updates
 		for (const user of this.userList) {
 			try {
 				this.authExchange.subscribeToUserUpdates({
 					user,
-					handleClearOrders: this.clearOrders,
+					handleClearOrders: this.clearOrders.bind(this),
 				});
 			} catch (e) {
 				console.error(e);
