@@ -533,6 +533,8 @@ export class Trade {
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		if (userIndex === -1) return;
 
+		const user = this.userList[userIndex];
+
 		for (
 			let posIndex = 0;
 			posIndex < this.userList[userIndex].openPositions.length;
@@ -578,17 +580,13 @@ export class Trade {
 							pos.positionSide
 					);
 					try {
-						//TODO: Secure position
-						// await securePositionService({
-						// 	symbol,
-						// 	user: this.userList[userIndex],
-						// 	positionSide:
-						// 		this.userList[userIndex].openPositions[posIndex].positionSide,
-						// 	coinQuantity: Number(
-						// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
-						// 	),
-						// 	bePrice,
-						// });
+						this.authExchange.securePosition({
+							user,
+							symbol,
+							positionSide: pos.positionSide,
+							coinQuantity: Number(pos.coinQuantity),
+							bePrice,
+						});
 
 						this.userList[userIndex].openPositions[posIndex].status = "SECURED";
 						breakOrdersSameSymbol.push({
