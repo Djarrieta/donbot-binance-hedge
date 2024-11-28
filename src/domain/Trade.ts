@@ -93,7 +93,7 @@ export class Trade {
 			console.log("No trades found");
 		}
 
-		await delay(5000);
+		await delay(1000);
 		this.userList = await this.authExchange.getUsersData({
 			interval: this.config.interval,
 		});
@@ -627,17 +627,6 @@ export class Trade {
 			alerts: StrategyResponse[];
 		} = { text: "", alerts: [] };
 
-		for (
-			let symbolIndex = 0;
-			symbolIndex < this.symbolList.length;
-			symbolIndex++
-		) {
-			const symbol = this.symbolList[symbolIndex];
-			this.symbolList[symbolIndex].volatility = getVolatility({
-				candlestick: symbol.candlestick,
-			});
-		}
-
 		const readySymbols = [...this.symbolList]
 			.filter((s) => s.isReady)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
@@ -682,6 +671,10 @@ export class Trade {
 			symbolIndex++
 		) {
 			const symbol = this.symbolList[symbolIndex];
+
+			this.symbolList[symbolIndex].volatility = getVolatility({
+				candlestick: symbol.candlestick,
+			});
 
 			if (!symbol.candlestick.length) {
 				this.symbolList[symbolIndex].isReady = false;
