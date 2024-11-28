@@ -39,6 +39,7 @@ export class Trade {
 				interval: this.config.interval,
 				minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
 				candlestickAPILimit: this.config.apiLimit,
+				strategies: this.strategies,
 			}),
 			this.authExchange.getUsersData({
 				interval: this.config.interval,
@@ -60,7 +61,9 @@ export class Trade {
 
 	async loop() {
 		await delay(5000);
-		console.log(getDate().dateString);
+		console.log(`\n${getDate().dateString}`);
+
+		this.checkSymbols();
 
 		const { text: alertText, alerts } = this.checkForTrades();
 
@@ -369,6 +372,11 @@ export class Trade {
 	}) {
 		if (user.isAddingPosition) return;
 
+		const userIndex = this.userList.findIndex((u) => u.name === user.name);
+
+		if (userIndex === -1) return;
+		this.userList[userIndex].isAddingPosition = true;
+
 		const hedgedPosUniquePairs = Array.from(
 			new Set(
 				user.openPositions
@@ -405,7 +413,6 @@ export class Trade {
 			tooManyOpenWithoutHedge ||
 			tooManyOpenWithHedge ||
 			tooManyHedge ||
-			user.isAddingPosition ||
 			openPosUniquePairs.includes(symbol.pair)
 		) {
 			return;
@@ -425,6 +432,7 @@ export class Trade {
 			tpPrice,
 			coinQuantity,
 		});
+		this.userList[userIndex].isAddingPosition = false;
 	}
 	async quitPosition({
 		user,
@@ -681,6 +689,48 @@ export class Trade {
 		}
 
 		return response;
+	}
+
+	checkSymbols() {
+		for (
+			let symbolIndex = 0;
+			symbolIndex < this.symbolList.length;
+			symbolIndex++
+		) {
+			const symbol = this.symbolList[symbolIndex];
+
+			if (!symbol.candlestick.length) {
+				this.symbolList[symbolIndex].isReady = false;
+				continue;
+			}
+
+			const lastOpenTime =
+				symbol.candlestick[symbol.candlestick.length - 1].openTime;
+			const lastDiff =
+				(getDate().dateMs - getDate(lastOpenTime).dateMs) /
+				this.config.interval;
+
+			if (lastDiff > 2) {
+				this.symbolList[symbolIndex].isReady = false;
+				continue;
+			}
+
+			for (let index = 0; index < symbol.candlestick.length - 1; index++) {
+				const currentCandle = symbol.candlestick[index];
+				const nextCandle = symbol.candlestick[index + 1];
+
+				const candlesDifference =
+					(getDate(nextCandle.openTime).dateMs -
+						getDate(currentCandle.openTime).dateMs) /
+					this.config.interval;
+
+				if (candlesDifference !== 1) {
+					this.symbolList[symbolIndex].isReady = false;
+					continue;
+				}
+			}
+			this.symbolList[symbolIndex].isReady = true;
+		}
 	}
 
 	showConfig() {

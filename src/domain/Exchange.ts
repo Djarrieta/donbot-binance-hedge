@@ -1,6 +1,7 @@
 import type { CandleBt } from "../domain/Candle";
 import { Interval } from "../domain/Interval";
 import type { Symbol } from "../domain/Symbol";
+import type { Strategy } from "./Strategy";
 
 export type Exchange = {
 	getPairList(props: GetPairListProps): Promise<string[]>;
@@ -23,6 +24,7 @@ export type GetSymbolsDataProps = {
 	lookBackLength: number;
 	candlestickAPILimit: number;
 	apiLimit: number;
+	strategies: Strategy[];
 };
 export type GetPairListProps = {
 	minAmountToTradeUSDT: number;

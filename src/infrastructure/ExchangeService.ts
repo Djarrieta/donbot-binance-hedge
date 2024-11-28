@@ -13,6 +13,7 @@ import type {
 	UpdateSymbolProps,
 } from "../domain/Exchange";
 import { Interval } from "../domain/Interval";
+import type { Strategy } from "../domain/Strategy";
 import { type Symbol } from "../domain/Symbol";
 import { getDate } from "../utils/getDate";
 
@@ -25,16 +26,28 @@ export class ExchangeService implements Exchange {
 
 	public async getPairList({
 		minAmountToTradeUSDT,
+		strategies,
 	}: {
 		minAmountToTradeUSDT: number;
+		strategies: Strategy[];
 	}): Promise<string[]> {
-		const pairList: string[] = [];
+		let pairList: string[] = [];
+		const pairsInStrategies = Array.from(
+			new Set(strategies.map((s) => s.allowedPairs).flat())
+		) as string[];
+
 		try {
 			const { symbols: unformattedList } =
 				await this.exchange.futuresExchangeInfo();
+
+			const filteredSymbols = pairsInStrategies.length
+				? unformattedList.filter((symbol) => {
+						return pairsInStrategies.includes(symbol.symbol);
+				  })
+				: unformattedList;
 			const prices = await this.exchange.futuresMarkPrice();
 
-			for (const symbol of unformattedList) {
+			for (const symbol of filteredSymbols) {
 				if (this.isValidSymbol(symbol, prices, minAmountToTradeUSDT)) {
 					pairList.push(symbol.symbol);
 				}
@@ -42,6 +55,7 @@ export class ExchangeService implements Exchange {
 		} catch (error) {
 			console.error("Error fetching pair list:", error);
 		}
+
 		return pairList;
 	}
 
@@ -184,10 +198,14 @@ export class ExchangeService implements Exchange {
 		interval,
 		lookBackLength,
 		candlestickAPILimit,
+		strategies,
 	}: GetSymbolsDataProps): Promise<Symbol[]> {
 		const exchange = Binance();
 		const symbolList: Symbol[] = [];
-		const pairList = await this.getPairList({ minAmountToTradeUSDT });
+		const pairList = await this.getPairList({
+			minAmountToTradeUSDT,
+			strategies,
+		});
 		if (!pairList.length) return symbolList;
 
 		const symbolListInfo = await exchange.futuresExchangeInfo();

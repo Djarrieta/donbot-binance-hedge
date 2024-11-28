@@ -1,6 +1,6 @@
-import { expect, test, describe } from "bun:test";
-import { getDate, type DateString } from "../../utils/getDate";
+import { describe, expect, test } from "bun:test";
 import { Interval } from "../../domain/Interval";
+import { getDate, type DateString } from "../../utils/getDate";
 import { ExchangeService } from "../ExchangeService";
 
 describe("Exchange Service", () => {
@@ -8,6 +8,7 @@ describe("Exchange Service", () => {
 		const exchange = new ExchangeService();
 		const pairList = await exchange.getPairList({
 			minAmountToTradeUSDT: 6,
+			strategies: [],
 		});
 
 		expect(pairList).toBeInstanceOf(Array);
