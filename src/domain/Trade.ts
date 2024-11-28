@@ -55,13 +55,17 @@ export class Trade {
 			this.handleExistingPositions({ userName: user.name });
 		}
 
-		this.securePositions();
+		for (const user of this.userList) {
+			this.securePositions({ userName: user.name });
+		}
+
 		this.runSubscribers();
 	}
 
 	async loop() {
-		await delay(5000);
-		console.log(`\n${getDate().dateString}`);
+		await delay(1000);
+
+		this.showConfig();
 
 		this.checkSymbols();
 
@@ -90,7 +94,7 @@ export class Trade {
 		}
 
 		await delay(5000);
-		await this.authExchange.getUsersData({
+		this.userList = await this.authExchange.getUsersData({
 			interval: this.config.interval,
 		});
 
@@ -98,10 +102,10 @@ export class Trade {
 			this.handleExistingPositions({ userName: user.name });
 		}
 
-		await this.authExchange.getUsersData({
-			interval: this.config.interval,
-		});
-		this.securePositions();
+		for (const user of this.userList) {
+			this.securePositions({ userName: user.name });
+		}
+
 		this.runSubscribers();
 	}
 	handleSymbolUpdate({ pair, price, newCandle }: UpdateSymbolProps) {
@@ -525,79 +529,78 @@ export class Trade {
 		}
 	}
 
-	async securePositions() {
-		for (let userIndex = 0; userIndex < this.userList.length; userIndex++) {
+	async securePositions({ userName }: { userName: string }) {
+		const userIndex = this.userList.findIndex((u) => u.name === userName);
+		if (userIndex === -1) return;
+
+		for (
+			let posIndex = 0;
+			posIndex < this.userList[userIndex].openPositions.length;
+			posIndex++
+		) {
+			const pos = this.userList[userIndex].openPositions[posIndex];
+
+			if (pos.status !== "PROTECTED" && pos.status !== "SECURED") continue;
+
+			const symbol = this.symbolList.find((s) => s.pair === pos.pair);
+
+			if (!symbol || !symbol.currentPrice) continue;
+			const breakOrdersSameSymbol = this.userList[userIndex].openOrders.filter(
+				(order) =>
+					order.pair === pos.pair && order.orderType === OrderType.BREAK
+			);
+
+			const pnlGraph =
+				pos.positionSide === "LONG"
+					? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
+					: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
 			for (
-				let posIndex = 0;
-				posIndex < this.userList[userIndex].openPositions.length;
-				posIndex++
+				let alertIndex = 0;
+				alertIndex < this.config.breakEventAlerts.length;
+				alertIndex++
 			) {
-				const pos = this.userList[userIndex].openPositions[posIndex];
-
-				if (pos.status !== "PROTECTED" && pos.status !== "SECURED") continue;
-
-				const symbol = this.symbolList.find((s) => s.pair === pos.pair);
-
-				if (!symbol || !symbol.currentPrice) continue;
-				const breakOrdersSameSymbol = this.userList[
-					userIndex
-				].openOrders.filter(
-					(order) =>
-						order.pair === pos.pair && order.orderType === OrderType.BREAK
-				);
-
-				const pnlGraph =
-					pos.positionSide === "LONG"
-						? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
-						: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
-				for (
-					let alertIndex = 0;
-					alertIndex < this.config.breakEventAlerts.length;
-					alertIndex++
+				const alert = this.config.breakEventAlerts[alertIndex];
+				if (
+					pnlGraph > alert.alert &&
+					Number(pos.tradeLength) >= alert.len &&
+					breakOrdersSameSymbol.length <= alertIndex
 				) {
-					const alert = this.config.breakEventAlerts[alertIndex];
-					if (
-						pnlGraph > alert.alert &&
-						Number(pos.tradeLength) >= alert.len &&
-						breakOrdersSameSymbol.length <= alertIndex
-					) {
-						const bePrice =
-							pos.positionSide === "LONG"
-								? pos.entryPriceUSDT * (1 + alert.value)
-								: pos.entryPriceUSDT * (1 - alert.value);
-						console.log(
-							"Securing position for " +
-								this.userList[userIndex].name +
-								" " +
-								pos.pair +
-								" " +
-								pos.positionSide
-						);
-						try {
-							// await securePositionService({
-							// 	symbol,
-							// 	user: this.userList[userIndex],
-							// 	positionSide:
-							// 		this.userList[userIndex].openPositions[posIndex].positionSide,
-							// 	coinQuantity: Number(
-							// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
-							// 	),
-							// 	bePrice,
-							// });
+					const bePrice =
+						pos.positionSide === "LONG"
+							? pos.entryPriceUSDT * (1 + alert.value)
+							: pos.entryPriceUSDT * (1 - alert.value);
+					console.log(
+						"Securing position for " +
+							this.userList[userIndex].name +
+							" " +
+							pos.pair +
+							" " +
+							pos.positionSide
+					);
+					try {
+						//TODO: Secure position
+						// await securePositionService({
+						// 	symbol,
+						// 	user: this.userList[userIndex],
+						// 	positionSide:
+						// 		this.userList[userIndex].openPositions[posIndex].positionSide,
+						// 	coinQuantity: Number(
+						// 		this.userList[userIndex].openPositions[posIndex].coinQuantity
+						// 	),
+						// 	bePrice,
+						// });
 
-							this.userList[userIndex].openPositions[posIndex].status =
-								"SECURED";
-							breakOrdersSameSymbol.push({
-								pair: pos.pair,
-								orderType: OrderType.BREAK,
-								price: bePrice,
-								coinQuantity: 0,
-								orderId: 0,
-								clientOrderId: "",
-							});
-						} catch (e) {
-							console.error(e);
-						}
+						this.userList[userIndex].openPositions[posIndex].status = "SECURED";
+						breakOrdersSameSymbol.push({
+							pair: pos.pair,
+							orderType: OrderType.BREAK,
+							price: bePrice,
+							coinQuantity: 0,
+							orderId: 0,
+							clientOrderId: "",
+						});
+					} catch (e) {
+						console.error(e);
 					}
 				}
 			}
@@ -640,23 +643,6 @@ export class Trade {
 		const readySymbols = [...this.symbolList]
 			.filter((s) => s.isReady)
 			.sort((a, b) => Number(b.volatility) - Number(a.volatility));
-
-		if (readySymbols.length) {
-			readySymbols.length > 4
-				? console.log(
-						"Checking for trades in  " +
-							readySymbols[0].pair +
-							", " +
-							readySymbols[1].pair +
-							", ...(" +
-							(readySymbols.length - 2) +
-							" more) "
-				  )
-				: console.log(
-						"Checking for trades in  " +
-							readySymbols.map((s) => s.pair).join(", ")
-				  );
-		}
 
 		for (const strategy of this.strategies) {
 			for (const symbol of readySymbols) {
@@ -735,14 +721,16 @@ export class Trade {
 
 	showConfig() {
 		const userText = `${this.userList.map((u) => u.text).join(`\n`)}`;
-		const symbolText = `Symbols: ${
+		const symbolText = `${
 			this.symbolList.filter((s) => s.isReady).length
-		} ready of ${this.symbolList.length}.`;
+		} symbols ready of ${this.symbolList.length}.`;
 
 		const strategiesText = `Strategies: ${this.strategies
 			.map((s) => s.stgName)
 			.join(", ")}`;
 
-		console.log(`${userText}\n${symbolText}\n${strategiesText}`);
+		console.log(
+			`\n${getDate().dateString}\n${userText}\n${symbolText}\n${strategiesText}`
+		);
 	}
 }
