@@ -3,15 +3,17 @@ import type { Strategy } from "./domain/Strategy";
 import type { TradeConfig } from "./domain/TradeConfig";
 import type { BacktestConfig } from "./domain/TradingStrategyTester";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
+import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 
 export const DATA_BASE_NAME = "DB.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 200000,
+	candleCount: 50000,
 	backtestPercent: 0.75,
 	interval,
+	lastDate: getDate("2024 11 22 00:00:00" as DateString).dateMs,
 });
 
 export const backtestConfig: BacktestConfig = {
@@ -28,7 +30,7 @@ export const backtestConfig: BacktestConfig = {
 	riskPt: 0.25 / 100,
 	feePt: 0.0005,
 	steps: {
-		overrideHistoricalRecords: true,
+		overrideHistoricalRecords: false,
 		overrideAlerts: true,
 	},
 };
@@ -45,7 +47,10 @@ export const tradeConfig: TradeConfig = {
 	apiLimit: 500,
 	maxProtectedPositions: 1,
 	maxHedgePositions: 20,
-	breakEventAlerts: [],
+	breakEventAlerts: [
+		{ alert: 1.5 / 100, value: 1 / 100, len: 5 },
+		{ alert: 7 / 100, value: 5 / 100, len: 5 },
+	],
 };
 
 export const strategies: Strategy[] = [rsiDivergency5m];

@@ -59,8 +59,6 @@ export class AuthExchangeService implements AuthExchange {
 					orderType === OrderType.PROFIT ||
 					orderType === OrderType.BREAK
 				) {
-					console.log("orderType", orderType);
-
 					handleClearOrders({
 						pair,
 						user,

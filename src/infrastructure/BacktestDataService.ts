@@ -74,11 +74,17 @@ export class BacktestDataService {
 	getCandlestick = ({
 		start,
 		end,
+		pair,
 	}: {
 		start: number;
 		end: number;
+		pair?: string;
 	}): Candle[] => {
-		const query = `SELECT * FROM ${this.candlestickTableName} WHERE openTime >= ${start} AND openTime <= ${end} ORDER BY openTime ASC`;
+		const query = `SELECT * FROM ${
+			this.candlestickTableName
+		} WHERE openTime >= ${start} AND openTime <= ${end} ${
+			pair ? `AND pair = '${pair}'` : ""
+		} ORDER BY openTime ASC`;
 		const results = this.db.query(query).all() as Candle[];
 		return results;
 	};

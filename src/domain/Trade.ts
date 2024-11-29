@@ -123,8 +123,6 @@ export class Trade {
 		}
 	}
 	private runSubscribers() {
-		console.log("Running subscribers");
-
 		for (const symbol of this.symbolList) {
 			try {
 				this.exchange.subscribeToSymbolUpdates({
@@ -189,7 +187,6 @@ export class Trade {
 		userName: string;
 		alerts?: Alert[];
 	}) {
-		console.log("Handling existing positions for " + userName);
 		const userIndex = this.userList.findIndex((u) => u.name === userName);
 		const user = this.userList[userIndex];
 		if (userIndex === -1) return;
@@ -427,6 +424,15 @@ export class Trade {
 			symbol,
 			positionSide,
 		});
+
+		console.log(
+			"Adding position " +
+				positionSide +
+				" for " +
+				user.name +
+				" in " +
+				symbol.pair
+		);
 
 		await this.authExchange.openPosition({
 			user,

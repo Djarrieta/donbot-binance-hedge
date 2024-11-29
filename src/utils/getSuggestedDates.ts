@@ -5,12 +5,14 @@ export const getSuggestedDates = ({
 	candleCount,
 	interval,
 	backtestPercent,
+	lastDate,
 }: {
 	candleCount: number;
 	interval: Interval;
 	backtestPercent: number;
+	lastDate?: number;
 }) => {
-	const today = new Date();
+	const today = lastDate ? new Date(lastDate) : new Date();
 	const yesterdayMidNight = new Date(
 		today.getFullYear(),
 		today.getMonth(),
