@@ -107,8 +107,12 @@ export class BacktestDataService {
 			
 			avPnlWP,
 			avPnlAcc,
-			avPnlFwd
-		) VALUES (?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,? )`;
+			avPnlFwd,
+
+			accPnlWP,
+			accPnlAcc,
+			accPnlFwd
+		) VALUES (?, ?,  ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?, ?, ?, ?)`;
 		const values = [
 			stats.sl,
 			stats.tp,
@@ -127,6 +131,10 @@ export class BacktestDataService {
 			stats.avPnlWP,
 			stats.avPnlAcc,
 			stats.avPnlFwd,
+
+			stats.accPnlWP,
+			stats.accPnlAcc,
+			stats.accPnlFwd,
 		];
 
 		this.db.query(query).run(...values);

@@ -38,7 +38,7 @@ export const backtestConfig: BacktestConfig = {
 export const tradeConfig: TradeConfig = {
 	interval: Interval["5m"],
 	lookBackLength: 200,
-	sl: 1 / 100,
+	sl: 2 / 100,
 	tp: 10 / 100,
 	riskPt: 0.25 / 100,
 	feePt: 0.0005,
