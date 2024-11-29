@@ -50,7 +50,7 @@ export class TradingStrategyTester {
 
 	private showConfig() {
 		console.log(`	
-			=======================================================================================================
+			=================================================================
 			Running backtest and forwardtest for ${(
 				(this.config.forwardTestEnd - this.config.backtestStart) /
 				Interval["1d"]
@@ -82,7 +82,7 @@ export class TradingStrategyTester {
 					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
 				}
 				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
-			=======================================================================================================
+			=================================================================
 						
 		
 			`);
@@ -205,32 +205,28 @@ export class TradingStrategyTester {
 		this.alertService.deleteAlerts();
 
 		const alerts: Alert[] = [];
-		let startSnap = start;
-		let endSnap = start + (lookBackLength + maxTradeLength - 1) * interval;
-		let endCandlestick = start + lookBackLength * interval;
-		const totalLoop = (end - start) / interval + 1;
-		this.progressBar.start(totalLoop, 0);
-		do {
-			const candlesticksAllSymbols = this.backtestDataService.getCandlestick({
-				start: startSnap,
-				end: endSnap,
+		const pairList = this.backtestDataService.getPairList();
+
+		this.progressBar.start(pairList.length, 0);
+		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
+			const pair = pairList[pairIndex];
+			const candlesticksAllTime = this.backtestDataService.getCandlestick({
+				start,
+				end,
+				pair,
 			});
-			const pairList = new Set<string>(
-				candlesticksAllSymbols.map((c) => c.pair)
-			);
-			for (const pair of pairList) {
-				const candlestick = candlesticksAllSymbols.filter(
-					(c) =>
-						c.pair === pair &&
-						c.openTime < endCandlestick &&
-						c.openTime >= startSnap
+
+			let startSnap = start;
+			let endSnap = start + (lookBackLength + maxTradeLength - 1) * interval;
+			let endCandlestick = start + lookBackLength * interval;
+
+			do {
+				const candlestick = candlesticksAllTime.filter(
+					(c) => c.openTime < endCandlestick && c.openTime >= startSnap
 				);
 
-				const profitStick = candlesticksAllSymbols.filter(
-					(c) =>
-						c.pair === pair &&
-						c.openTime >= endCandlestick &&
-						c.openTime <= endSnap
+				const profitStick = candlesticksAllTime.filter(
+					(c) => c.openTime >= endCandlestick && c.openTime <= endSnap
 				);
 
 				for (const strategy of this.strategies) {
@@ -242,16 +238,13 @@ export class TradingStrategyTester {
 						alerts.push({ ...stgResponse, profitStick, start: startSnap });
 					}
 				}
-			}
 
-			startSnap += interval;
-			endSnap += interval;
-			endCandlestick += interval;
-			this.progressBar.update(
-				(endSnap - start - (maxTradeLength + lookBackLength) * interval) /
-					interval
-			);
-		} while (endSnap < end);
+				startSnap += interval;
+				endSnap += interval;
+				endCandlestick += interval;
+			} while (endSnap < end);
+			this.progressBar.update(pairIndex + 1);
+		}
 
 		this.alertService.saveAlerts(alerts);
 		this.progressBar.stop();

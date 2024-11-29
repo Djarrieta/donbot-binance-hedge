@@ -24,14 +24,14 @@ export const backtestConfig: BacktestConfig = {
 	lookBackLength: 200,
 	minAmountToTradeUSDT: 6,
 	apiLimit: 500,
-	slArray: [1 / 100],
-	tpArray: [10 / 100],
+	slArray: [1 / 100, 2 / 100, 3 / 100],
+	tpArray: [9 / 100, 10 / 100, 11 / 100],
 	maxTradeLengthArray: [100],
 	riskPt: 0.25 / 100,
 	feePt: 0.0005,
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: true,
+		overrideAlerts: false,
 	},
 };
 
@@ -49,6 +49,7 @@ export const tradeConfig: TradeConfig = {
 	maxHedgePositions: 20,
 	breakEventAlerts: [
 		{ alert: 1.5 / 100, value: 1 / 100, len: 5 },
+		{ alert: 3 / 100, value: 2 / 100, len: 5 },
 		{ alert: 7 / 100, value: 5 / 100, len: 5 },
 	],
 };
