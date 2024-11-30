@@ -1,12 +1,12 @@
 import Binance, { type FuturesUserTradeResult } from "binance-api-node";
 import OldBinance from "node-binance-api";
 import type {
-	AuthExchange,
+	IAuthExchange,
 	HistoricalPnl,
 	openPositionProps,
 	securePositionProps,
 	SubscribeToUserUpdatesProps,
-} from "../domain/AuthExchange";
+} from "../domain/IAuthExchange";
 import { Interval } from "../domain/Interval";
 import { OrderType, type Order } from "../domain/Order";
 import type { PositionSide } from "../domain/Position";
@@ -22,7 +22,7 @@ import {
 	orderIdNameGenerator,
 } from "../utils/orderIdNameGenerator";
 
-export class AuthExchangeService implements AuthExchange {
+export class AuthExchangeService implements IAuthExchange {
 	async subscribeToUserUpdates({
 		user,
 		handleClearOrders,

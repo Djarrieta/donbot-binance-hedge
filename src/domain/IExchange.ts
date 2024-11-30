@@ -1,9 +1,9 @@
-import type { CandleBt } from "../domain/Candle";
-import { Interval } from "../domain/Interval";
-import type { Symbol } from "../domain/Symbol";
+import type { CandleBt } from "./Candle";
+import { Interval } from "./Interval";
+import type { Symbol } from "./Symbol";
 import type { Strategy } from "./Strategy";
 
-export type Exchange = {
+export type IExchange = {
 	getPairList(props: GetPairListProps): Promise<string[]>;
 	getCandlestick: (props: GetCandlestickProps) => Promise<CandleBt[]>;
 	getSymbolsData(props: GetSymbolsDataProps): Promise<Symbol[]>;

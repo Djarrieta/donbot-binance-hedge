@@ -3,7 +3,7 @@ import type { PositionSide } from "./Position";
 import type { User } from "./User";
 import type { Symbol } from "./Symbol";
 
-export type AuthExchange = {
+export type IAuthExchange = {
 	getUsersData(props: GetUserDataProps): Promise<User[]>;
 	quitPosition(props: QuitPositionProps): Promise<void>;
 	cancelOrders(props: { user: User; pair: string }): Promise<void>;

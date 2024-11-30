@@ -4,8 +4,9 @@ import type { MarketDataService } from "../infrastructure/MarketDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
-import type { Alert, AlertRepository } from "./Alert";
+import type { Alert } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
+import type { IAlert } from "./IAlert";
 import { Interval } from "./Interval";
 import type { PositionBT, PositionSide } from "./Position";
 import type { Stat } from "./Stat";
@@ -35,7 +36,7 @@ export class TradingStrategyTester {
 		private readonly config: BacktestConfig,
 		private readonly backtestDataService: BacktestDataService,
 		private readonly marketDataService: MarketDataService,
-		private readonly alertService: AlertRepository,
+		private readonly alertService: IAlert,
 		private readonly strategies: Strategy[]
 	) {
 		this.config = config;

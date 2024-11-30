@@ -7,17 +7,17 @@ import Binance from "binance-api-node";
 import OldBinance from "node-binance-api";
 import { type CandleBt } from "../domain/Candle";
 import type {
-	Exchange,
+	IExchange,
 	GetCandlestickProps,
 	GetSymbolsDataProps,
 	UpdateSymbolProps,
-} from "../domain/Exchange";
+} from "../domain/IExchange";
 import { Interval } from "../domain/Interval";
 import type { Strategy } from "../domain/Strategy";
 import { type Symbol } from "../domain/Symbol";
 import { getDate } from "../utils/getDate";
 
-export class ExchangeService implements Exchange {
+export class ExchangeService implements IExchange {
 	private exchange: IBinance;
 
 	constructor() {

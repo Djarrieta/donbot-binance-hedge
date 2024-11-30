@@ -1,6 +1,7 @@
 import { Database } from "bun:sqlite";
-import { type Alert, type AlertRepository } from "../domain/Alert";
-export class AlertService implements AlertRepository {
+import type { IAlert } from "../domain/IAlert";
+import type { Alert } from "../domain/Alert";
+export class AlertService implements IAlert {
 	private db: Database;
 	private tableName: string;
 

@@ -1,4 +1,4 @@
-import type { AuthExchange } from "./AuthExchange";
+import type { IAuthExchange } from "./IAuthExchange";
 import type { Symbol } from "./Symbol";
 import type { Strategy, StrategyResponse } from "./Strategy";
 import { delay } from "../utils/delay";
@@ -9,19 +9,19 @@ import type { Alert } from "./Alert";
 import { OrderType } from "./Order";
 import type { User } from "./User";
 import type { TradeConfig } from "./TradeConfig";
-import type { Exchange, UpdateSymbolProps } from "./Exchange";
+import type { IExchange, UpdateSymbolProps } from "./IExchange";
 
 export class Trade {
-	exchange: Exchange;
-	authExchange: AuthExchange;
+	exchange: IExchange;
+	authExchange: IAuthExchange;
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
 	strategies: Strategy[];
 	config: TradeConfig;
 
 	constructor(
-		exchange: Exchange,
-		authExchange: AuthExchange,
+		exchange: IExchange,
+		authExchange: IAuthExchange,
 		config: TradeConfig,
 		strategies: Strategy[]
 	) {
