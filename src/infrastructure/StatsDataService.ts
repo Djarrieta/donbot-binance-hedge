@@ -80,7 +80,7 @@ export class StatsDataService implements IStatsData {
 
 	getStats() {
 		const unformattedResults = this.db
-			.query(`SELECT * FROM ${this.tableName} ORDER BY avPnlFwd DESC`)
+			.query(`SELECT * FROM ${this.tableName} ORDER BY accPnlAcc DESC`)
 			.all() as any[];
 
 		const stats: Stat[] = unformattedResults.map((r) => ({
@@ -250,7 +250,7 @@ export class StatsDataService implements IStatsData {
 			`Showing last possible Positions in forward test: ${positionsFwd.length}`
 		);
 		console.table(
-			positionsFwd.map((p) => ({
+			positionsFwd.slice(-100).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),

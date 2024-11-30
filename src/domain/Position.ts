@@ -27,4 +27,5 @@ export type PositionBT = Pick<
 	"pair" | "positionSide" | "startTime" | "entryPriceUSDT" | "pnl" | "stgName"
 > & {
 	tradeLength: number;
+	secureLength?: number;
 };

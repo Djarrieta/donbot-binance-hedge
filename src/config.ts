@@ -27,8 +27,9 @@ export const backtestConfig: BacktestConfig = {
 	slArray: [1 / 100, 2 / 100, 3 / 100],
 	tpArray: [9 / 100, 10 / 100, 11 / 100],
 	maxTradeLengthArray: [100],
-	riskPt: 0.25 / 100,
+	riskPt: 1 / 100,
 	feePt: 0.0005,
+	breakEventAlerts: [{ trigger: 5 / 100, break: 1 / 100, minLength: 5 }],
 	steps: {
 		overrideHistoricalRecords: false,
 		overrideAlerts: false,
@@ -48,9 +49,9 @@ export const tradeConfig: TradeConfig = {
 	maxProtectedPositions: 1,
 	maxHedgePositions: 20,
 	breakEventAlerts: [
-		{ alert: 1.5 / 100, value: 1 / 100, len: 5 },
-		{ alert: 3 / 100, value: 2 / 100, len: 5 },
-		{ alert: 7 / 100, value: 5 / 100, len: 5 },
+		{ trigger: 1.5 / 100, break: 1 / 100, minLength: 5 },
+		{ trigger: 3 / 100, break: 2 / 100, minLength: 5 },
+		{ trigger: 7 / 100, break: 5 / 100, minLength: 5 },
 	],
 };
 

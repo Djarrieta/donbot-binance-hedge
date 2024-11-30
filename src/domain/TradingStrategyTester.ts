@@ -3,15 +3,16 @@ import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
 import type { Alert } from "./Alert";
+import type { BreakEventAlert } from "./BreakEvenAlert";
 import type { CandleBt as Candle } from "./Candle";
 import type { IAlert } from "./IAlert";
+import type { IExchange } from "./IExchange";
+import type { IHistoryData } from "./IHistoryData";
 import { Interval } from "./Interval";
+import type { IStatsData } from "./IStatsData";
 import type { PositionBT, PositionSide } from "./Position";
 import type { Stat } from "./Stat";
 import type { Strategy } from "./Strategy";
-import type { IExchange } from "./IExchange";
-import type { IStatsData } from "./IStatsData";
-import type { IHistoryData } from "./IHistoryData";
 
 export type BacktestConfig = {
 	backtestStart: number;
@@ -26,6 +27,7 @@ export type BacktestConfig = {
 	maxTradeLengthArray: number[];
 	minAmountToTradeUSDT: number;
 	apiLimit: number;
+	breakEventAlerts: BreakEventAlert[];
 	steps: {
 		overrideHistoricalRecords: boolean;
 		overrideAlerts: boolean;
@@ -272,20 +274,37 @@ export class TradingStrategyTester {
 
 			const entryPriceUSDT = profitStick[0].open;
 
+			const stopLoss =
+				alert.positionSide === "LONG"
+					? entryPriceUSDT * (1 - sl)
+					: entryPriceUSDT * (1 + sl);
+
+			const takeProfit = tp
+				? alert.positionSide === "LONG"
+					? entryPriceUSDT * (1 + tp)
+					: entryPriceUSDT * (1 - tp)
+				: 0;
+
+			const breakEvens = this.config.breakEventAlerts.map((be) => {
+				return {
+					...be,
+					trigger:
+						alert.positionSide === "LONG"
+							? entryPriceUSDT * (1 + be.trigger)
+							: entryPriceUSDT * (1 - be.trigger),
+					break:
+						alert.positionSide === "LONG"
+							? entryPriceUSDT * (1 + be.break)
+							: entryPriceUSDT * (1 - be.break),
+				};
+			});
+
 			let pnl = 0;
 			let stickIndex = 0;
-			let done = false;
-			do {
+			let secureLength = 0;
+			let securePrice = 0;
+			indexLoop: do {
 				const candle = profitStick[stickIndex];
-				const stopLoss =
-					alert.positionSide === "LONG"
-						? entryPriceUSDT * (1 - sl)
-						: entryPriceUSDT * (1 + sl);
-				const takeProfit = tp
-					? alert.positionSide === "LONG"
-						? entryPriceUSDT * (1 + tp)
-						: entryPriceUSDT * (1 - tp)
-					: 0;
 
 				if (
 					(alert.positionSide === "LONG" &&
@@ -294,7 +313,8 @@ export class TradingStrategyTester {
 						(candle.high >= stopLoss || candle.close >= stopLoss))
 				) {
 					pnl = -this.config.riskPt - this.config.feePt;
-					done = true;
+					stickIndex++;
+					break indexLoop;
 				}
 
 				if (
@@ -304,11 +324,45 @@ export class TradingStrategyTester {
 						(candle.low <= takeProfit || candle.close <= takeProfit))
 				) {
 					pnl = this.config.riskPt * (tp / sl) - this.config.feePt;
-					done = true;
+					stickIndex++;
+					break indexLoop;
+				}
+
+				for (const be of breakEvens) {
+					if (
+						(alert.positionSide === "LONG" &&
+							stickIndex > be.minLength &&
+							Math.max(candle.high, candle.close) >= be.trigger &&
+							be.break > securePrice) ||
+						(alert.positionSide === "SHORT" &&
+							stickIndex > be.minLength &&
+							Math.min(candle.low, candle.close) <= be.trigger &&
+							be.break < securePrice)
+					) {
+						securePrice = be.break;
+						secureLength = stickIndex;
+					}
+				}
+
+				if (securePrice) {
+					if (
+						(alert.positionSide === "LONG" &&
+							Math.min(candle.low, candle.close) <= Number(securePrice)) ||
+						(alert.positionSide === "SHORT" &&
+							Math.max(candle.high, candle.close) >= Number(securePrice))
+					) {
+						const pnlGraph =
+							(alert.positionSide === "LONG"
+								? securePrice - entryPriceUSDT
+								: entryPriceUSDT - securePrice) / entryPriceUSDT;
+						pnl = this.config.riskPt * (pnlGraph / sl) - this.config.feePt;
+						secureLength = stickIndex;
+						break indexLoop;
+					}
 				}
 
 				stickIndex++;
-			} while (done !== true && stickIndex < profitStick.length - 1);
+			} while (stickIndex < profitStick.length - 1);
 
 			if (pnl === 0) {
 				const lastPrice = profitStick[profitStick.length - 1].close;
@@ -319,6 +373,7 @@ export class TradingStrategyTester {
 
 				pnl = this.config.riskPt * (pnlGraph / sl) - this.config.feePt;
 			}
+
 			closedPositions.push({
 				pair,
 				positionSide: alert.positionSide as PositionSide,
@@ -326,6 +381,7 @@ export class TradingStrategyTester {
 				entryPriceUSDT: profitStick[0].open,
 				pnl,
 				tradeLength: stickIndex,
+				secureLength,
 				stgName: alert.stgName,
 			});
 		}
@@ -378,12 +434,13 @@ export class TradingStrategyTester {
 		} = this.getStats(positionsWP);
 
 		const positionsAcc = [];
-		let openPosTime = 0;
+		let lastAccClosedTime = 0;
 		for (const position of positionsWP) {
-			if (position.startTime > openPosTime) {
+			if (position.startTime > lastAccClosedTime) {
 				positionsAcc.push(position);
-				openPosTime =
-					position.startTime + position.tradeLength * this.config.interval;
+				lastAccClosedTime = position.secureLength
+					? position.startTime + position.secureLength * this.config.interval
+					: position.startTime + position.tradeLength * this.config.interval;
 			}
 		}
 
@@ -399,11 +456,13 @@ export class TradingStrategyTester {
 			(p) => winningPairs.includes(p.pair) && p.startTime > backtestEnd
 		);
 		const positionsFwd = [];
-		let openPosFwdTime = 0;
-		for (const pos of positionsFwdFullList) {
-			if (pos.startTime > openPosFwdTime) {
-				positionsFwd.push(pos);
-				openPosFwdTime = pos.startTime + pos.tradeLength * this.config.interval;
+		let lastFwdClosedTime = 0;
+		for (const position of positionsFwdFullList) {
+			if (position.startTime > lastFwdClosedTime) {
+				positionsFwd.push(position);
+				lastFwdClosedTime = position.secureLength
+					? position.startTime + position.secureLength * this.config.interval
+					: position.startTime + position.tradeLength * this.config.interval;
 			}
 		}
 

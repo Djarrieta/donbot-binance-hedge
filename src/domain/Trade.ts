@@ -563,20 +563,20 @@ export class Trade {
 					? (symbol.currentPrice - pos.entryPriceUSDT) / pos.entryPriceUSDT
 					: (pos.entryPriceUSDT - symbol.currentPrice) / pos.entryPriceUSDT;
 			for (
-				let alertIndex = 0;
-				alertIndex < this.config.breakEventAlerts.length;
-				alertIndex++
+				let breakevenIndex = 0;
+				breakevenIndex < this.config.breakEventAlerts.length;
+				breakevenIndex++
 			) {
-				const alert = this.config.breakEventAlerts[alertIndex];
+				const breakeven = this.config.breakEventAlerts[breakevenIndex];
 				if (
-					pnlGraph > alert.alert &&
-					Number(pos.tradeLength) >= alert.len &&
-					breakOrdersSameSymbol.length <= alertIndex
+					pnlGraph > breakeven.trigger &&
+					Number(pos.tradeLength) >= breakeven.minLength &&
+					breakOrdersSameSymbol.length <= breakevenIndex
 				) {
 					const bePrice =
 						pos.positionSide === "LONG"
-							? pos.entryPriceUSDT * (1 + alert.value)
-							: pos.entryPriceUSDT * (1 - alert.value);
+							? pos.entryPriceUSDT * (1 + breakeven.break)
+							: pos.entryPriceUSDT * (1 - breakeven.break);
 					console.log(
 						"Securing position for " +
 							this.userList[userIndex].name +
