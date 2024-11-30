@@ -3,6 +3,7 @@ import type { BacktestDataService } from "../infrastructure/BacktestDataService"
 import type { MarketDataService } from "../infrastructure/MarketDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
+import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
 import type { Alert, AlertRepository } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
 import { Interval } from "./Interval";
@@ -38,8 +39,8 @@ export class TradingStrategyTester {
 		private readonly strategies: Strategy[]
 	) {
 		this.config = config;
-		this.backtestDataService = backtestDataService;
-		this.marketDataService = marketDataService;
+		this.backtestDataService = backtestDataService; //TODO: split into Stats and Candles
+		this.marketDataService = marketDataService; //TODO: use Exchange instead
 		this.alertService = alertService;
 		this.strategies = strategies;
 	}
@@ -389,6 +390,8 @@ export class TradingStrategyTester {
 			winRate: winRateAcc,
 			accPnl: accPnlAcc,
 			avPnl: avPnlAcc,
+			drawdownMonteCarlo: drawdownMC,
+			badRunMonteCarlo: badRunMC,
 		} = this.getStats(positionsAcc);
 
 		const positionsFwdFullList = positions.filter(
@@ -430,6 +433,9 @@ export class TradingStrategyTester {
 			accPnlWP,
 			accPnlAcc,
 			accPnlFwd,
+
+			drawdownMC,
+			badRunMC,
 		};
 
 		return stats;
@@ -445,10 +451,18 @@ export class TradingStrategyTester {
 		const accPnl = positions.reduce((acc, p) => acc + p.pnl, 0);
 		const avPnl = accPnl / tradesQty || 0;
 
+		const { drawdownMonteCarlo, badRunMonteCarlo } = monteCarloAnalysis({
+			values: positions.map((p) => p.pnl),
+			confidenceLevel: 0.95,
+			amountOfSimulations: 1000,
+		});
+
 		return {
 			winRate,
 			accPnl,
 			avPnl,
+			drawdownMonteCarlo,
+			badRunMonteCarlo,
 		};
 	}
 

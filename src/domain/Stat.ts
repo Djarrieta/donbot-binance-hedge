@@ -22,4 +22,7 @@ export type Stat = {
 	accPnlWP: number;
 	accPnlAcc: number;
 	accPnlFwd: number;
+
+	drawdownMC: number;
+	badRunMC: number;
 };

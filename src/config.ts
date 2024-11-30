@@ -3,7 +3,7 @@ import type { Strategy } from "./domain/Strategy";
 import type { TradeConfig } from "./domain/TradeConfig";
 import type { BacktestConfig } from "./domain/TradingStrategyTester";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
-import { getDate, type DateString } from "./utils/getDate";
+import { getDate } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 
 export const DATA_BASE_NAME = "DB.db";
@@ -13,7 +13,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	candleCount: 50000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate("2024 11 22 00:00:00" as DateString).dateMs,
+	lastDate: getDate().dateMs,
 });
 
 export const backtestConfig: BacktestConfig = {

@@ -62,6 +62,9 @@ const fakeStat: Stat = {
 	accPnlFwd: 0,
 	accPnlAcc: 0,
 
+	drawdownMC: 0,
+	badRunMC: 0,
+
 	positions: [
 		{
 			pair: "XRPUSDT",

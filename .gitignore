@@ -2,7 +2,7 @@
 
 DB.*
 backup
-src/userSeedList.ts
+*/userSeedList.ts
 *.db
 
 # Logs
