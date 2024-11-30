@@ -256,7 +256,7 @@ export class StatsDataService implements IStatsData {
 				pnl: formatPercent(p.pnl),
 			}))
 		);
-		console.log("WinningParis Accumulation ForwardTest");
+		console.log("Stats summary:");
 		console.table(
 			stats.map((r) => ({
 				"sl tp maxLen": `${formatPercent(r.sl)} ${formatPercent(r.tp)} ${
