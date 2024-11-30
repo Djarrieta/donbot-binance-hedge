@@ -1,6 +1,4 @@
 import cliProgress from "cli-progress";
-import type { BacktestDataService } from "../infrastructure/BacktestDataService";
-import type { MarketDataService } from "../infrastructure/MarketDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
@@ -11,6 +9,9 @@ import { Interval } from "./Interval";
 import type { PositionBT, PositionSide } from "./Position";
 import type { Stat } from "./Stat";
 import type { Strategy } from "./Strategy";
+import type { IExchange } from "./IExchange";
+import type { IStatsData } from "./IStatsData";
+import type { IHistoryData } from "./IHistoryData";
 
 export type BacktestConfig = {
 	backtestStart: number;
@@ -34,14 +35,13 @@ export type BacktestConfig = {
 export class TradingStrategyTester {
 	constructor(
 		private readonly config: BacktestConfig,
-		private readonly backtestDataService: BacktestDataService,
-		private readonly marketDataService: MarketDataService,
+		private readonly exchange: IExchange,
+		private readonly statsDataService: IStatsData,
+		private readonly historyDataService: IHistoryData,
 		private readonly alertService: IAlert,
 		private readonly strategies: Strategy[]
 	) {
 		this.config = config;
-		this.backtestDataService = backtestDataService; //TODO: split into Stats and Candles
-		this.marketDataService = marketDataService; //TODO: use Exchange instead
 		this.alertService = alertService;
 		this.strategies = strategies;
 	}
@@ -107,7 +107,7 @@ export class TradingStrategyTester {
 		if (this.config.steps.overrideHistoricalRecords) {
 			await this.saveHistoricalRecords();
 		} else {
-			this.backtestDataService.showSavedCandlestick();
+			this.historyDataService.showSavedCandlestick();
 		}
 
 		console.log(getDate().dateString);
@@ -127,7 +127,7 @@ export class TradingStrategyTester {
 
 		console.log(getDate().dateString);
 
-		this.backtestDataService.deleteStatsRows();
+		this.statsDataService.deleteRows();
 
 		for (const sl of this.config.slArray) {
 			for (const tp of this.config.tpArray) {
@@ -146,19 +146,19 @@ export class TradingStrategyTester {
 						maxTradeLength,
 						backtestEnd: this.config.backtestEnd,
 					});
-					this.backtestDataService.saveStats(stats);
+					this.statsDataService.save(stats);
 				}
 			}
 		}
 
-		this.backtestDataService.showSavedStats();
+		this.statsDataService.showStats();
 	}
 
 	public async saveHistoricalRecords(): Promise<void> {
 		console.log("Saving historical records...");
-		this.backtestDataService.deleteCandlestickRows();
+		this.historyDataService.deleteRows();
 
-		const pairList = await this.marketDataService.getPairList({
+		const pairList = await this.exchange.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
 		});
 		console.log("Available trading pairs:", pairList.length);
@@ -167,12 +167,12 @@ export class TradingStrategyTester {
 		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 			const pair = pairList[pairIndex];
 
-			const rawCandlesticks = await this.marketDataService.getCandlestick({
+			const rawCandlesticks = await this.exchange.getCandlestick({
 				pair,
 				start: this.config.backtestStart,
 				end: this.config.forwardTestEnd,
 				interval: this.config.interval,
-				apiLimit: this.config.apiLimit,
+				candlestickAPILimit: this.config.apiLimit,
 			});
 
 			const fixedCandlesticks = this.fixCandlestick({
@@ -182,12 +182,12 @@ export class TradingStrategyTester {
 				interval: this.config.interval,
 			});
 
-			this.backtestDataService.saveCandlestick(fixedCandlesticks);
+			this.historyDataService.saveCandlestick(fixedCandlesticks);
 			this.progressBar.update(pairIndex + 1);
 		}
 		this.progressBar.stop();
 
-		this.backtestDataService.showSavedCandlestick();
+		this.historyDataService.showSavedCandlestick();
 	}
 
 	private saveAlerts({
@@ -207,12 +207,12 @@ export class TradingStrategyTester {
 		this.alertService.deleteAlerts();
 
 		const alerts: Alert[] = [];
-		const pairList = this.backtestDataService.getPairList();
+		const pairList = this.historyDataService.getPairList();
 
 		this.progressBar.start(pairList.length, 0);
 		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 			const pair = pairList[pairIndex];
-			const candlesticksAllTime = this.backtestDataService.getCandlestick({
+			const candlesticksAllTime = this.historyDataService.getCandlestick({
 				start,
 				end,
 				pair,

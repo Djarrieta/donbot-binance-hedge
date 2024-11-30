@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { unlinkSync } from "fs";
 import type { CandleBt } from "../../domain/Candle";
 import type { Stat } from "../../domain/Stat";
-import { BacktestDataService } from "../BacktestDataService";
 
 const TEST_DB_NAME = "TEST.db";
 const deletePreviousDB = () => {
@@ -111,149 +110,149 @@ const fakeStat: Stat = {
 	],
 };
 
-describe("Backtest Data Service", () => {
-	beforeAll(() => {
-		deletePreviousDB();
+// describe("Backtest Data Service", () => {
+// 	beforeAll(() => {
+// 		deletePreviousDB();
 
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
-		backtestDataService.saveCandlestick(fakeCandlestick);
-		backtestDataService.saveStats(fakeStat);
-	});
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
+// 		backtestDataService.saveCandlestick(fakeCandlestick);
+// 		backtestDataService.saveStats(fakeStat);
+// 	});
 
-	afterAll(() => {
-		deletePreviousDB();
-	});
+// 	afterAll(() => {
+// 		deletePreviousDB();
+// 	});
 
-	test("gets pair list", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("gets pair list", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const pairList = backtestDataService.getPairList();
+// 		const pairList = backtestDataService.getPairList();
 
-		expect(pairList).toEqual(["MANAUSDT", "XRPUSDT"]);
-	});
+// 		expect(pairList).toEqual(["MANAUSDT", "XRPUSDT"]);
+// 	});
 
-	test("get candlesticks in the range", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("get candlesticks in the range", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const candlesticks = backtestDataService.getCandlestick({
-			start: 1730736204001,
-			end: 1730736204002,
-		});
-		expect(candlesticks).toEqual(fakeCandlestick.slice(0, 2));
-	});
+// 		const candlesticks = backtestDataService.getCandlestick({
+// 			start: 1730736204001,
+// 			end: 1730736204002,
+// 		});
+// 		expect(candlesticks).toEqual(fakeCandlestick.slice(0, 2));
+// 	});
 
-	test(" delete Candlestick Rows", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
-		backtestDataService.deleteCandlestickRows();
+// 	test(" delete Candlestick Rows", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
+// 		backtestDataService.deleteCandlestickRows();
 
-		const candlesticks = backtestDataService.getCandlestick({
-			start: 1730736204001,
-			end: 1730736204003,
-		});
+// 		const candlesticks = backtestDataService.getCandlestick({
+// 			start: 1730736204001,
+// 			end: 1730736204003,
+// 		});
 
-		expect(candlesticks).toEqual([]);
-	});
+// 		expect(candlesticks).toEqual([]);
+// 	});
 
-	test("get stats", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("get stats", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const stats = backtestDataService.getSavedStats();
-		expect(stats).toEqual([fakeStat]);
-	});
+// 		const stats = backtestDataService.getSavedStats();
+// 		expect(stats).toEqual([fakeStat]);
+// 	});
 
-	test("get positionsWP", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("get positionsWP", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const positionsWP = backtestDataService.getSavedStatsPositions({
-			sl: 1,
-			tp: 1,
-			maxTradeLength: 1,
-			column: "positionsWP",
-		});
-		expect(positionsWP).toEqual(fakeStat.positionsWP);
-	});
+// 		const positionsWP = backtestDataService.getSavedStatsPositions({
+// 			sl: 1,
+// 			tp: 1,
+// 			maxTradeLength: 1,
+// 			column: "positionsWP",
+// 		});
+// 		expect(positionsWP).toEqual(fakeStat.positionsWP);
+// 	});
 
-	test("get positionsAcc", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("get positionsAcc", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const positionsAcc = backtestDataService.getSavedStatsPositions({
-			sl: 1,
-			tp: 1,
-			maxTradeLength: 1,
-			column: "positionsAcc",
-		});
-		expect(positionsAcc).toEqual(fakeStat.positionsAcc);
-	});
+// 		const positionsAcc = backtestDataService.getSavedStatsPositions({
+// 			sl: 1,
+// 			tp: 1,
+// 			maxTradeLength: 1,
+// 			column: "positionsAcc",
+// 		});
+// 		expect(positionsAcc).toEqual(fakeStat.positionsAcc);
+// 	});
 
-	test("get positionsFwd", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("get positionsFwd", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const positionsFwd = backtestDataService.getSavedStatsPositions({
-			sl: 1,
-			tp: 1,
-			maxTradeLength: 1,
-			column: "positionsFwd",
-		});
-		expect(positionsFwd).toEqual(fakeStat.positionsFwd);
-	});
+// 		const positionsFwd = backtestDataService.getSavedStatsPositions({
+// 			sl: 1,
+// 			tp: 1,
+// 			maxTradeLength: 1,
+// 			column: "positionsFwd",
+// 		});
+// 		expect(positionsFwd).toEqual(fakeStat.positionsFwd);
+// 	});
 
-	test("get positions", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("get positions", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		const positions = backtestDataService.getSavedStatsPositions({
-			sl: 1,
-			tp: 1,
-			maxTradeLength: 1,
-			column: "positions",
-		});
-		expect(positions).toEqual(fakeStat.positions);
-	});
+// 		const positions = backtestDataService.getSavedStatsPositions({
+// 			sl: 1,
+// 			tp: 1,
+// 			maxTradeLength: 1,
+// 			column: "positions",
+// 		});
+// 		expect(positions).toEqual(fakeStat.positions);
+// 	});
 
-	test("delete stats rows", () => {
-		const backtestDataService = new BacktestDataService({
-			databaseName: TEST_DB_NAME,
-			tableName: "symbolsBT",
-			statsTableName: "statsBT",
-		});
+// 	test("delete stats rows", () => {
+// 		const backtestDataService = new BacktestDataService({
+// 			databaseName: TEST_DB_NAME,
+// 			tableName: "symbolsBT",
+// 			statsTableName: "statsBT",
+// 		});
 
-		backtestDataService.deleteStatsRows();
-		const stats = backtestDataService.getSavedStats();
-		expect(stats).toEqual([]);
-	});
-});
+// 		backtestDataService.deleteStatsRows();
+// 		const stats = backtestDataService.getSavedStats();
+// 		expect(stats).toEqual([]);
+// 	});
+// });

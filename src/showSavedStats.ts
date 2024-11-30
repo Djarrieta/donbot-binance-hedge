@@ -1,9 +1,8 @@
-import { BacktestDataService } from "./infrastructure/BacktestDataService";
+import { StatsDataService } from "./infrastructure/StatsDataService";
 
-const backtestDataService = new BacktestDataService({
+const statsDataService = new StatsDataService({
 	databaseName: "DB.db",
-	tableName: "BACKTEST_DATA",
-	statsTableName: "STATS_DATA",
+	tableName: "STATS_DATA",
 });
 
-backtestDataService.showSavedStats();
+statsDataService.showStats();
