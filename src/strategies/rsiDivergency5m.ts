@@ -1,63 +1,65 @@
 import { rsi } from "technicalindicators";
-import type { Strategy, StrategyResponse } from "./Strategy";
-import { params } from "../Params";
-import { getVolatility } from "../utils/getVolatility";
+import { Interval } from "../domain/Interval";
+import { Strategy, type StrategyResponse } from "../domain/Strategy";
 
-const STG_NAME = "rsiDivergency5m";
-const ALLOWED_PAIRS: string[] = [
-	"1000BONKUSDT",
-	"STXUSDT",
-	"ATOMUSDT",
-	"KASUSDT",
-	"BIGTIMEUSDT",
-	"FLMUSDT",
-	"EDUUSDT",
-	"TLMUSDT",
-	"SXPUSDT",
-	"ZILUSDT",
-	"1000SHIBUSDT",
-	"1000FLOKIUSDT",
-	"SNXUSDT",
-	"TUSDT",
-	"KAVAUSDT",
-	"CRVUSDT",
-	"KSMUSDT",
-	"WAXPUSDT",
-	"INJUSDT",
-	"XTZUSDT",
-	"FILUSDT",
-	"CAKEUSDT",
-	"POWRUSDT",
-	"XAIUSDT",
-	"ICXUSDT",
-	"1000LUNCUSDT",
-	"HIFIUSDT",
-	"ZETAUSDT",
-	"EOSUSDT",
-	"PORTALUSDT",
-	"IOUSDT",
-	"RENDERUSDT",
-];
-const stg: Strategy = {
-	stgName: STG_NAME,
-	lookBackLength: params.lookBackLength,
-	interval: params.interval,
-	validate: ({ candlestick, pair }) => {
+export const rsiDivergency5m = new Strategy({
+	stgName: "rsiDivergency5m",
+	lookBackLength: 200,
+	interval: Interval["5m"],
+	allowedPairs: [
+		"ALTUSDT",
+		"TNSRUSDT",
+		"ARPAUSDT",
+		"SUIUSDT",
+		"WLDUSDT",
+		"LPTUSDT",
+		"FETUSDT",
+		"UMAUSDT",
+		"ARKMUSDT",
+		"XRPUSDT",
+		"CELOUSDT",
+		"HOOKUSDT",
+		"BLURUSDT",
+		"LRCUSDT",
+		"GMXUSDT",
+		"THETAUSDT",
+		"MTLUSDT",
+		"GASUSDT",
+		"IOUSDT",
+		"ROSEUSDT",
+		"1000XECUSDT",
+		"ASTRUSDT",
+		"LUNA2USDT",
+		"USTCUSDT",
+		"PIXELUSDT",
+		"XMRUSDT",
+		"QTUMUSDT",
+		"ZILUSDT",
+		"PHBUSDT",
+		"XTZUSDT",
+		"XEMUSDT",
+		"RAREUSDT",
+		"VOXELUSDT",
+		"VIDTUSDT",
+		"FLUXUSDT",
+		"AERGOUSDT",
+		"GHSTUSDT",
+		"HMSTRUSDT",
+	],
+
+	validate({ candlestick, pair }) {
 		const response: StrategyResponse = {
 			positionSide: null,
-			sl: params.defaultSL,
-			tp: params.defaultTP,
-			stgName: STG_NAME,
+			stgName: this.stgName,
 			pair,
 		};
 
-		if (candlestick.length < params.lookBackLength) return response;
-		if (ALLOWED_PAIRS.length && !ALLOWED_PAIRS.includes(pair)) return response;
+		if (candlestick.length < this.lookBackLength) return response;
+		if (this.allowedPairs?.length && !this.allowedPairs.includes(pair))
+			return response;
 
 		const MIN_RSI = 30;
 		const CANDLESTICK_SIZE = 50;
-		const MIN_VOL = 10 / 100;
-		const MAX_VOL = 25 / 100;
 
 		const closePrices = candlestick.map((candle) => candle.close);
 		const rsiArray = rsi({ period: 14, values: closePrices });
@@ -67,8 +69,6 @@ const stg: Strategy = {
 		candlestick.forEach(({ close, high, low, open }) => {
 			candlestickValues.push(close, high, low, open);
 		});
-
-		const volatility = getVolatility({ candlestick });
 
 		if (
 			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
@@ -126,18 +126,22 @@ const stg: Strategy = {
 
 		return response;
 	},
-};
+});
 
-export default stg;
-
-// ┌───┬────────┬────────┬───────────┬───────────┬─────────────┬──────────────┬──────────────┬───────────┬────────────┬────────────┬─────────┬──────────┬──────────┬──────────────┐
-// │   │ sl     │ tp     │ maxLength │ positions │ positionsWP │ positionsAcc │ positionsFwd │ winRateWP │ winRateAcc │ winRateFwd │ avPnlWP │ avPnlAcc │ avPnlFwd │ winningPairs │
-// ├───┼────────┼────────┼───────────┼───────────┼─────────────┼──────────────┼──────────────┼───────────┼────────────┼────────────┼─────────┼──────────┼──────────┼──────────────┤
-// │ 0 │ 1.00%  │ 1.00%  │ 200       │ 58039     │ 4370        │ 1423         │ 534          │ 57.14%    │ 55.31%     │ 49.06%     │ 0.02%   │ 0.00%    │ -0.06%   │ 32           │
-// │ 1 │ 1.00%  │ 1.00%  │ 100       │ 58039     │ 4154        │ 1397         │ 535          │ 57.05%    │ 55.62%     │ 49.72%     │ 0.02%   │ 0.01%    │ -0.05%   │ 29           │
-// │ 2 │ 1.00%  │ 10.00% │ 200       │ 58039     │ 12382       │ 799          │ 307          │ 22.28%    │ 21.90%     │ 20.52%     │ 0.09%   │ 0.07%    │ -0.05%   │ 79           │
-// │ 3 │ 1.00%  │ 10.00% │ 100       │ 58039     │ 8723        │ 1066         │ 390          │ 28.87%    │ 27.95%     │ 33.08%     │ 0.06%   │ 0.06%    │ 0.04%    │ 58           │
-// │ 4 │ 10.00% │ 1.00%  │ 200       │ 58039     │ 2189        │ 560          │ 225          │ 49.70%    │ 49.11%     │ 40.44%     │ 0.01%   │ 0.02%    │ -0.04%   │ 16           │
-// │ 5 │ 10.00% │ 1.00%  │ 100       │ 58039     │ 645         │ 315          │ 155          │ 49.46%    │ 50.16%     │ 43.87%     │ 0.02%   │ 0.00%    │ -0.01%   │ 5            │
-// │ 6 │ 10.00% │ 10.00% │ 200       │ 58039     │ 1491        │ 244          │ 103          │ 51.44%    │ 49.59%     │ 33.98%     │ 0.01%   │ 0.00%    │ -0.08%   │ 11           │
-// │ 7 │ 10.00% │ 10.00% │ 100       │ 58039     │ 251         │ 134          │ 63           │ 51.79%    │ 48.51%     │ 50.79%     │ 0.01%   │ -0.02%   │ -0.02%   │ 2            │
+// Stats summary:
+// ┌────┬──────────────────┬───────────────────┬──────────────────────┬────────────────────┬────────────────────────┬───────────┬───────┐
+// │    │ sl tp maxLen     │ QTY ps wp acc fwd │ WINRATE wp acc fwd   │ AVPNL wp acc fwd   │ ACCPNL wp acc fwd      │ DD badRun │ pairs │
+// ├────┼──────────────────┼───────────────────┼──────────────────────┼────────────────────┼────────────────────────┼───────────┼───────┤
+// │  0 │ 2.00% 13.00% 100 │ 4336 3069 384 146 │ 47.44% 48.70% 41.78% │ 0.24% 0.28% 0.09%  │ 741.92% 107.50% 12.54% │ 20.82% 12 │ 38    │
+// │  1 │ 2.00% 13.00% 120 │ 4336 3069 384 146 │ 47.44% 48.70% 41.78% │ 0.24% 0.28% 0.09%  │ 741.92% 107.50% 12.54% │ 20.49% 15 │ 38    │
+// │  2 │ 2.00% 12.00% 100 │ 4336 3069 385 147 │ 47.44% 48.57% 41.50% │ 0.24% 0.27% 0.07%  │ 738.93% 104.45% 10.49% │ 20.65% 7  │ 38    │
+// │  3 │ 2.00% 12.00% 120 │ 4336 3069 385 147 │ 47.44% 48.57% 41.50% │ 0.24% 0.27% 0.07%  │ 738.93% 104.45% 10.49% │ 20.57% 7  │ 38    │
+// │  4 │ 2.00% 14.00% 100 │ 4336 3069 383 146 │ 47.44% 48.83% 41.78% │ 0.24% 0.27% 0.08%  │ 742.67% 102.11% 11.95% │ 20.86% 9  │ 38    │
+// │  5 │ 2.00% 14.00% 120 │ 4336 3069 383 146 │ 47.44% 48.83% 41.78% │ 0.24% 0.27% 0.08%  │ 742.67% 102.11% 11.95% │ 20.92% 10 │ 38    │
+// │  6 │ 3.00% 12.00% 100 │ 4336 3057 339 130 │ 52.57% 51.33% 46.15% │ 0.17% 0.14% -0.00% │ 507.96% 48.05% -0.33%  │ 16.83% 9  │ 37    │
+// │  7 │ 3.00% 12.00% 120 │ 4336 3057 339 130 │ 52.57% 51.33% 46.15% │ 0.17% 0.14% -0.00% │ 507.96% 48.05% -0.33%  │ 17.80% 8  │ 37    │
+// │  8 │ 3.00% 13.00% 100 │ 4336 3057 339 129 │ 52.57% 51.33% 45.74% │ 0.17% 0.14% -0.01% │ 512.29% 46.95% -0.67%  │ 16.89% 6  │ 37    │
+// │  9 │ 3.00% 13.00% 120 │ 4336 3057 339 129 │ 52.57% 51.33% 45.74% │ 0.17% 0.14% -0.01% │ 512.29% 46.95% -0.67%  │ 17.33% 10 │ 37    │
+// │ 10 │ 3.00% 14.00% 100 │ 4336 3057 339 129 │ 52.57% 51.33% 45.74% │ 0.17% 0.13% -0.01% │ 511.02% 44.14% -1.07%  │ 17.79% 9  │ 37    │
+// │ 11 │ 3.00% 14.00% 120 │ 4336 3057 339 129 │ 52.57% 51.33% 45.74% │ 0.17% 0.13% -0.01% │ 511.02% 44.14% -1.07%  │ 16.85% 8  │ 37    │
+// └────┴──────────────────┴───────────────────┴──────────────────────┴────────────────────┴────────────────────────┴───────────┴───────┘

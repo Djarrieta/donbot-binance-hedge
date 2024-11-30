@@ -1,4 +1,4 @@
-import type { Candle } from "../sharedModels/Candle";
+import type { Candle } from "../domain/Candle";
 
 export const getVolatility = ({ candlestick }: { candlestick: Candle[] }) => {
 	if (!candlestick?.length || !candlestick[candlestick.length - 1].close)

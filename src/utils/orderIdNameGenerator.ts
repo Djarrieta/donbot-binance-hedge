@@ -1,5 +1,5 @@
-import { OrderType } from "../sharedModels/Order";
-import type { PositionSide } from "../sharedModels/Position";
+import { OrderType } from "../domain/Order";
+import type { PositionSide } from "../domain/Position";
 
 export const ORDER_ID_DIV = "__";
 
