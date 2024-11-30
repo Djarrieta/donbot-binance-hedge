@@ -10,7 +10,7 @@ export const DATA_BASE_NAME = "DB.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 50000,
+	candleCount: 100000,
 	backtestPercent: 0.75,
 	interval,
 	lastDate: getDate().dateMs,
@@ -37,8 +37,8 @@ export const backtestConfig: BacktestConfig = {
 		},
 	],
 	steps: {
-		overrideHistoricalRecords: false,
-		overrideAlerts: false,
+		overrideHistoricalRecords: true,
+		overrideAlerts: true,
 	},
 };
 

@@ -162,6 +162,7 @@ export class TradingStrategyTester {
 
 		const pairList = await this.exchange.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
+			strategies: this.strategies,
 		});
 		console.log("Available trading pairs:", pairList.length);
 

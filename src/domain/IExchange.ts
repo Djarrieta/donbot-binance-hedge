@@ -28,6 +28,7 @@ export type GetSymbolsDataProps = {
 };
 export type GetPairListProps = {
 	minAmountToTradeUSDT: number;
+	strategies: Strategy[];
 };
 export type UpdateSymbolProps = {
 	pair: string;
