@@ -6,7 +6,7 @@ import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
 import { getDate } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 
-export const DATA_BASE_NAME = "DB.db";
+export const DATA_BASE_NAME = "rsiDivergency5m.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
@@ -24,29 +24,23 @@ export const backtestConfig: BacktestConfig = {
 	lookBackLength: 200,
 	minAmountToTradeUSDT: 6,
 	apiLimit: 500,
-	slArray: [2 / 100, 3 / 100],
-	tpArray: [12 / 100, 13 / 100, 14 / 100],
-	maxTradeLengthArray: [100, 120],
+	slArray: [1 / 100, 3 / 100, 5 / 100, 7 / 100, 10 / 100, 15 / 100],
+	tpArray: [1 / 100, 3 / 100, 5 / 100, 7 / 100, 10 / 100, 15 / 100],
+	maxTradeLengthArray: [100],
 	riskPt: 1 / 100,
 	feePt: 0.0005,
-	breakEventAlerts: [
-		{
-			trigger: 5 / 100,
-			break: 1 / 100,
-			minLength: 5,
-		},
-	],
+	breakEventAlerts: [],
 	steps: {
-		overrideHistoricalRecords: true,
-		overrideAlerts: true,
+		overrideHistoricalRecords: false,
+		overrideAlerts: false,
 	},
 };
 
 export const tradeConfig: TradeConfig = {
 	interval: Interval["5m"],
 	lookBackLength: 200,
-	sl: 2 / 100,
-	tp: 13 / 100,
+	sl: 1 / 100,
+	tp: 10 / 100,
 	riskPt: 0.25 / 100,
 	feePt: 0.0005,
 	maxTradeLength: 100,
