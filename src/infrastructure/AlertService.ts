@@ -39,8 +39,8 @@ export class AlertService implements IAlert {
 			const batch = alerts.slice(i, i + batchSize);
 			const query = `
 				INSERT INTO ${this.tableName}
-				(start, stgName, positionSide, pair, profitStick)
-				VALUES ${batch.map(() => "(?,?,?,?,?)").join(",")}
+				(start, stgName, positionSide, pair, profitStick, sl, tp)
+				VALUES ${batch.map(() => "(?,?,?,?,?,?,?)").join(",")}
 			`;
 
 			const params: (string | number)[] = [];
@@ -50,6 +50,8 @@ export class AlertService implements IAlert {
 					a.stgName,
 					a.positionSide as string,
 					a.pair,
+					a.sl || 0,
+					a.tp || 0,
 					JSON.stringify(a.profitStick)
 				);
 			});
@@ -76,6 +78,8 @@ export class AlertService implements IAlert {
 					stgName TEXT,
 					positionSide TEXT,
 					pair TEXT,
+					sl REAL,
+					tp REAL,
 					profitStick TEXT
 				)
 			`

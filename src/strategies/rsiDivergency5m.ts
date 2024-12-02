@@ -119,6 +119,8 @@ export const rsiDivergency5m = new Strategy({
 			candlestickValues.push(close, high, low, open);
 		});
 
+		const lastPrice = candlestickValues[candlestickValues.length - 1];
+
 		if (
 			rsiArray[rsiArray.length - 1] <= MIN_RSI &&
 			rsiArray[rsiArray.length - 2] <= MIN_RSI &&
@@ -142,7 +144,17 @@ export const rsiDivergency5m = new Strategy({
 			);
 
 			if (firstMin !== 0 && secondMin !== 0 && firstMin > secondMin) {
+				const minPrevPrice = Math.min(
+					...candlestick.slice(-CANDLESTICK_SIZE).map((candle) => candle.low)
+				);
+				let sl = (lastPrice - minPrevPrice) / lastPrice;
+				if (sl < 1 / 100) sl = 1 / 100;
+				if (sl > 10 / 100) sl = 10 / 100;
+				const tp = sl * 2;
+
 				response.positionSide = "LONG";
+				response.sl = sl;
+				response.tp = tp;
 			}
 		}
 
@@ -169,6 +181,17 @@ export const rsiDivergency5m = new Strategy({
 			);
 
 			if (firstMax !== 0 && secondMax !== 0 && firstMax < secondMax) {
+				const maxPrevPrice = Math.max(
+					...candlestick.slice(-CANDLESTICK_SIZE).map((candle) => candle.high)
+				);
+
+				let sl = (maxPrevPrice - lastPrice) / lastPrice;
+				if (sl < 1 / 100) sl = 1 / 100;
+				if (sl > 10 / 100) sl = 10 / 100;
+				const tp = sl * 2;
+
+				response.sl = sl;
+				response.tp = tp;
 				response.positionSide = "SHORT";
 			}
 		}

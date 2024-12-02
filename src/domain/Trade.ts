@@ -151,20 +151,24 @@ export class Trade {
 		user,
 		symbol,
 		positionSide,
+		sl,
+		tp,
 	}: {
 		user: User;
 		symbol: Symbol;
 		positionSide: PositionSide;
+		sl?: number;
+		tp?: number;
 	}) {
 		const slPrice =
 			positionSide === "LONG"
-				? symbol.currentPrice * (1 - this.config.sl)
-				: symbol.currentPrice * (1 + this.config.sl);
+				? symbol.currentPrice * (1 - (sl || this.config.sl))
+				: symbol.currentPrice * (1 + (sl || this.config.sl));
 
 		const tpPrice =
 			positionSide === "LONG"
-				? symbol.currentPrice * (1 + this.config.tp)
-				: symbol.currentPrice * (1 - this.config.tp);
+				? symbol.currentPrice * (1 + (tp || this.config.tp))
+				: symbol.currentPrice * (1 - (tp || this.config.tp));
 
 		const quantityUSDT = Math.max(
 			(user.balanceUSDT * this.config.riskPt) / this.config.sl,
@@ -366,10 +370,14 @@ export class Trade {
 		user,
 		symbol,
 		positionSide,
+		sl,
+		tp,
 	}: {
 		user: User;
 		symbol: Symbol;
 		positionSide: PositionSide;
+		sl?: number;
+		tp?: number;
 	}) {
 		if (user.isAddingPosition) return;
 
@@ -423,6 +431,8 @@ export class Trade {
 			user,
 			symbol,
 			positionSide,
+			sl,
+			tp,
 		});
 
 		console.log(

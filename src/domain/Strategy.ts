@@ -6,6 +6,8 @@ export type StrategyResponse = {
 	stgName: string;
 	positionSide: PositionSide | null;
 	pair: string;
+	sl?: number;
+	tp?: number;
 };
 
 export class Strategy {

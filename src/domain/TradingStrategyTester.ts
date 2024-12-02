@@ -239,6 +239,7 @@ export class TradingStrategyTester {
 						candlestick,
 						pair,
 					});
+
 					if (stgResponse.positionSide) {
 						alerts.push({ ...stgResponse, profitStick, start: startSnap });
 					}
@@ -277,13 +278,13 @@ export class TradingStrategyTester {
 
 			const stopLoss =
 				alert.positionSide === "LONG"
-					? entryPriceUSDT * (1 - sl)
-					: entryPriceUSDT * (1 + sl);
+					? entryPriceUSDT * (1 - (alert.sl || sl))
+					: entryPriceUSDT * (1 + (alert.sl || sl));
 
 			const takeProfit = tp
 				? alert.positionSide === "LONG"
-					? entryPriceUSDT * (1 + tp)
-					: entryPriceUSDT * (1 - tp)
+					? entryPriceUSDT * (1 + (alert.tp || tp))
+					: entryPriceUSDT * (1 - (alert.tp || tp))
 				: 0;
 
 			const breakEvens = this.config.breakEventAlerts.map((be) => {
