@@ -22,16 +22,16 @@ export const backtestConfig: ConfigBacktest = {
 	forwardTestEnd,
 	interval,
 	lookBackLength: 200,
-	maxTradeLengthArray: [75, 100, 125],
+	maxTradeLengthArray: [100, 200],
 
 	minAmountToTradeUSDT: 6,
 	leverage: 10,
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	minSlArray: [1 / 100, 2 / 100, 3 / 100],
-	tpSlRatioArray: [4, 5, 6],
-	minSlTp: 4 / 100,
+	minSlArray: [1 / 100],
+	tpSlRatioArray: [10],
+	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
 	steps: {
