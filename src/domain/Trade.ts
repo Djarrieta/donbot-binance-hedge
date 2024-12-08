@@ -1,3 +1,4 @@
+import cliProgress from "cli-progress";
 import type { IAuthExchange } from "./IAuthExchange";
 import type { Symbol } from "./Symbol";
 import type { Strategy, StrategyResponse } from "./Strategy";
@@ -8,7 +9,7 @@ import type { PositionSide } from "./Position";
 import type { Alert } from "./Alert";
 import { OrderType } from "./Order";
 import type { User } from "./User";
-import type { TradeConfig } from "./TradeConfig";
+import type { ConfigTrade } from "./ConfigTrade";
 import type { IExchange, UpdateSymbolProps } from "./IExchange";
 
 export class Trade {
@@ -17,12 +18,12 @@ export class Trade {
 	symbolList: Symbol[] = [];
 	userList: User[] = [];
 	strategies: Strategy[];
-	config: TradeConfig;
+	config: ConfigTrade;
 
 	constructor(
 		exchange: IExchange,
 		authExchange: IAuthExchange,
-		config: TradeConfig,
+		config: ConfigTrade,
 		strategies: Strategy[]
 	) {
 		this.exchange = exchange;
@@ -30,6 +31,12 @@ export class Trade {
 		this.config = config;
 		this.strategies = strategies;
 	}
+
+	private progressBar = new cliProgress.SingleBar(
+		{},
+		cliProgress.Presets.shades_classic
+	);
+	isLoading: boolean = true;
 
 	async initialize() {
 		const [symbolList, userList] = await Promise.all([
@@ -51,6 +58,22 @@ export class Trade {
 
 		this.showConfig();
 
+		if (this.config.setLeverage) {
+			console.log("Checking and setting leverage");
+			this.progressBar.start(this.userList.length * this.symbolList.length, 0);
+			for (const user of this.userList) {
+				for (const symbol of this.symbolList) {
+					await this.authExchange.setLeverage({
+						user,
+						symbol,
+						leverage: this.config.leverage,
+					});
+					this.progressBar.increment();
+				}
+			}
+			this.progressBar.stop();
+		}
+
 		for (const user of this.userList) {
 			this.handleExistingPositions({ userName: user.name });
 		}
@@ -60,9 +83,14 @@ export class Trade {
 		}
 
 		this.runSubscribers();
+		this.isLoading = false;
 	}
 
 	async loop() {
+		if (this.isLoading) {
+			console.log("Loop time but still loading");
+			return;
+		}
 		await delay(1000);
 
 		this.showConfig();
@@ -84,7 +112,7 @@ export class Trade {
 						this.openPosition({
 							user,
 							symbol,
-							positionSide: alert.positionSide,
+							alert,
 						});
 					}
 				}
@@ -150,28 +178,35 @@ export class Trade {
 	getTransactionProps({
 		user,
 		symbol,
-		positionSide,
-		sl,
-		tp,
+		alert,
 	}: {
 		user: User;
 		symbol: Symbol;
-		positionSide: PositionSide;
-		sl?: number;
-		tp?: number;
+		alert: StrategyResponse;
 	}) {
+		const calcSl =
+			alert.sl &&
+			Number(alert.sl) > this.config.minSlTp &&
+			Number(alert.sl) < this.config.minSl
+				? alert.sl
+				: this.config.minSl;
+		let calcTp =
+			alert.tp && Number(alert.tp) > calcSl * this.config.tpSlRatio
+				? alert.tp
+				: calcSl * this.config.tpSlRatio;
+
 		const slPrice =
-			positionSide === "LONG"
-				? symbol.currentPrice * (1 - (sl || this.config.sl))
-				: symbol.currentPrice * (1 + (sl || this.config.sl));
+			alert.positionSide === "LONG"
+				? symbol.currentPrice * (1 - calcSl)
+				: symbol.currentPrice * (1 + calcSl);
 
 		const tpPrice =
-			positionSide === "LONG"
-				? symbol.currentPrice * (1 + (tp || this.config.tp))
-				: symbol.currentPrice * (1 - (tp || this.config.tp));
+			alert.positionSide === "LONG"
+				? symbol.currentPrice * (1 + calcTp)
+				: symbol.currentPrice * (1 - calcTp);
 
 		const quantityUSDT = Math.max(
-			(user.balanceUSDT * this.config.riskPt) / this.config.sl,
+			(user.balanceUSDT * this.config.riskPt) / this.config.minSl,
 			this.config.minAmountToTradeUSDT
 		);
 
@@ -369,15 +404,11 @@ export class Trade {
 	async openPosition({
 		user,
 		symbol,
-		positionSide,
-		sl,
-		tp,
+		alert,
 	}: {
 		user: User;
 		symbol: Symbol;
-		positionSide: PositionSide;
-		sl?: number;
-		tp?: number;
+		alert: StrategyResponse;
 	}) {
 		if (user.isAddingPosition) return;
 
@@ -427,17 +458,19 @@ export class Trade {
 			return;
 		}
 
+		if (!alert.positionSide) {
+			return;
+		}
+
 		const { coinQuantity, slPrice, tpPrice } = this.getTransactionProps({
 			user,
 			symbol,
-			positionSide,
-			sl,
-			tp,
+			alert,
 		});
 
 		console.log(
 			"Adding position " +
-				positionSide +
+				alert.positionSide +
 				" for " +
 				user.name +
 				" in " +
@@ -447,7 +480,7 @@ export class Trade {
 		await this.authExchange.openPosition({
 			user,
 			symbol,
-			positionSide,
+			positionSide: alert.positionSide,
 			slPrice,
 			tpPrice,
 			coinQuantity,
@@ -520,7 +553,7 @@ export class Trade {
 		const { slPrice, tpPrice } = this.getTransactionProps({
 			user,
 			symbol,
-			positionSide,
+			alert: openPos,
 		});
 
 		try {

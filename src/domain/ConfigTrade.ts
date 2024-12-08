@@ -1,11 +1,12 @@
 import type { BreakEventAlert } from "./BreakEvenAlert";
 import type { Interval } from "./Interval";
 
-export type TradeConfig = {
+export type ConfigTrade = {
 	interval: Interval;
 	lookBackLength: number;
-	sl: number;
-	tp: number;
+	minSl: number;
+	tpSlRatio: number;
+	minSlTp: number;
 	riskPt: number;
 	feePt: number;
 	maxTradeLength: number;
@@ -14,4 +15,6 @@ export type TradeConfig = {
 	maxProtectedPositions: number;
 	maxHedgePositions: number;
 	breakEventAlerts: BreakEventAlert[];
+	leverage: number;
+	setLeverage: boolean;
 };

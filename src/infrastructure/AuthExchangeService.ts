@@ -6,6 +6,7 @@ import type {
 	openPositionProps,
 	securePositionProps,
 	SubscribeToUserUpdatesProps,
+	SetLeverageProps,
 } from "../domain/IAuthExchange";
 import { Interval } from "../domain/Interval";
 import { OrderType, type Order } from "../domain/Order";
@@ -23,6 +24,36 @@ import {
 } from "../utils/orderIdNameGenerator";
 
 export class AuthExchangeService implements IAuthExchange {
+	async setLeverage({
+		user,
+		symbol,
+		leverage,
+	}: SetLeverageProps): Promise<void> {
+		const authExchange = Binance({
+			apiKey: user.binanceApiKey,
+			apiSecret: user.binanceApiSecret || "",
+		});
+
+		try {
+			await authExchange.futuresLeverage({
+				symbol: symbol.pair,
+				leverage,
+			});
+			await authExchange.futuresMarginType({
+				symbol: symbol.pair,
+				marginType: "CROSSED",
+			});
+		} catch (e: any) {
+			if (e.code != "-4046") {
+				console.log(
+					"There were a problem setting leverage for " +
+						user.name +
+						" in " +
+						symbol.pair
+				);
+			}
+		}
+	}
 	async subscribeToUserUpdates({
 		user,
 		handleClearOrders,

@@ -2,7 +2,7 @@ import type { PositionBT } from "./Position";
 
 export type Stat = {
 	sl: number;
-	tp: number;
+	tpSlRatio: number;
 	maxTradeLength: number;
 	positions: PositionBT[];
 

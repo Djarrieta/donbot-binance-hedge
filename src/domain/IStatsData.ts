@@ -12,13 +12,13 @@ export type IStatsData = {
 
 export type GetWinningPairsStatsDataProps = {
 	sl: number;
-	tp: number;
+	tpSlRatio: number;
 	maxTradeLength: number;
 };
 
 export type GetPositionsStatsDataProps = {
 	sl: number;
-	tp: number;
+	tpSlRatio: number;
 	maxTradeLength: number;
 	column: "positionsWP" | "positionsAcc" | "positionsFwd" | "positions";
 };

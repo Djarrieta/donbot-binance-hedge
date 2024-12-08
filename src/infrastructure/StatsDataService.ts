@@ -2,8 +2,8 @@ import { Database } from "bun:sqlite";
 import type { IStatsData } from "../domain/IStatsData";
 import type { PositionBT } from "../domain/Position";
 import type { Stat } from "../domain/Stat";
-import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
+import { formatPercent } from "../utils/formatPercent";
 
 export class StatsDataService implements IStatsData {
 	private db: Database;
@@ -24,7 +24,7 @@ export class StatsDataService implements IStatsData {
 	save(stats: Stat) {
 		const query = `INSERT INTO ${this.tableName} (
 			sl,
-			tp,
+			tpSlRatio,
 			maxTradeLength,
 	
 			winningPairs,
@@ -50,7 +50,7 @@ export class StatsDataService implements IStatsData {
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 		const values = [
 			stats.sl,
-			stats.tp,
+			stats.tpSlRatio,
 			stats.maxTradeLength,
 
 			JSON.stringify(stats.winningPairs),
@@ -85,7 +85,7 @@ export class StatsDataService implements IStatsData {
 
 		const stats: Stat[] = unformattedResults.map((r) => ({
 			sl: Number(r.sl),
-			tp: Number(r.tp),
+			tpSlRatio: Number(r.tpSlRatio),
 			maxTradeLength: Number(r.maxTradeLength),
 
 			winningPairs: JSON.parse(r.winningPairs),
@@ -115,11 +115,11 @@ export class StatsDataService implements IStatsData {
 
 	getWinningPairs({
 		sl,
-		tp,
+		tpSlRatio,
 		maxTradeLength,
 	}: {
 		sl: number;
-		tp: number;
+		tpSlRatio: number;
 		maxTradeLength: number;
 	}) {
 		const unformattedResults = this.db
@@ -127,7 +127,7 @@ export class StatsDataService implements IStatsData {
 				`SELECT winningPairs 
 				FROM ${this.tableName} 
 				WHERE sl = ${sl}  
-				AND tp = ${tp}  
+				AND tpSlRatio = ${tpSlRatio}  
 				AND maxTradeLength = ${maxTradeLength} 
 				AND winningPairs IS NOT NULL
 				LIMIT 1`
@@ -138,12 +138,12 @@ export class StatsDataService implements IStatsData {
 
 	getPositions({
 		sl,
-		tp,
+		tpSlRatio,
 		maxTradeLength,
 		column,
 	}: {
 		sl: number;
-		tp: number;
+		tpSlRatio: number;
 		maxTradeLength: number;
 		column: "positionsWP" | "positionsAcc" | "positionsFwd" | "positions";
 	}) {
@@ -152,7 +152,7 @@ export class StatsDataService implements IStatsData {
 				`SELECT ${column} 
 				FROM ${this.tableName} 
 				WHERE sl = ${sl}  
-				AND tp = ${tp}  
+				AND tpSlRatio = ${tpSlRatio}  
 				AND maxTradeLength = ${maxTradeLength} 
 				AND ${column} IS NOT NULL
 				LIMIT 1`
@@ -168,7 +168,7 @@ export class StatsDataService implements IStatsData {
 	showStats() {
 		const stats = this.getStats();
 
-		const { sl, tp, maxTradeLength } = stats[0];
+		const { sl, tpSlRatio, maxTradeLength } = stats[0];
 		console.log("\n\n");
 		console.log(
 			"======================================================================================================="
@@ -176,31 +176,18 @@ export class StatsDataService implements IStatsData {
 		console.log(
 			`Stats for the best combination sl=${formatPercent(
 				sl
-			)}, tp=${formatPercent(tp)}, maxTradeLength=${maxTradeLength}`
+			)}, tpSlRatio=${formatPercent(
+				tpSlRatio
+			)}, maxTradeLength=${maxTradeLength}`
 		);
 		console.log(
 			"======================================================================================================="
 		);
 		console.log("\n\n");
 
-		const positions = this.getPositions({
-			sl,
-			tp,
-			maxTradeLength,
-			column: "positions",
-		});
-		console.log(`Showing last 100 possible Positions of ${positions.length}`);
-		console.table(
-			positions.slice(-100).map((p) => ({
-				...p,
-				startTime: getDate(p.startTime).dateString,
-				pnl: formatPercent(p.pnl),
-			}))
-		);
-
 		const winningPairs = this.getWinningPairs({
 			sl,
-			tp,
+			tpSlRatio,
 			maxTradeLength,
 		});
 		console.log(`Winning pairs : ${winningPairs.length}`);
@@ -208,7 +195,7 @@ export class StatsDataService implements IStatsData {
 
 		const positionsWP = this.getPositions({
 			sl,
-			tp,
+			tpSlRatio,
 			maxTradeLength,
 			column: "positionsWP",
 		});
@@ -225,7 +212,7 @@ export class StatsDataService implements IStatsData {
 
 		const positionsAcc = this.getPositions({
 			sl,
-			tp,
+			tpSlRatio,
 			maxTradeLength,
 			column: "positionsAcc",
 		});
@@ -242,7 +229,7 @@ export class StatsDataService implements IStatsData {
 
 		const positionsFwd = this.getPositions({
 			sl,
-			tp,
+			tpSlRatio,
 			maxTradeLength,
 			column: "positionsFwd",
 		});
@@ -259,7 +246,7 @@ export class StatsDataService implements IStatsData {
 		console.log("Stats summary:");
 		console.table(
 			stats.map((r) => ({
-				"sl tp maxLen": `${formatPercent(r.sl)} ${formatPercent(r.tp)} ${
+				"sl tpSlRatio maxLen": `${formatPercent(r.sl)} ${r.tpSlRatio} ${
 					r.maxTradeLength
 				}`,
 
@@ -297,7 +284,7 @@ export class StatsDataService implements IStatsData {
 				`
 				CREATE TABLE IF NOT EXISTS ${this.tableName} (
 					sl REAL,
-					tp REAL,
+					tpSlRatio REAL,
 					maxTradeLength INTEGER,
 
 					winningPairs TEXT,

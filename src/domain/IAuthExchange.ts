@@ -11,6 +11,13 @@ export type IAuthExchange = {
 	protectPosition(props: openPositionProps): Promise<void>;
 	securePosition(props: securePositionProps): Promise<void>;
 	subscribeToUserUpdates(props: SubscribeToUserUpdatesProps): Promise<void>;
+	setLeverage(props: SetLeverageProps): Promise<void>;
+};
+
+export type SetLeverageProps = {
+	user: User;
+	symbol: Symbol;
+	leverage: number;
 };
 
 export type securePositionProps = {

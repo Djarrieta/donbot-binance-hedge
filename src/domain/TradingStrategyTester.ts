@@ -3,8 +3,8 @@ import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
 import type { Alert } from "./Alert";
-import type { BreakEventAlert } from "./BreakEvenAlert";
 import type { CandleBt as Candle } from "./Candle";
+import type { ConfigBacktest } from "./ConfigBacktest";
 import type { IAlert } from "./IAlert";
 import type { IExchange } from "./IExchange";
 import type { IHistoryData } from "./IHistoryData";
@@ -14,29 +14,9 @@ import type { PositionBT, PositionSide } from "./Position";
 import type { Stat } from "./Stat";
 import type { Strategy } from "./Strategy";
 
-export type BacktestConfig = {
-	backtestStart: number;
-	backtestEnd: number;
-	forwardTestEnd: number;
-	interval: Interval;
-	lookBackLength: number;
-	slArray: number[];
-	tpArray: number[];
-	riskPt: number;
-	feePt: number;
-	maxTradeLengthArray: number[];
-	minAmountToTradeUSDT: number;
-	apiLimit: number;
-	breakEventAlerts: BreakEventAlert[];
-	steps: {
-		overrideHistoricalRecords: boolean;
-		overrideAlerts: boolean;
-	};
-};
-
 export class TradingStrategyTester {
 	constructor(
-		private readonly config: BacktestConfig,
+		private readonly config: ConfigBacktest,
 		private readonly exchange: IExchange,
 		private readonly statsDataService: IStatsData,
 		private readonly historyDataService: IHistoryData,
@@ -77,8 +57,10 @@ export class TradingStrategyTester {
 			getDate(this.config.backtestEnd).dateString
 		} to ${getDate(this.config.forwardTestEnd).dateString}
 
-			StopLoss array: ${this.config.slArray.map((x) => formatPercent(x)).join(", ")}
-			TakeProfit array: ${this.config.tpArray.map((x) => formatPercent(x)).join(", ")}
+			StopLoss array: ${this.config.minSlArray
+				.map((x) => formatPercent(x))
+				.join(", ")}
+			TP Sl Ratio array: ${this.config.tpSlRatioArray.join(", ")}
 			MaxTradeLength array: ${this.config.maxTradeLengthArray.join(", ")}
 			
 			Steps: 
@@ -131,19 +113,19 @@ export class TradingStrategyTester {
 
 		this.statsDataService.deleteRows();
 
-		for (const sl of this.config.slArray) {
-			for (const tp of this.config.tpArray) {
+		for (const sl of this.config.minSlArray) {
+			for (const tpSlRatio of this.config.tpSlRatioArray) {
 				for (const maxTradeLength of this.config.maxTradeLengthArray) {
 					const positions = this.processPositions({
 						alerts,
 						sl,
-						tp,
+						tpSlRatio,
 						maxTradeLength,
 					});
 
 					const stats = this.processStats({
 						positions,
-						tp,
+						tpSlRatio,
 						sl,
 						maxTradeLength,
 						backtestEnd: this.config.backtestEnd,
@@ -260,32 +242,42 @@ export class TradingStrategyTester {
 	private processPositions({
 		alerts,
 		sl,
-		tp,
+		tpSlRatio,
 		maxTradeLength,
 	}: {
 		alerts: Alert[];
 		sl: number;
-		tp: number;
+		tpSlRatio: number;
 		maxTradeLength: number;
 	}) {
 		const closedPositions: PositionBT[] = [];
 
 		for (const alert of alerts) {
 			const { profitStick: maxProfitStick, pair } = alert;
-			const profitStick = maxProfitStick.slice(0, maxTradeLength);
+			const profitStick = maxProfitStick?.slice(0, maxTradeLength) || [];
 
 			const entryPriceUSDT = profitStick[0].open;
 
+			const calcSl =
+				alert.sl &&
+				Number(alert.sl) > this.config.minSlTp &&
+				Number(alert.sl) < sl
+					? alert.sl
+					: sl;
+			let calcTp =
+				alert.tp && Number(alert.tp) > calcSl * tpSlRatio
+					? alert.tp
+					: calcSl * tpSlRatio;
+
 			const stopLoss =
 				alert.positionSide === "LONG"
-					? entryPriceUSDT * (1 - (alert.sl || sl))
-					: entryPriceUSDT * (1 + (alert.sl || sl));
+					? entryPriceUSDT * (1 - calcSl)
+					: entryPriceUSDT * (1 + calcSl);
 
-			const takeProfit = tp
-				? alert.positionSide === "LONG"
-					? entryPriceUSDT * (1 + (alert.tp || tp))
-					: entryPriceUSDT * (1 - (alert.tp || tp))
-				: 0;
+			const takeProfit =
+				alert.positionSide === "LONG"
+					? entryPriceUSDT * (1 + calcTp)
+					: entryPriceUSDT * (1 - calcTp);
 
 			const breakEvens = this.config.breakEventAlerts.map((be) => {
 				return {
@@ -314,7 +306,11 @@ export class TradingStrategyTester {
 					(alert.positionSide === "SHORT" &&
 						(candle.high >= stopLoss || candle.close >= stopLoss))
 				) {
-					pnl = -this.config.riskPt - this.config.feePt;
+					pnl =
+						-this.config.feePt -
+						(this.config.leverage * this.config.minAmountToTradeUSDT * calcSl) /
+							this.config.balanceUSDT;
+
 					stickIndex++;
 					break indexLoop;
 				}
@@ -325,7 +321,11 @@ export class TradingStrategyTester {
 					(alert.positionSide === "SHORT" &&
 						(candle.low <= takeProfit || candle.close <= takeProfit))
 				) {
-					pnl = this.config.riskPt * (tp / sl) - this.config.feePt;
+					pnl =
+						-this.config.feePt +
+						(this.config.leverage * this.config.minAmountToTradeUSDT * calcTp) /
+							this.config.balanceUSDT;
+
 					stickIndex++;
 					break indexLoop;
 				}
@@ -357,7 +357,13 @@ export class TradingStrategyTester {
 							(alert.positionSide === "LONG"
 								? securePrice - entryPriceUSDT
 								: entryPriceUSDT - securePrice) / entryPriceUSDT;
-						pnl = this.config.riskPt * (pnlGraph / sl) - this.config.feePt;
+						pnl =
+							-this.config.feePt +
+							(this.config.leverage *
+								this.config.minAmountToTradeUSDT *
+								pnlGraph) /
+								this.config.balanceUSDT;
+
 						secureLength = stickIndex;
 						break indexLoop;
 					}
@@ -373,8 +379,18 @@ export class TradingStrategyTester {
 						? lastPrice - profitStick[0].open
 						: profitStick[0].open - lastPrice) / profitStick[0].open;
 
-				pnl = this.config.riskPt * (pnlGraph / sl) - this.config.feePt;
+				pnl =
+					-this.config.feePt +
+					(this.config.leverage * this.config.minAmountToTradeUSDT * pnlGraph) /
+						this.config.balanceUSDT;
 			}
+
+			const adf =
+				alert.pair +
+				"-" +
+				getDate(alert.profitStick[0].openTime).dateString +
+				"-" +
+				alert.positionSide;
 
 			closedPositions.push({
 				pair,
@@ -393,14 +409,14 @@ export class TradingStrategyTester {
 
 	public processStats({
 		positions,
-		tp,
 		sl,
+		tpSlRatio,
 		maxTradeLength,
 		backtestEnd,
 	}: {
 		positions: PositionBT[];
-		tp: number;
 		sl: number;
+		tpSlRatio: number;
 		maxTradeLength: number;
 		backtestEnd: number;
 	}) {
@@ -476,7 +492,7 @@ export class TradingStrategyTester {
 
 		const stats: Stat = {
 			sl,
-			tp,
+			tpSlRatio,
 			maxTradeLength,
 			winningPairs,
 			positions,

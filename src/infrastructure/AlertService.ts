@@ -50,9 +50,9 @@ export class AlertService implements IAlert {
 					a.stgName,
 					a.positionSide as string,
 					a.pair,
+					JSON.stringify(a.profitStick),
 					a.sl || 0,
-					a.tp || 0,
-					JSON.stringify(a.profitStick)
+					a.tp || 0
 				);
 			});
 
