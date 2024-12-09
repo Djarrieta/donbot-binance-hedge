@@ -2,7 +2,7 @@ import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
 import type { ConfigTrade } from "./domain/ConfigTrade";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
-import { getDate, type DateString } from "./utils/getDate";
+import { getDate } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 import type { ConfigBacktest } from "./domain/ConfigBacktest";
 
@@ -30,7 +30,7 @@ export const backtestConfig: ConfigBacktest = {
 	feePt: 0.0005,
 
 	minSlArray: [3 / 100, 4 / 100, 5 / 100],
-	tpSlRatioArray: [2, 3, 4, 5],
+	tpSlRatioArray: [3, 4],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 

@@ -385,13 +385,6 @@ export class TradingStrategyTester {
 						this.config.balanceUSDT;
 			}
 
-			const adf =
-				alert.pair +
-				"-" +
-				getDate(alert.profitStick[0].openTime).dateString +
-				"-" +
-				alert.positionSide;
-
 			closedPositions.push({
 				pair,
 				positionSide: alert.positionSide as PositionSide,
@@ -437,7 +430,7 @@ export class TradingStrategyTester {
 			const avPnl = totalPnl / tradesQty || 0;
 
 			if (avPnl > 0) {
-				winningPairs.push({ pair, avPnl });
+				winningPairs.push({ pair, avPnl, qty: closedPosForSymbol.length || 0 });
 			}
 		}
 

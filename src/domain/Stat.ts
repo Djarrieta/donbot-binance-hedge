@@ -3,6 +3,7 @@ import type { PositionBT } from "./Position";
 export type WinningPair = {
 	pair: string;
 	avPnl: number;
+	qty: number;
 };
 
 export type Stat = {

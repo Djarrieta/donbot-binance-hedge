@@ -211,10 +211,10 @@ export class StatsDataService implements IStatsData {
 			column: "positionsWP",
 		});
 		console.log(
-			`Showing last 100 possible Positions for winning pairs: ${positionsWP.length}`
+			`Showing last 20 possible Positions for winning pairs: ${positionsWP.length}`
 		);
 		console.table(
-			positionsWP.slice(-100).map((p) => ({
+			positionsWP.slice(-20).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),
@@ -228,10 +228,10 @@ export class StatsDataService implements IStatsData {
 			column: "positionsAcc",
 		});
 		console.log(
-			`Showing last 100 possible Positions with accumulation for winning pairs: ${positionsAcc.length}`
+			`Showing last 20 possible Positions with accumulation for winning pairs: ${positionsAcc.length}`
 		);
 		console.table(
-			positionsAcc.slice(-100).map((p) => ({
+			positionsAcc.slice(-20).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),
@@ -248,7 +248,7 @@ export class StatsDataService implements IStatsData {
 			`Showing last possible Positions in forward test: ${positionsFwd.length}`
 		);
 		console.table(
-			positionsFwd.slice(-100).map((p) => ({
+			positionsFwd.slice(-20).map((p) => ({
 				...p,
 				startTime: getDate(p.startTime).dateString,
 				pnl: formatPercent(p.pnl),
