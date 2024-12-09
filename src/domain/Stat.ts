@@ -4,6 +4,12 @@ export type WinningPair = {
 	pair: string;
 	avPnl: number;
 	qty: number;
+	winRate: number;
+	accPnl: number;
+	winRateAcc: number;
+	accPnlAcc: number;
+	avPnlAcc: number;
+	drawdownAcc: number;
 };
 
 export type Stat = {

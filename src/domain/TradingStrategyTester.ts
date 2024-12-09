@@ -57,7 +57,7 @@ export class TradingStrategyTester {
 			getDate(this.config.backtestEnd).dateString
 		} to ${getDate(this.config.forwardTestEnd).dateString}
 
-			StopLoss array: ${this.config.minSlArray
+			StopLoss array: ${this.config.maxSlArray
 				.map((x) => formatPercent(x))
 				.join(", ")}
 			TP Sl Ratio array: ${this.config.tpSlRatioArray.join(", ")}
@@ -113,7 +113,7 @@ export class TradingStrategyTester {
 
 		this.statsDataService.deleteRows();
 
-		for (const sl of this.config.minSlArray) {
+		for (const sl of this.config.maxSlArray) {
 			for (const tpSlRatio of this.config.tpSlRatioArray) {
 				for (const maxTradeLength of this.config.maxTradeLengthArray) {
 					const positions = this.processPositions({
@@ -415,27 +415,43 @@ export class TradingStrategyTester {
 	}) {
 		const pairList = new Set<string>(positions.map((p) => p.pair));
 
-		const positionsBacktest = positions.filter(
-			(pos) => pos.startTime <= backtestEnd
-		);
-
 		let winningPairs: WinningPair[] = [];
 
 		for (const pair of pairList) {
-			const closedPosForSymbol = positionsBacktest.filter(
-				(pos) => pos.pair === pair
+			const positionsForPair = positions.filter(
+				(pos) => pos.pair === pair && pos.startTime <= backtestEnd
 			);
-			const tradesQty = closedPosForSymbol.length;
-			const totalPnl = closedPosForSymbol.reduce((acc, a) => acc + a.pnl, 0);
-			const avPnl = totalPnl / tradesQty || 0;
+			const { winRate, accPnl, avPnl } = this.getStats(positionsForPair);
+
+			const positionsForPairAcc = this.getAccPositions(positionsForPair);
+
+			const {
+				winRate: winRateAcc,
+				accPnl: accPnlAcc,
+				avPnl: avPnlAcc,
+				drawdownMonteCarlo: drawdownAcc,
+			} = this.getStats(positionsForPairAcc);
 
 			if (avPnl > 0) {
-				winningPairs.push({ pair, avPnl, qty: closedPosForSymbol.length || 0 });
+				winningPairs.push({
+					pair,
+					avPnl,
+					qty: positionsForPair.length || 0,
+					winRate,
+					accPnl,
+					winRateAcc,
+					accPnlAcc,
+					avPnlAcc,
+					drawdownAcc,
+				});
 			}
 		}
 
-		const positionsWP = positionsBacktest.filter((p) => {
-			return winningPairs.map((wp) => wp.pair).includes(p.pair);
+		const positionsWP = positions.filter((p) => {
+			return (
+				p.startTime <= backtestEnd &&
+				winningPairs.map((wp) => wp.pair).includes(p.pair)
+			);
 		});
 
 		const {
@@ -444,16 +460,7 @@ export class TradingStrategyTester {
 			avPnl: avPnlWP,
 		} = this.getStats(positionsWP);
 
-		const positionsAcc = [];
-		let lastAccClosedTime = 0;
-		for (const position of positionsWP) {
-			if (position.startTime > lastAccClosedTime) {
-				positionsAcc.push(position);
-				lastAccClosedTime = position.secureLength
-					? position.startTime + position.secureLength * this.config.interval
-					: position.startTime + position.tradeLength * this.config.interval;
-			}
-		}
+		const positionsAcc = this.getAccPositions(positionsWP);
 
 		const {
 			winRate: winRateAcc,
@@ -468,16 +475,7 @@ export class TradingStrategyTester {
 				winningPairs.map((wp) => wp.pair).includes(p.pair) &&
 				p.startTime > backtestEnd
 		);
-		const positionsFwd = [];
-		let lastFwdClosedTime = 0;
-		for (const position of positionsFwdFullList) {
-			if (position.startTime > lastFwdClosedTime) {
-				positionsFwd.push(position);
-				lastFwdClosedTime = position.secureLength
-					? position.startTime + position.secureLength * this.config.interval
-					: position.startTime + position.tradeLength * this.config.interval;
-			}
-		}
+		const positionsFwd = this.getAccPositions(positionsFwdFullList);
 
 		const {
 			winRate: winRateFwd,
@@ -512,6 +510,20 @@ export class TradingStrategyTester {
 		};
 
 		return stats;
+	}
+
+	private getAccPositions(positions: PositionBT[]) {
+		const positionsAcc = [];
+		let lastAccClosedTime = 0;
+		for (const position of positions) {
+			if (position.startTime > lastAccClosedTime) {
+				positionsAcc.push(position);
+				lastAccClosedTime = position.secureLength
+					? position.startTime + position.secureLength * this.config.interval
+					: position.startTime + position.tradeLength * this.config.interval;
+			}
+		}
+		return positionsAcc;
 	}
 
 	private getStats(positions: PositionBT[]) {

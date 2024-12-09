@@ -7,7 +7,7 @@ export type ConfigBacktest = {
 	forwardTestEnd: number;
 	interval: Interval;
 	lookBackLength: number;
-	minSlArray: number[];
+	maxSlArray: number[];
 	tpSlRatioArray: number[];
 	minSlTp: number;
 	feePt: number;

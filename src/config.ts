@@ -2,7 +2,7 @@ import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
 import type { ConfigTrade } from "./domain/ConfigTrade";
 import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
-import { getDate } from "./utils/getDate";
+import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 import type { ConfigBacktest } from "./domain/ConfigBacktest";
 
@@ -13,7 +13,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	candleCount: 80000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate().dateMs,
+	lastDate: getDate("2024 12 08 00:00:00" as DateString).dateMs,
 });
 
 export const backtestConfig: ConfigBacktest = {
@@ -29,8 +29,8 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	minSlArray: [3 / 100, 4 / 100, 5 / 100],
-	tpSlRatioArray: [3, 4],
+	maxSlArray: [1 / 100],
+	tpSlRatioArray: [10],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 

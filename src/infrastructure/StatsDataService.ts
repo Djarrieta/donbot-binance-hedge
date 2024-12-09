@@ -195,14 +195,8 @@ export class StatsDataService implements IStatsData {
 			maxTradeLength,
 		});
 		console.log(`Winning pairs : ${winningPairs.length}`);
-		console.table(
-			winningPairs
-				.sort((a, b) => b.avPnl - a.avPnl)
-				.map((p) => ({
-					...p,
-					avPnl: formatPercent(p.avPnl),
-				}))
-		);
+
+		console.log(winningPairs.map((p) => p.pair));
 
 		const positionsWP = this.getPositions({
 			sl,
@@ -281,6 +275,24 @@ export class StatsDataService implements IStatsData {
 
 				pairs: r.winningPairs.length,
 			}))
+		);
+
+		("Stats per pair");
+
+		console.table(
+			winningPairs
+				.sort((a, b) => b.avPnl - a.avPnl)
+				.map((p) => ({
+					pair: p.pair,
+					qty: p.qty,
+					avPnl: formatPercent(p.avPnl),
+					avPnlAcc: formatPercent(p.avPnlAcc),
+					winRate: formatPercent(p.winRate),
+					winRateAcc: formatPercent(p.winRateAcc),
+					accPnl: formatPercent(p.accPnl),
+					accPnlAcc: formatPercent(p.accPnlAcc),
+					drawdownAcc: formatPercent(p.drawdownAcc),
+				}))
 		);
 	}
 
