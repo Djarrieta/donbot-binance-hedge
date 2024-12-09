@@ -1,12 +1,17 @@
 import type { PositionBT } from "./Position";
 
+export type WinningPair = {
+	pair: string;
+	avPnl: number;
+};
+
 export type Stat = {
 	sl: number;
 	tpSlRatio: number;
 	maxTradeLength: number;
 	positions: PositionBT[];
 
-	winningPairs: string[];
+	winningPairs: WinningPair[];
 	positionsWP: PositionBT[];
 	positionsAcc: PositionBT[];
 	positionsFwd: PositionBT[];

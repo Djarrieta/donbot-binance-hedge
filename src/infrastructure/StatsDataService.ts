@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 import type { IStatsData } from "../domain/IStatsData";
 import type { PositionBT } from "../domain/Position";
-import type { Stat } from "../domain/Stat";
+import type { Stat, WinningPair } from "../domain/Stat";
 import { getDate } from "../utils/getDate";
 import { formatPercent } from "../utils/formatPercent";
 
@@ -133,7 +133,11 @@ export class StatsDataService implements IStatsData {
 				LIMIT 1`
 			)
 			.get() as any;
-		return JSON.parse(unformattedResults.winningPairs);
+
+		const winningPairs: WinningPair[] = JSON.parse(
+			unformattedResults.winningPairs
+		);
+		return winningPairs;
 	}
 
 	getPositions({
@@ -191,7 +195,14 @@ export class StatsDataService implements IStatsData {
 			maxTradeLength,
 		});
 		console.log(`Winning pairs : ${winningPairs.length}`);
-		console.log(winningPairs);
+		console.table(
+			winningPairs
+				.sort((a, b) => b.avPnl - a.avPnl)
+				.map((p) => ({
+					...p,
+					avPnl: formatPercent(p.avPnl),
+				}))
+		);
 
 		const positionsWP = this.getPositions({
 			sl,

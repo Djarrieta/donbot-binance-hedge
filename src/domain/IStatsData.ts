@@ -1,10 +1,10 @@
 import type { PositionBT } from "./Position";
-import type { Stat } from "./Stat";
+import type { Stat, WinningPair } from "./Stat";
 
 export type IStatsData = {
 	save: (stats: Stat) => void;
 	getStats: () => Stat[];
-	getWinningPairs: (props: GetWinningPairsStatsDataProps) => string[];
+	getWinningPairs: (props: GetWinningPairsStatsDataProps) => WinningPair[];
 	getPositions: (props: GetPositionsStatsDataProps) => PositionBT[];
 	showStats: () => void;
 	deleteRows: () => void;

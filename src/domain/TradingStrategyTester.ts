@@ -11,7 +11,7 @@ import type { IHistoryData } from "./IHistoryData";
 import { Interval } from "./Interval";
 import type { IStatsData } from "./IStatsData";
 import type { PositionBT, PositionSide } from "./Position";
-import type { Stat } from "./Stat";
+import type { Stat, WinningPair } from "./Stat";
 import type { Strategy } from "./Strategy";
 
 export class TradingStrategyTester {
@@ -426,7 +426,7 @@ export class TradingStrategyTester {
 			(pos) => pos.startTime <= backtestEnd
 		);
 
-		let winningPairs: string[] = [];
+		let winningPairs: WinningPair[] = [];
 
 		for (const pair of pairList) {
 			const closedPosForSymbol = positionsBacktest.filter(
@@ -437,12 +437,12 @@ export class TradingStrategyTester {
 			const avPnl = totalPnl / tradesQty || 0;
 
 			if (avPnl > 0) {
-				winningPairs.push(pair);
+				winningPairs.push({ pair, avPnl });
 			}
 		}
 
 		const positionsWP = positionsBacktest.filter((p) => {
-			return winningPairs.includes(p.pair);
+			return winningPairs.map((wp) => wp.pair).includes(p.pair);
 		});
 
 		const {
@@ -471,7 +471,9 @@ export class TradingStrategyTester {
 		} = this.getStats(positionsAcc);
 
 		const positionsFwdFullList = positions.filter(
-			(p) => winningPairs.includes(p.pair) && p.startTime > backtestEnd
+			(p) =>
+				winningPairs.map((wp) => wp.pair).includes(p.pair) &&
+				p.startTime > backtestEnd
 		);
 		const positionsFwd = [];
 		let lastFwdClosedTime = 0;

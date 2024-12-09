@@ -10,10 +10,10 @@ export const DATA_BASE_NAME = "DYNAMIC_PARAMS.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 40000,
+	candleCount: 80000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate("2024 12 07 00:00:00" as DateString).dateMs,
+	lastDate: getDate().dateMs,
 });
 
 export const backtestConfig: ConfigBacktest = {
@@ -22,15 +22,15 @@ export const backtestConfig: ConfigBacktest = {
 	forwardTestEnd,
 	interval,
 	lookBackLength: 200,
-	maxTradeLengthArray: [100, 200],
+	maxTradeLengthArray: [100],
 
 	minAmountToTradeUSDT: 6,
-	leverage: 10,
+	leverage: 2,
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	minSlArray: [1 / 100],
-	tpSlRatioArray: [10],
+	minSlArray: [3 / 100, 4 / 100, 5 / 100],
+	tpSlRatioArray: [2, 3, 4, 5],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
