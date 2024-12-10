@@ -277,11 +277,12 @@ export class StatsDataService implements IStatsData {
 			}))
 		);
 
-		("Stats per pair");
+		console.log("Stats per pair");
 
 		console.table(
 			winningPairs
-				.sort((a, b) => b.avPnl - a.avPnl)
+
+				.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
 				.map((p) => ({
 					pair: p.pair,
 					qty: p.qty,
@@ -293,6 +294,15 @@ export class StatsDataService implements IStatsData {
 					accPnlAcc: formatPercent(p.accPnlAcc),
 					drawdownAcc: formatPercent(p.drawdownAcc),
 				}))
+		);
+
+		console.log("Recommended pairs:");
+
+		console.log(
+			winningPairs
+				.filter((p) => p.qty >= 100)
+				.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
+				.map((p) => p.pair)
 		);
 	}
 

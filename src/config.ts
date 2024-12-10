@@ -15,7 +15,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	interval,
 	lastDate: getDate("2024 12 08 00:00:00" as DateString).dateMs,
 });
-
+//TODO: add daily pnl
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
