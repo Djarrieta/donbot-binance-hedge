@@ -1,16 +1,17 @@
 import cliProgress from "cli-progress";
-import type { IAuthExchange } from "./IAuthExchange";
-import type { Symbol } from "./Symbol";
-import type { Strategy, StrategyResponse } from "./Strategy";
 import { delay } from "../utils/delay";
+import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { getVolatility } from "../utils/getVolatility";
-import type { PositionSide } from "./Position";
 import type { Alert } from "./Alert";
-import { OrderType } from "./Order";
-import type { User } from "./User";
 import type { ConfigTrade } from "./ConfigTrade";
+import type { IAuthExchange } from "./IAuthExchange";
 import type { IExchange, UpdateSymbolProps } from "./IExchange";
+import { OrderType } from "./Order";
+import type { PositionSide } from "./Position";
+import type { Strategy, StrategyResponse } from "./Strategy";
+import type { Symbol } from "./Symbol";
+import type { User } from "./User";
 
 export class Trade {
 	exchange: IExchange;
@@ -209,6 +210,12 @@ export class Trade {
 			(user.balanceUSDT * this.config.riskPt) / this.config.maxSl,
 			this.config.minAmountToTradeUSDT
 		);
+
+		const realPositionRisk =
+			(this.config.leverage * quantityUSDT * this.config.maxSl) /
+			user.balanceUSDT;
+
+		console.log("Real position risk", formatPercent(realPositionRisk));
 
 		const coinQuantity = Math.max(
 			quantityUSDT / symbol.currentPrice,
