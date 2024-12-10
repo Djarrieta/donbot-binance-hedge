@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git checkout feat/strategy-variable-sl-tp
+git checkout main
 git pull
 sudo docker rm -f donbot-c
 sudo docker rmi donbot-i

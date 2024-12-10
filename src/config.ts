@@ -6,16 +6,16 @@ import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 import type { ConfigBacktest } from "./domain/ConfigBacktest";
 
-export const DATA_BASE_NAME = "DYNAMIC_PARAMS.db";
+export const DATA_BASE_NAME = "rsiDivergency5m.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	candleCount: 80000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate("2024 12 08 00:00:00" as DateString).dateMs,
+	lastDate: getDate().dateMs,
 });
-//TODO: add daily pnl
+
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
@@ -46,7 +46,7 @@ export const tradeConfig: ConfigTrade = {
 	lookBackLength: 200,
 	maxTradeLength: 100,
 
-	maxSl: 2 / 100,
+	maxSl: 1 / 100,
 	tpSlRatio: 9,
 	minSlTp: 1 / 100,
 

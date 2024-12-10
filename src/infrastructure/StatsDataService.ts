@@ -349,17 +349,5 @@ export class StatsDataService implements IStatsData {
 			`
 			)
 			.run();
-
-		//TODO: remove when getting all data
-		const columnExists = this.db
-			.query(`PRAGMA table_info(${this.tableName})`)
-			.all()
-			.some((col: any) => col.name === "avPnlPerDay");
-
-		if (!columnExists) {
-			this.db
-				.query(`ALTER TABLE ${this.tableName} ADD COLUMN avPnlPerDay REAL`)
-				.run();
-		}
 	}
 }
