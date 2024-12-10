@@ -30,7 +30,7 @@ export const backtestConfig: ConfigBacktest = {
 	feePt: 0.0005,
 
 	maxSlArray: [1 / 100],
-	tpSlRatioArray: [10],
+	tpSlRatioArray: [9],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
@@ -46,25 +46,19 @@ export const tradeConfig: ConfigTrade = {
 	lookBackLength: 200,
 	maxTradeLength: 100,
 
-	minSl: 2 / 100,
-	tpSlRatio: 4,
-	minSlTp: 4 / 100,
+	maxSl: 2 / 100,
+	tpSlRatio: 9,
+	minSlTp: 1 / 100,
 
 	riskPt: 0.25 / 100,
 	minAmountToTradeUSDT: 6,
-	leverage: 10,
+	leverage: 2,
 	feePt: 0.0005,
 
 	maxProtectedPositions: 1,
 	maxHedgePositions: 20,
 
-	breakEventAlerts: [
-		{
-			trigger: 5 / 100,
-			break: 1 / 100,
-			minLength: 5,
-		},
-	],
+	breakEventAlerts: [],
 	apiLimit: 500,
 	setLeverage: false,
 };

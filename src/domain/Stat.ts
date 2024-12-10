@@ -37,4 +37,5 @@ export type Stat = {
 
 	drawdownMC: number;
 	badRunMC: number;
+	avPnlPerDay: number;
 };

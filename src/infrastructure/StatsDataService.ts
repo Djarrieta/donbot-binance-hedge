@@ -46,8 +46,9 @@ export class StatsDataService implements IStatsData {
 			accPnlFwd,
 	
 			drawdownMC,
-			badRunMC
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+			badRunMC,
+			avPnlPerDay
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 		const values = [
 			stats.sl,
 			stats.tpSlRatio,
@@ -73,6 +74,7 @@ export class StatsDataService implements IStatsData {
 
 			stats.drawdownMC,
 			stats.badRunMC,
+			stats.avPnlPerDay,
 		];
 
 		this.db.query(query).run(...values);
@@ -108,6 +110,7 @@ export class StatsDataService implements IStatsData {
 
 			drawdownMC: Number(r.drawdownMC || 0),
 			badRunMC: Number(r.badRunMC || 0),
+			avPnlPerDay: Number(r.avPnlPerDay || 0),
 		}));
 
 		return stats;
@@ -251,7 +254,7 @@ export class StatsDataService implements IStatsData {
 		console.log("Stats summary:");
 		console.table(
 			stats.map((r) => ({
-				"sl tpSlRatio maxLen": `${formatPercent(r.sl)} ${r.tpSlRatio} ${
+				"SL TPSLRatio MaxLen": `${formatPercent(r.sl)} ${r.tpSlRatio} ${
 					r.maxTradeLength
 				}`,
 
@@ -271,7 +274,9 @@ export class StatsDataService implements IStatsData {
 					r.accPnlAcc
 				)} ${formatPercent(r.accPnlFwd)}`,
 
-				"DD badRun": `${formatPercent(r.drawdownMC)} ${r.badRunMC}`,
+				"DD badRun pnlPerDay": `${formatPercent(r.drawdownMC)} ${
+					r.badRunMC
+				} ${formatPercent(r.avPnlPerDay)}`,
 
 				pairs: r.winningPairs.length,
 			}))
@@ -281,7 +286,6 @@ export class StatsDataService implements IStatsData {
 
 		console.table(
 			winningPairs
-
 				.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
 				.map((p) => ({
 					pair: p.pair,
@@ -339,10 +343,23 @@ export class StatsDataService implements IStatsData {
 					accPnlFwd REAL,
 
 					drawdownMC REAL,
-					badRunMC REAL
+					badRunMC REAL,
+					avPnlPerDay REAL
 				)
 			`
 			)
 			.run();
+
+		//TODO: remove when getting all data
+		const columnExists = this.db
+			.query(`PRAGMA table_info(${this.tableName})`)
+			.all()
+			.some((col: any) => col.name === "avPnlPerDay");
+
+		if (!columnExists) {
+			this.db
+				.query(`ALTER TABLE ${this.tableName} ADD COLUMN avPnlPerDay REAL`)
+				.run();
+		}
 	}
 }

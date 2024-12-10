@@ -4,7 +4,7 @@ import type { Interval } from "./Interval";
 export type ConfigTrade = {
 	interval: Interval;
 	lookBackLength: number;
-	minSl: number;
+	maxSl: number;
 	tpSlRatio: number;
 	minSlTp: number;
 	riskPt: number;

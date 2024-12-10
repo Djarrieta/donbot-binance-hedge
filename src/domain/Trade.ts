@@ -187,9 +187,9 @@ export class Trade {
 		const calcSl =
 			alert.sl &&
 			Number(alert.sl) > this.config.minSlTp &&
-			Number(alert.sl) < this.config.minSl
+			Number(alert.sl) < this.config.maxSl
 				? alert.sl
-				: this.config.minSl;
+				: this.config.maxSl;
 		let calcTp =
 			alert.tp && Number(alert.tp) > calcSl * this.config.tpSlRatio
 				? alert.tp
@@ -206,7 +206,7 @@ export class Trade {
 				: symbol.currentPrice * (1 - calcTp);
 
 		const quantityUSDT = Math.max(
-			(user.balanceUSDT * this.config.riskPt) / this.config.minSl,
+			(user.balanceUSDT * this.config.riskPt) / this.config.maxSl,
 			this.config.minAmountToTradeUSDT
 		);
 

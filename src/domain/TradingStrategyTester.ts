@@ -468,6 +468,7 @@ export class TradingStrategyTester {
 			avPnl: avPnlAcc,
 			drawdownMonteCarlo: drawdownMC,
 			badRunMonteCarlo: badRunMC,
+			avPnlPerDay,
 		} = this.getStats(positionsAcc);
 
 		const positionsFwdFullList = positions.filter(
@@ -507,6 +508,7 @@ export class TradingStrategyTester {
 
 			drawdownMC,
 			badRunMC,
+			avPnlPerDay,
 		};
 
 		return stats;
@@ -527,6 +529,10 @@ export class TradingStrategyTester {
 	}
 
 	private getStats(positions: PositionBT[]) {
+		const start = positions[0].startTime;
+		const end = positions[positions.length - 1].startTime;
+		const totalDays = (end - start) / Interval["1d"];
+
 		const tradesQty = positions.length;
 		const winningPositions = positions.filter((p) => p.pnl > 0);
 		const lostPositions = positions.filter((p) => p.pnl < 0);
@@ -535,6 +541,7 @@ export class TradingStrategyTester {
 			(winningPositions.length + lostPositions.length);
 		const accPnl = positions.reduce((acc, p) => acc + p.pnl, 0);
 		const avPnl = accPnl / tradesQty || 0;
+		const avPnlPerDay = accPnl / totalDays;
 
 		const { drawdownMonteCarlo, badRunMonteCarlo } = monteCarloAnalysis({
 			values: positions.map((p) => p.pnl),
@@ -546,6 +553,7 @@ export class TradingStrategyTester {
 			winRate,
 			accPnl,
 			avPnl,
+			avPnlPerDay,
 			drawdownMonteCarlo,
 			badRunMonteCarlo,
 		};
