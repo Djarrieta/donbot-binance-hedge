@@ -13,7 +13,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	candleCount: 80000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate().dateMs,
+	lastDate: getDate("2024 12 10 00:00:00" as DateString).dateMs,
 });
 
 export const backtestConfig: ConfigBacktest = {

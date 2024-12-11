@@ -413,7 +413,13 @@ export class TradingStrategyTester {
 		maxTradeLength: number;
 		backtestEnd: number;
 	}) {
-		const pairList = new Set<string>(positions.map((p) => p.pair));
+		const pairsInStrategies = Array.from(
+			new Set(this.strategies.map((s) => s.allowedPairs).flat())
+		) as string[];
+
+		const pairList = pairsInStrategies.length
+			? pairsInStrategies
+			: new Set<string>(positions.map((p) => p.pair));
 
 		let winningPairs: WinningPair[] = [];
 
