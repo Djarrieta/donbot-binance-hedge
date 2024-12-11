@@ -1,12 +1,3 @@
-export enum OrderType {
-	NEW = "NEW",
-	HEDGE = "HEDGE",
-	PROFIT = "PROFIT",
-	BREAK = "BREAK",
-	QUIT = "QUIT",
-	UNKNOWN = "UNKNOWN",
-}
-
 export type Order = {
 	orderId: number;
 	pair: string;
@@ -15,3 +6,12 @@ export type Order = {
 	coinQuantity: number;
 	orderType: OrderType;
 };
+
+export enum OrderType {
+	NEW = "NEW",
+	HEDGE = "HEDGE",
+	PROFIT = "PROFIT",
+	BREAK = "BREAK",
+	QUIT = "QUIT",
+	UNKNOWN = "UNKNOWN",
+}

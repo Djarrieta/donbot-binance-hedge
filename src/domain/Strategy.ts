@@ -2,14 +2,6 @@ import type { Candle } from "./Candle";
 import type { Interval } from "./Interval";
 import type { PositionSide } from "./Position";
 
-export type StrategyResponse = {
-	stgName: string;
-	positionSide: PositionSide | null;
-	pair: string;
-	sl?: number;
-	tp?: number;
-};
-
 export class Strategy {
 	constructor(props: {
 		stgName: string;
@@ -37,3 +29,11 @@ export class Strategy {
 		pair: string;
 	}) => StrategyResponse;
 }
+
+export type StrategyResponse = {
+	stgName: string;
+	positionSide: PositionSide | null;
+	pair: string;
+	sl?: number;
+	tp?: number;
+};

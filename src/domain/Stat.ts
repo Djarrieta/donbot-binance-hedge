@@ -1,17 +1,5 @@
 import type { PositionBT } from "./Position";
 
-export type WinningPair = {
-	pair: string;
-	avPnl: number;
-	qty: number;
-	winRate: number;
-	accPnl: number;
-	winRateAcc: number;
-	accPnlAcc: number;
-	avPnlAcc: number;
-	drawdownAcc: number;
-};
-
 export type Stat = {
 	sl: number;
 	tpSlRatio: number;
@@ -38,4 +26,16 @@ export type Stat = {
 	drawdownMC: number;
 	badRunMC: number;
 	avPnlPerDay: number;
+};
+
+export type WinningPair = {
+	pair: string;
+	avPnl: number;
+	qty: number;
+	winRate: number;
+	accPnl: number;
+	winRateAcc: number;
+	accPnlAcc: number;
+	avPnlAcc: number;
+	drawdownAcc: number;
 };

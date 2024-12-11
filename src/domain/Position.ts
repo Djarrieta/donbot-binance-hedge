@@ -1,12 +1,3 @@
-export type PositionSide = "LONG" | "SHORT";
-
-export type PositionStatus =
-	| "UNKNOWN"
-	| "UNPROTECTED"
-	| "PROTECTED"
-	| "HEDGED"
-	| "SECURED";
-
 export type Position = {
 	pair: string;
 	positionSide: PositionSide;
@@ -21,6 +12,15 @@ export type Position = {
 	sl: number;
 	tp: number;
 };
+
+export type PositionSide = "LONG" | "SHORT";
+
+export type PositionStatus =
+	| "UNKNOWN"
+	| "UNPROTECTED"
+	| "PROTECTED"
+	| "HEDGED"
+	| "SECURED";
 
 export type PositionBT = Pick<
 	Position,
