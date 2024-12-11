@@ -176,21 +176,15 @@ export class StatsDataService implements IStatsData {
 		const stats = this.getStats();
 
 		const { sl, tpSlRatio, maxTradeLength } = stats[0];
-		console.log("\n\n");
 		console.log(
-			"======================================================================================================="
+			`\n\n===============================================================================================\n` +
+				`Stats for the best combination sl=${formatPercent(
+					sl
+				)}, tpSlRatio=${formatPercent(
+					tpSlRatio
+				)}, maxTradeLength=${maxTradeLength}\n
+				===============================================================================================\n\n`
 		);
-		console.log(
-			`Stats for the best combination sl=${formatPercent(
-				sl
-			)}, tpSlRatio=${formatPercent(
-				tpSlRatio
-			)}, maxTradeLength=${maxTradeLength}`
-		);
-		console.log(
-			"======================================================================================================="
-		);
-		console.log("\n\n");
 
 		const winningPairs = this.getWinningPairs({
 			sl,

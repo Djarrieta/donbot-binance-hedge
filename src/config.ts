@@ -23,6 +23,7 @@ export const backtestConfig: ConfigBacktest = {
 	interval,
 	lookBackLength: 200,
 	maxTradeLengthArray: [100],
+	winningPairsOnly: false,
 
 	minAmountToTradeUSDT: 6,
 	leverage: 2,

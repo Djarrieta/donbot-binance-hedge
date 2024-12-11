@@ -68,9 +68,9 @@ export class TradingStrategyTester {
 					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
 				}
 				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
+				Stats for Winning Pairs Only: ${this.config.winningPairsOnly ? "TRUE" : "FALSE"}
 			=================================================================
-						
-		
+					
 			`);
 	}
 
@@ -432,7 +432,7 @@ export class TradingStrategyTester {
 				drawdownMonteCarlo: drawdownAcc,
 			} = this.getStats(positionsForPairAcc);
 
-			if (avPnl > 0) {
+			if (avPnl > 0 || !this.config.winningPairsOnly) {
 				winningPairs.push({
 					pair,
 					avPnl,

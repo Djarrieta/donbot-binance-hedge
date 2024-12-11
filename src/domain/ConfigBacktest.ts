@@ -21,4 +21,5 @@ export type ConfigBacktest = {
 	};
 	leverage: number;
 	balanceUSDT: number;
+	winningPairsOnly: boolean;
 };
