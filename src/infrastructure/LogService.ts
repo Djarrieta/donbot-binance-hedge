@@ -69,10 +69,14 @@ export class LogService implements ILog {
 		return results;
 	}
 
-	async showLogs() {
+	async showLogs(logType?: LogType) {
 		const logs = await this.get({ start: 0, end: Date.now() });
+
+		const filteredLogs = logType
+			? logs.filter((l) => l.type === logType)
+			: logs;
 		console.log(
-			logs.map((l) => {
+			filteredLogs.map((l) => {
 				return {
 					type: l.type,
 					date: getDate(l.date).dateString,
