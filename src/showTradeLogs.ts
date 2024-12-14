@@ -6,4 +6,7 @@ const logService = new LogService({
 	tableName: "TRADE_DATA",
 });
 
-logService.showLogs();
+logService.showLogs({
+	start: 0,
+	end: Date.now(),
+});

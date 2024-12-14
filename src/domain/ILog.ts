@@ -4,7 +4,7 @@ export type ILog = {
 	get: (props: GetLogsProps) => Promise<Log[]>;
 	save: (log: Log) => void;
 	deleteAll: () => void;
-	showLogs: () => void;
+	showLogs: (props: GetLogsProps) => void;
 };
 export type GetLogsProps = {
 	start: number;

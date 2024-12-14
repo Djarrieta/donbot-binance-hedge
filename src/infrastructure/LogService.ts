@@ -69,14 +69,11 @@ export class LogService implements ILog {
 		return results;
 	}
 
-	async showLogs(logType?: LogType) {
-		const logs = await this.get({ start: 0, end: Date.now() });
+	async showLogs({ start, end, type }: GetLogsProps) {
+		const logs = await this.get({ start: 0, end: Date.now(), type });
 
-		const filteredLogs = logType
-			? logs.filter((l) => l.type === logType)
-			: logs;
 		console.log(
-			filteredLogs.map((l) => {
+			logs.map((l) => {
 				return {
 					type: l.type,
 					date: getDate(l.date).dateString,
@@ -107,7 +104,7 @@ export class LogService implements ILog {
 			logCounts[l.type]++;
 		});
 
-		console.table(logCounts);
+		!type && console.table(logCounts);
 	}
 	private configureDatabase() {
 		this.db
