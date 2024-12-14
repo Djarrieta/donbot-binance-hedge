@@ -17,6 +17,7 @@ export type LogType =
 	| "SecurePos"
 	| "ProtectPos"
 	| "Loop"
+	| "Alert"
 	| "Error";
 export type LogData = {
 	symbolList: Symbol[];

@@ -109,6 +109,7 @@ export class Trade {
 
 		if (alerts.length) {
 			console.log(alertText);
+			this.saveLogs({ type: "Alert", eventData: alerts });
 			const symbol = this.symbolList.find((s) => s.pair === alerts[0].pair);
 			if (!symbol) {
 				console.log("Symbol not found");
