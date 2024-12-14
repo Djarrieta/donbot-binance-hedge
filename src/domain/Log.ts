@@ -16,10 +16,12 @@ export type LogType =
 	| "ClosePos"
 	| "SecurePos"
 	| "ProtectPos"
+	| "Loop"
 	| "Error";
 export type LogData = {
 	symbolList: Symbol[];
 	userList: User[];
 	strategies: Strategy[];
 	config: ConfigTrade;
+	isLoading: boolean;
 };

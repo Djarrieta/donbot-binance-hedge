@@ -6,7 +6,7 @@ import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 import type { ConfigBacktest } from "./domain/ConfigBacktest";
 
-export const DATA_BASE_NAME = "rsiDivergency5m.db";
+export const DATA_BASE_NAME = "trade.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({

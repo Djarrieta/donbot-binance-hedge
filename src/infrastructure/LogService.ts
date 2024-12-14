@@ -21,8 +21,8 @@ export class LogService implements ILog {
 	save(log: Log) {
 		const query = `
 			INSERT INTO ${this.tableName}
-			(eventData, type, date, symbolList, userList, strategies, config)
-			VALUES (?, ?, ?, ?, ?, ?, ?)
+			(eventData, type, date, symbolList, userList, strategies, config, isLoading)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 		`;
 
 		const values = [
@@ -33,6 +33,7 @@ export class LogService implements ILog {
 			JSON.stringify(log.tradeData.userList),
 			JSON.stringify(log.tradeData.strategies),
 			JSON.stringify(log.tradeData.config),
+			log.tradeData.isLoading,
 		];
 
 		this.db.query(query).run(...values);
@@ -61,6 +62,7 @@ export class LogService implements ILog {
 				userList: JSON.parse(r.userList),
 				strategies: JSON.parse(r.strategies),
 				config: JSON.parse(r.config),
+				isLoading: r.isLoading,
 			},
 		}));
 
@@ -75,6 +77,13 @@ export class LogService implements ILog {
 					type: l.type,
 					date: getDate(l.date).dateString,
 					eventData: l.eventData,
+					users: l.tradeData.userList.map(
+						(u) => `${u.text} ${u.isAddingPosition ? " (adding position)" : ""}`
+					),
+					readySymbols: l.tradeData.symbolList
+						.filter((s) => s.isReady)
+						.map((s) => s.pair),
+					isTradeLoading: l.tradeData.isLoading,
 				};
 			})
 		);
@@ -90,7 +99,8 @@ export class LogService implements ILog {
                         symbolList TEXT,
                         userList TEXT,
                         strategies TEXT,
-                        config TEXT
+                        config TEXT,
+						isLoading BOOLEAN
                     )
                 `
 			)

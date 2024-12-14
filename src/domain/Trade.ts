@@ -94,6 +94,7 @@ export class Trade {
 	}
 
 	async loop() {
+		this.saveLogs({ type: "Loop" });
 		if (this.isLoading) {
 			console.log("Loop time but still loading");
 			return;
@@ -176,7 +177,10 @@ export class Trade {
 					user,
 					handleClearOrders: () => {
 						this.clearOrders.bind(this);
-						this.saveLogs({ type: "ClosePos", eventData: { user: user.name } });
+						this.saveLogs({
+							type: "ClosePos",
+							eventData: { userName: user.name },
+						});
 					},
 				});
 			} catch (e) {
@@ -805,6 +809,7 @@ export class Trade {
 				userList: this.userList,
 				config: this.config,
 				strategies: this.strategies,
+				isLoading: this.isLoading,
 			},
 			eventData,
 		});

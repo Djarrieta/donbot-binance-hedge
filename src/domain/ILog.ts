@@ -1,4 +1,4 @@
-import type { Log, LogData, LogType } from "./Log";
+import type { Log, LogType } from "./Log";
 
 export type ILog = {
 	get: (props: GetLogsProps) => Promise<Log[]>;
