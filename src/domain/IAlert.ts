@@ -1,6 +1,6 @@
 import type { Alert } from "./Alert";
 
-export interface IAlert {
+export type IAlert = {
 	getAlerts: ({
 		start,
 		end,
@@ -10,4 +10,4 @@ export interface IAlert {
 	}) => Promise<Alert[]>;
 	saveAlerts: (alerts: Alert[]) => void;
 	deleteAlerts: () => void;
-}
+};

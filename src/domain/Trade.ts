@@ -7,6 +7,8 @@ import type { Alert } from "./Alert";
 import type { ConfigTrade } from "./ConfigTrade";
 import type { IAuthExchange } from "./IAuthExchange";
 import type { IExchange, UpdateSymbolProps } from "./IExchange";
+import type { ILog } from "./ILog";
+import type { LogType } from "./Log";
 import { OrderType } from "./Order";
 import type { PositionSide } from "./Position";
 import type { Strategy, StrategyResponse } from "./Strategy";
@@ -20,17 +22,20 @@ export class Trade {
 	userList: User[] = [];
 	strategies: Strategy[];
 	config: ConfigTrade;
+	logs: ILog;
 
 	constructor(
 		exchange: IExchange,
 		authExchange: IAuthExchange,
 		config: ConfigTrade,
-		strategies: Strategy[]
+		strategies: Strategy[],
+		logs: ILog
 	) {
 		this.exchange = exchange;
 		this.authExchange = authExchange;
 		this.config = config;
 		this.strategies = strategies;
+		this.logs = logs;
 	}
 
 	private progressBar = new cliProgress.SingleBar(
@@ -85,6 +90,7 @@ export class Trade {
 
 		this.runSubscribers();
 		this.isLoading = false;
+		this.saveLogs({ type: "Init" });
 	}
 
 	async loop() {
@@ -168,7 +174,10 @@ export class Trade {
 			try {
 				this.authExchange.subscribeToUserUpdates({
 					user,
-					handleClearOrders: this.clearOrders.bind(this),
+					handleClearOrders: () => {
+						this.clearOrders.bind(this);
+						this.saveLogs({ type: "ClosePos", eventData: { user: user.name } });
+					},
 				});
 			} catch (e) {
 				console.error(e);
@@ -493,6 +502,10 @@ export class Trade {
 			coinQuantity,
 		});
 		this.userList[userIndex].isAddingPosition = false;
+		this.saveLogs({
+			type: "OpenPos",
+			eventData: { userName: user.name, alert },
+		});
 	}
 	async quitPosition({
 		user,
@@ -524,6 +537,10 @@ export class Trade {
 			].openPositions.filter((p) => p.pair !== pair);
 
 			this.clearOrders({ user, pair });
+			this.saveLogs({
+				type: "ClosePos",
+				eventData: { pair, positionSide, userName: user.name },
+			});
 		} catch (e) {
 			console.error(e);
 		}
@@ -574,6 +591,10 @@ export class Trade {
 			});
 
 			this.userList[userIndex].openPositions[openPosIndex].status = "PROTECTED";
+			this.saveLogs({
+				type: "ProtectPos",
+				eventData: { pair, positionSide, userName: user.name },
+			});
 		} catch (e) {
 			console.error(e);
 			await this.quitPosition({
@@ -652,6 +673,15 @@ export class Trade {
 							coinQuantity: 0,
 							orderId: 0,
 							clientOrderId: "",
+						});
+
+						this.saveLogs({
+							type: "SecurePos",
+							eventData: {
+								pair: pos.pair,
+								positionSide: pos.positionSide,
+								userName: user.name,
+							},
 						});
 					} catch (e) {
 						console.error(e);
@@ -764,6 +794,20 @@ export class Trade {
 			}
 			this.symbolList[symbolIndex].isReady = true;
 		}
+	}
+
+	saveLogs({ type, eventData }: { type: LogType; eventData?: any }) {
+		this.logs.save({
+			type,
+			date: getDate().dateMs,
+			tradeData: {
+				symbolList: this.symbolList,
+				userList: this.userList,
+				config: this.config,
+				strategies: this.strategies,
+			},
+			eventData,
+		});
 	}
 
 	showConfig() {
