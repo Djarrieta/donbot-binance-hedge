@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 import type { GetLogsProps, ILog } from "../domain/ILog";
-import type { Log } from "../domain/Log";
+import type { Log, LogType } from "../domain/Log";
 import { getDate } from "../utils/getDate";
 export class LogService implements ILog {
 	private db: Database;
@@ -87,6 +87,23 @@ export class LogService implements ILog {
 				};
 			})
 		);
+
+		const logCounts: { [key in LogType]: number } = {
+			Init: 0,
+			OpenPos: 0,
+			ClosePos: 0,
+			SecurePos: 0,
+			ProtectPos: 0,
+			Loop: 0,
+			Alert: 0,
+			Error: 0,
+		};
+
+		logs.forEach((l) => {
+			logCounts[l.type]++;
+		});
+
+		console.table(logCounts);
 	}
 	private configureDatabase() {
 		this.db
