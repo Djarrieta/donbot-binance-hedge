@@ -7,7 +7,8 @@
     "lint": "bunx oxlint && tsc ",
     "runTrade": "bun ./src/runTrade.ts",
     "runBacktest": "bun ./src/runBacktest.ts",
-    "showTradeLogs": "bun ./src/showTradeLogs.ts"
+    "showTradeLogs": "bun ./src/showTradeLogs.ts",
+    "flushLogs": "bun ./src/flushLogs.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
