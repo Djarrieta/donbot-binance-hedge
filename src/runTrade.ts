@@ -5,14 +5,11 @@ import { Trade } from "./domain/Trade";
 import { AuthExchangeService } from "./infrastructure/AuthExchangeService";
 import { ExchangeService } from "./infrastructure/ExchangeService";
 import { intervalToCron } from "./utils/intervalToCron";
-import { LogService } from "./infrastructure/LogService";
+import { LogServiceFirebase } from "./infrastructure/LogServiceFirebase";
 
 const exchangeService = new ExchangeService();
 const authExchangeService = new AuthExchangeService();
-const logService = new LogService({
-	databaseName: DATA_BASE_NAME,
-	tableName: "TRADE_DATA",
-});
+const logService = new LogServiceFirebase();
 
 const trade = new Trade(
 	exchangeService,

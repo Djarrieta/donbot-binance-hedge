@@ -1,10 +1,7 @@
 import { DATA_BASE_NAME } from "./config";
-import { LogService } from "./infrastructure/LogService";
+import { LogServiceFirebase } from "./infrastructure/LogServiceFirebase";
 
-const logService = new LogService({
-	databaseName: DATA_BASE_NAME,
-	tableName: "TRADE_DATA",
-});
+const logService = new LogServiceFirebase();
 
 logService.showLogs({
 	start: 0,
