@@ -1,16 +1,16 @@
+import type { ConfigBacktest } from "./domain/ConfigBacktest";
+import type { ConfigTrade } from "./domain/ConfigTrade";
 import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
-import type { ConfigTrade } from "./domain/ConfigTrade";
-import { rsiDivergency5m } from "./strategies/rsiDivergency5m";
 import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
-import type { ConfigBacktest } from "./domain/ConfigBacktest";
+import { stg as supertrend } from "./strategies/supertrend";
 
 export const DATA_BASE_NAME = "supertrend.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 80000,
+	candleCount: 500,
 	backtestPercent: 0.75,
 	interval,
 	lastDate: getDate("2024 12 10 00:00:00" as DateString).dateMs,
@@ -64,4 +64,4 @@ export const tradeConfig: ConfigTrade = {
 	setLeverage: false,
 };
 
-export const strategies: Strategy[] = [rsiDivergency5m];
+export const strategies: Strategy[] = [supertrend];
