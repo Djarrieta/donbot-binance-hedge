@@ -1,4 +1,4 @@
-import { EMA, rsi } from "technicalindicators";
+import { EMA } from "technicalindicators";
 import { Interval } from "../domain/Interval";
 import { Strategy, type StrategyResponse } from "../domain/Strategy";
 import { getSuperTrend } from "../utils/getSupertrend";

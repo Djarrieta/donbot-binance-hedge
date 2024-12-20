@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { DATA_BASE_NAME, strategies, tradeConfig } from "./config";
+import { strategies, tradeConfig } from "./config";
 import { Interval } from "./domain/Interval";
 import { Trade } from "./domain/Trade";
 import { AuthExchangeService } from "./infrastructure/AuthExchangeService";

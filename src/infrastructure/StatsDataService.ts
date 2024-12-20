@@ -47,8 +47,9 @@ export class StatsDataService implements IStatsData {
 	
 			drawdownMC,
 			badRunMC,
-			avPnlPerDay
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+			avPnlPerDay,
+			avPosPerDay
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 		const values = [
 			stats.sl,
 			stats.tpSlRatio,
@@ -75,6 +76,7 @@ export class StatsDataService implements IStatsData {
 			stats.drawdownMC,
 			stats.badRunMC,
 			stats.avPnlPerDay,
+			stats.avPosPerDay,
 		];
 
 		this.db.query(query).run(...values);
@@ -111,6 +113,7 @@ export class StatsDataService implements IStatsData {
 			drawdownMC: Number(r.drawdownMC || 0),
 			badRunMC: Number(r.badRunMC || 0),
 			avPnlPerDay: Number(r.avPnlPerDay || 0),
+			avPosPerDay: Number(r.avPosPerDay || 0),
 		}));
 
 		return stats;
@@ -268,9 +271,11 @@ export class StatsDataService implements IStatsData {
 					r.accPnlAcc
 				)} ${formatPercent(r.accPnlFwd)}`,
 
-				"DD badRun pnlPerDay": `${formatPercent(r.drawdownMC)} ${
-					r.badRunMC
-				} ${formatPercent(r.avPnlPerDay)}`,
+				"DD badRun": `${formatPercent(r.drawdownMC)} ${r.badRunMC}`,
+
+				"PerDay pnl Qty": `${formatPercent(
+					r.avPnlPerDay
+				)}  ${r.avPosPerDay.toFixed(2)}`,
 
 				pairs: r.winningPairs.length,
 			}))
@@ -338,7 +343,8 @@ export class StatsDataService implements IStatsData {
 
 					drawdownMC REAL,
 					badRunMC REAL,
-					avPnlPerDay REAL
+					avPnlPerDay REAL,
+					avPosPerDay REAL
 				)
 			`
 			)

@@ -70,7 +70,7 @@ export class LogService implements ILog {
 	}
 
 	async showLogs({ start, end, type }: GetLogsProps) {
-		const logs = await this.get({ start: 0, end: Date.now(), type });
+		const logs = await this.get({ start, end, type });
 
 		console.log(
 			logs.map((l) => {

@@ -26,6 +26,7 @@ export type Stat = {
 	drawdownMC: number;
 	badRunMC: number;
 	avPnlPerDay: number;
+	avPosPerDay: number;
 };
 
 export type WinningPair = {

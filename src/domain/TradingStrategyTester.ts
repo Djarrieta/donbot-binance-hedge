@@ -475,6 +475,7 @@ export class TradingStrategyTester {
 			drawdownMonteCarlo: drawdownMC,
 			badRunMonteCarlo: badRunMC,
 			avPnlPerDay,
+			avPosPerDay,
 		} = this.getStats(positionsAcc);
 
 		const positionsFwdFullList = positions.filter(
@@ -515,6 +516,7 @@ export class TradingStrategyTester {
 			drawdownMC,
 			badRunMC,
 			avPnlPerDay,
+			avPosPerDay,
 		};
 
 		return stats;
@@ -541,6 +543,7 @@ export class TradingStrategyTester {
 				accPnl: 0,
 				avPnl: 0,
 				avPnlPerDay: 0,
+				avPosPerDay: 0,
 				drawdownMonteCarlo: 0,
 				badRunMonteCarlo: 0,
 			};
@@ -558,6 +561,7 @@ export class TradingStrategyTester {
 		const accPnl = positions.reduce((acc, p) => acc + p.pnl, 0);
 		const avPnl = accPnl / tradesQty || 0;
 		const avPnlPerDay = accPnl / totalDays;
+		const avPosPerDay = tradesQty / totalDays;
 
 		const { drawdownMonteCarlo, badRunMonteCarlo } = monteCarloAnalysis({
 			values: positions.map((p) => p.pnl),
@@ -570,6 +574,7 @@ export class TradingStrategyTester {
 			accPnl,
 			avPnl,
 			avPnlPerDay,
+			avPosPerDay,
 			drawdownMonteCarlo,
 			badRunMonteCarlo,
 		};
