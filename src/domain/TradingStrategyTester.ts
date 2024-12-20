@@ -535,6 +535,16 @@ export class TradingStrategyTester {
 	}
 
 	private getStats(positions: PositionBT[]) {
+		if (positions.length === 0) {
+			return {
+				winRate: 0,
+				accPnl: 0,
+				avPnl: 0,
+				avPnlPerDay: 0,
+				drawdownMonteCarlo: 0,
+				badRunMonteCarlo: 0,
+			};
+		}
 		const start = positions[0].startTime;
 		const end = positions[positions.length - 1].startTime;
 		const totalDays = (end - start) / Interval["1d"];

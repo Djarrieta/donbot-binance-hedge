@@ -21,7 +21,8 @@ export const stg = new Strategy({
 		if (this.allowedPairs?.length && !this.allowedPairs.includes(pair))
 			return response;
 
-		//const volatility = getVolatility({ candlestick });
+		const volatility = getVolatility({ candlestick });
+		const MIN_VOL = 10 / 100;
 
 		const ema200Array = EMA.calculate({
 			period: 200,
@@ -47,6 +48,7 @@ export const stg = new Strategy({
 		const lastPrice = candlestick[candlestick.length - 1].close;
 
 		if (
+			volatility >= MIN_VOL &&
 			lastPrice > ema200Array[ema200Array.length - 1] &&
 			lastPrice > stA3[stA3.length - 2] &&
 			stA3[stA3.length - 2] > stA2[stA2.length - 2] &&
@@ -66,6 +68,7 @@ export const stg = new Strategy({
 		}
 
 		if (
+			volatility >= MIN_VOL &&
 			lastPrice < ema200Array[ema200Array.length - 1] &&
 			lastPrice < stA3[stA3.length - 2] &&
 			stA3[stA3.length - 2] < stA2[stA2.length - 2] &&

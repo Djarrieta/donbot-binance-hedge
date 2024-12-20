@@ -82,8 +82,7 @@ export class HistoryDataService implements IHistoryData {
 	};
 
 	showSavedCandlestick = () => {
-		const items = 5;
-		const results = this.db
+		const result = this.db
 			.query(
 				`SELECT pair, COUNT(*) AS count, MIN(openTime) AS startTime, MAX(openTime) AS endTime FROM ${this.candlestickTableName} GROUP BY pair`
 			)
@@ -93,24 +92,12 @@ export class HistoryDataService implements IHistoryData {
 			startTime: number;
 			endTime: number;
 		}[];
-
-		results.sort((a, b) => a.count - b.count);
+		const pairsCount = result.length;
 		console.log(
-			`Pairs in ${
-				this.candlestickTableName
-			} table with number of candles and time range:\n${results
-				.slice(0, items)
-				.map(
-					({ pair, count, startTime, endTime }) =>
-						`${pair} - ${count} candles from ${
-							getDate(startTime).dateString
-						} to ${getDate(endTime).dateString}`
-				)
-				.join(",\n")}${
-				results.length > items
-					? `,\n ...and ${results.length - items} others`
-					: ""
-			}`
+			`
+			Saved candlestick for ${pairsCount} pairs. 
+			From ${getDate(result[0].startTime).dateString} 
+			To ${getDate(result[0].endTime).dateString}`
 		);
 	};
 

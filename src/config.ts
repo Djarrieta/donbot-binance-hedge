@@ -10,10 +10,10 @@ export const DATA_BASE_NAME = "supertrend.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 500,
+	candleCount: 2000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate("2024 12 10 00:00:00" as DateString).dateMs,
+	lastDate: getDate("2024 12 20 00:00:00" as DateString).dateMs,
 });
 
 export const backtestConfig: ConfigBacktest = {
@@ -37,7 +37,7 @@ export const backtestConfig: ConfigBacktest = {
 
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: true,
+		overrideAlerts: false,
 	},
 	apiLimit: 500,
 };
