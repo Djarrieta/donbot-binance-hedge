@@ -2,7 +2,7 @@ import { rsi } from "technicalindicators";
 import { Interval } from "../domain/Interval";
 import { Strategy, type StrategyResponse } from "../domain/Strategy";
 
-export const rsiDivergency5m = new Strategy({
+export const stg = new Strategy({
 	stgName: "rsiDivergency5m",
 	lookBackLength: 200,
 	interval: Interval["5m"],

@@ -4,7 +4,7 @@ import { Strategy, type StrategyResponse } from "../domain/Strategy";
 
 // Example strategy with with RSI validation
 
-export const rsiDivergency5m = new Strategy({
+export const stg = new Strategy({
 	stgName: "strategy",
 	lookBackLength: 200, // number of candles to look back
 	interval: Interval["5m"],

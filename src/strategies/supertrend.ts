@@ -1,8 +1,8 @@
-import { rsi } from "technicalindicators";
+import { EMA, rsi } from "technicalindicators";
 import { Interval } from "../domain/Interval";
 import { Strategy, type StrategyResponse } from "../domain/Strategy";
-
-export const rsiDivergency5m = new Strategy({
+const getSuperTrend = () => {};
+export const stg = new Strategy({
 	stgName: "supertrend",
 	lookBackLength: 200,
 	interval: Interval["5m"],
@@ -19,21 +19,47 @@ export const rsiDivergency5m = new Strategy({
 		if (this.allowedPairs?.length && !this.allowedPairs.includes(pair))
 			return response;
 
-		const MIN_RSI = 30;
+		const ema200Array = EMA.calculate({
+			period: 200,
+			values: candlestick.map((candle) => candle.close),
+		});
 
-		const closePrices = candlestick.map((candle) => candle.close);
-		const rsiArray = rsi({ period: 14, values: closePrices });
+		const stA1 = getSuperTrend({
+			candlestick,
+			multiplier: 3,
+			period: 12,
+		});
+		const stA2 = getSuperTrend({
+			candlestick,
+			multiplier: 2,
+			period: 11,
+		});
+		const stA3 = getSuperTrend({
+			candlestick,
+			multiplier: 1,
+			period: 10,
+		});
 
-		if (rsiArray[rsiArray.length - 1] <= MIN_RSI) {
+		const lastPrice = candlestick[candlestick.length - 1].close;
+
+		if (
+			volatility > MIN_VOL &&
+			lastPrice > ema200Array[ema200Array.length - 1] &&
+			lastPrice > stA3[stA3.length - 2] &&
+			stA3[stA3.length - 2] > stA2[stA2.length - 2] &&
+			stA2[stA2.length - 2] > stA1[stA1.length - 2] &&
+			stA1[stA1.length - 3] > stA2[stA2.length - 3] &&
+			stA2[stA2.length - 3] > stA3[stA3.length - 3] &&
+			stA1[stA1.length - 4] > stA2[stA2.length - 4] &&
+			stA2[stA2.length - 4] > stA3[stA3.length - 4] &&
+			stA1[stA1.length - 6] > stA2[stA2.length - 6] &&
+			stA2[stA2.length - 6] > stA3[stA3.length - 6] &&
+			stA1[stA1.length - 8] > stA2[stA2.length - 8] &&
+			stA2[stA2.length - 8] > stA3[stA3.length - 8] &&
+			stA1[stA1.length - 10] > stA2[stA2.length - 10] &&
+			stA2[stA2.length - 10] > stA3[stA3.length - 10]
+		) {
 			response.positionSide = "LONG";
-			response.sl = 1 / 100; // Optionally calculate and set the stop loss
-			response.tp = 1 / 100; // Optionally calculate and set the take profit
-		}
-
-		if (rsiArray[rsiArray.length - 1] >= MIN_RSI) {
-			response.positionSide = "SHORT";
-			response.sl = 1 / 100; // Optionally calculate and set the stop loss
-			response.tp = 1 / 100; // Optionally calculate and set the take profit
 		}
 
 		return response;
