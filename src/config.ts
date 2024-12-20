@@ -6,7 +6,7 @@ import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 import type { ConfigBacktest } from "./domain/ConfigBacktest";
 
-export const DATA_BASE_NAME = "trade.db";
+export const DATA_BASE_NAME = "supertrend.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
@@ -37,7 +37,7 @@ export const backtestConfig: ConfigBacktest = {
 
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: false,
+		overrideAlerts: true,
 	},
 	apiLimit: 500,
 };

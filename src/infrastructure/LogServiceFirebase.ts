@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import type { GetLogsProps, ILog } from "../domain/ILog";
 import type { Log } from "../domain/Log";
+import { getDate } from "../utils/getDate";
 
 export class LogServiceFirebase implements ILog {
 	private collectionRef;
@@ -107,6 +108,25 @@ export class LogServiceFirebase implements ILog {
 
 	async showLogs({ start, end, type }: GetLogsProps) {
 		const logs = await this.get({ start, end, type });
-		console.log(logs);
+		console.log(
+			logs.map((l) => {
+				return {
+					...l,
+					date: getDate(l.date).dateString,
+				};
+			})
+		);
+
+		console.log({
+			total: logs.length,
+			loop: logs.filter((l) => l.type === "Loop").length,
+			init: logs.filter((l) => l.type === "Init").length,
+			openPos: logs.filter((l) => l.type === "OpenPos").length,
+			closePos: logs.filter((l) => l.type === "ClosePos").length,
+			securePos: logs.filter((l) => l.type === "SecurePos").length,
+			protectPos: logs.filter((l) => l.type === "ProtectPos").length,
+			alert: logs.filter((l) => l.type === "Alert").length,
+			error: logs.filter((l) => l.type === "Error").length,
+		});
 	}
 }

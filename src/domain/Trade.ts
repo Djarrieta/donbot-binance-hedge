@@ -94,7 +94,6 @@ export class Trade {
 	}
 
 	async loop() {
-		this.saveLogs({ type: "Loop" });
 		if (this.isLoading) {
 			console.log("Loop time but still loading");
 			return;
