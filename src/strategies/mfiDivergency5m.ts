@@ -4,7 +4,7 @@ import { Strategy, type StrategyResponse } from "../domain/Strategy";
 import { getVolatility } from "../utils/getVolatility";
 
 export const stg = new Strategy({
-	stgName: "strategy",
+	stgName: "mfiDivergency5m",
 	lookBackLength: 200,
 	interval: Interval["5m"],
 	allowedPairs: [
