@@ -4,18 +4,20 @@ import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
 import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
-import { stg as supertrend5m } from "./strategies/supertrend5m";
 
-export const DATA_BASE_NAME = "supertrend.db";
+import { stg as supertrend5m } from "./strategies/supertrend5m";
+import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	candleCount: 80000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate().dateMs,
+	lastDate: getDate("2024 12 20 00:00:00" as DateString).dateMs,
 });
 
+export const DATA_BASE_NAME = "rsiDivergency5m.db";
+export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
@@ -30,8 +32,8 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [2 / 100],
-	tpSlRatioArray: [7],
+	maxSlArray: [1 / 100],
+	tpSlRatioArray: [9],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
@@ -41,7 +43,6 @@ export const backtestConfig: ConfigBacktest = {
 	},
 	apiLimit: 500,
 };
-
 export const tradeConfig: ConfigTrade = {
 	interval: Interval["5m"],
 	lookBackLength: 200,
@@ -63,5 +64,3 @@ export const tradeConfig: ConfigTrade = {
 	apiLimit: 500,
 	setLeverage: false,
 };
-
-export const strategies: Strategy[] = [supertrend5m];
