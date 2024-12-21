@@ -4,13 +4,13 @@ import { Interval } from "./domain/Interval";
 import type { Strategy } from "./domain/Strategy";
 import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
-import { stg as supertrend } from "./strategies/supertrend";
+import { stg as supertrend5m } from "./strategies/supertrend5m";
 
 export const DATA_BASE_NAME = "supertrend.db";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 500,
+	candleCount: 80000,
 	backtestPercent: 0.75,
 	interval,
 	lastDate: getDate().dateMs,
@@ -30,14 +30,14 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [1 / 100],
-	tpSlRatioArray: [9],
+	maxSlArray: [2 / 100],
+	tpSlRatioArray: [7],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
 	steps: {
-		overrideHistoricalRecords: true,
-		overrideAlerts: true,
+		overrideHistoricalRecords: false,
+		overrideAlerts: false,
 	},
 	apiLimit: 500,
 };
@@ -64,4 +64,4 @@ export const tradeConfig: ConfigTrade = {
 	setLeverage: false,
 };
 
-export const strategies: Strategy[] = [supertrend];
+export const strategies: Strategy[] = [supertrend5m];
