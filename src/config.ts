@@ -7,6 +7,7 @@ import { getSuggestedDates } from "./utils/getSuggestedDates";
 
 import { stg as supertrend5m } from "./strategies/supertrend5m";
 import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
+import { stg as mfiDivergency5m } from "./strategies/mfiDivergency5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
@@ -16,8 +17,8 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate("2024 12 20 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "rsiDivergency5m.db";
-export const strategies: Strategy[] = [rsiDivergency5m];
+export const DATA_BASE_NAME = "test.db";
+export const strategies: Strategy[] = [mfiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
