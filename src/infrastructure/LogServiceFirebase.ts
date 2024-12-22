@@ -103,7 +103,9 @@ export class LogServiceFirebase implements ILog {
 			await deleteDoc(doc.ref);
 		});
 
-		console.log(`All documents deleted from the 'logs' collection.`);
+		console.log(
+			`Deleting All documents deleted from the 'logs' collection. This can take a while...`
+		);
 	}
 
 	async showLogs({ start, end, type }: GetLogsProps) {

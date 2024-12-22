@@ -7,7 +7,6 @@ import { getSuggestedDates } from "./utils/getSuggestedDates";
 
 import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
 import { stg as rsiDivergency15m } from "./strategies/rsiDivergency15m";
-
 import { stg as supertrend5m } from "./strategies/supertrend5m";
 import { stg as mfiDivergency5m } from "./strategies/mfiDivergency5m";
 
