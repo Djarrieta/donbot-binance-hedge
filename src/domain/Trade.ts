@@ -99,9 +99,7 @@ export class Trade {
 			return;
 		}
 		await delay(1000);
-
 		this.showConfig();
-
 		this.checkSymbols();
 
 		const { text: alertText, alerts } = this.checkForTrades();

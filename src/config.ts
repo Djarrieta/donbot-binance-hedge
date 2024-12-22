@@ -5,8 +5,10 @@ import type { Strategy } from "./domain/Strategy";
 import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 
-import { stg as supertrend5m } from "./strategies/supertrend5m";
 import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
+import { stg as rsiDivergency15m } from "./strategies/rsiDivergency15m";
+
+import { stg as supertrend5m } from "./strategies/supertrend5m";
 import { stg as mfiDivergency5m } from "./strategies/mfiDivergency5m";
 
 const interval = Interval["5m"];
@@ -17,7 +19,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate("2024 12 20 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "rsiDivergency5m.db";
+export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
 export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
@@ -45,7 +47,7 @@ export const backtestConfig: ConfigBacktest = {
 	apiLimit: 500,
 };
 export const tradeConfig: ConfigTrade = {
-	interval: Interval["5m"],
+	interval,
 	lookBackLength: 200,
 	maxTradeLength: 100,
 
