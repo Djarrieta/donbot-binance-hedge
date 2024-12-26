@@ -12,13 +12,13 @@ import { stg as mfiDivergency5m } from "./strategies/mfiDivergency5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 80000,
+	candleCount: 160000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate("2024 12 20 00:00:00" as DateString).dateMs,
+	lastDate: getDate("2024 12 26 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
+export const DATA_BASE_NAME = "./db/rsiDivergency5m_2.db";
 export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
@@ -41,7 +41,7 @@ export const backtestConfig: ConfigBacktest = {
 
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: false,
+		overrideAlerts: true,
 	},
 	apiLimit: 500,
 };
