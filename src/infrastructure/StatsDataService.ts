@@ -196,7 +196,7 @@ export class StatsDataService implements IStatsData {
 		});
 		console.log(`Winning pairs : ${winningPairs.length}`);
 
-		console.log(winningPairs.map((p) => p.pair));
+		console.log(winningPairs.map((p) => p.pair).join(", "));
 
 		const positionsWP = this.getPositions({
 			sl,
@@ -303,9 +303,10 @@ export class StatsDataService implements IStatsData {
 
 		console.log(
 			winningPairs
-				.filter((p) => p.qty >= 100)
+				.filter((p) => p.qty >= 10)
 				.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
 				.map((p) => p.pair)
+				.join(", ")
 		);
 	}
 

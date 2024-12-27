@@ -18,15 +18,14 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate("2024 12 26 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/rsiDivergency5m_2.db";
-export const strategies: Strategy[] = [rsiDivergency5m];
+export const DATA_BASE_NAME = "./db/mfiDivergency5m_2.db";
+export const strategies: Strategy[] = [mfiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
 	forwardTestEnd,
 	interval,
 	lookBackLength: 200,
-	maxTradeLengthArray: [100],
 	winningPairsOnly: false,
 
 	minAmountToTradeUSDT: 6,
@@ -34,8 +33,9 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [1 / 100],
-	tpSlRatioArray: [9],
+	maxTradeLengthArray: [100],
+	maxSlArray: [5 / 100],
+	tpSlRatioArray: [15],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
