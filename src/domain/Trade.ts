@@ -150,7 +150,7 @@ export class Trade {
 
 	async loop() {
 		if (this.isLoading) {
-			console.log("Loop time but still loading");
+			console.log("Loop time but still initializing");
 			return;
 		}
 		await this.updateSymbolsCandlestick();
@@ -277,11 +277,8 @@ export class Trade {
 			this.config.minAmountToTradeUSDT
 		);
 
-		const realPositionRisk =
-			(this.config.leverage * quantityUSDT * this.config.maxSl) /
-			user.balanceUSDT;
-
-		console.log("Real position risk", formatPercent(realPositionRisk));
+		const realPositionRiskUSDT = (quantityUSDT * calcSl) / this.config.leverage;
+		const realPositionRiskPt = realPositionRiskUSDT / user.balanceUSDT;
 
 		const coinQuantity = Math.max(
 			quantityUSDT / symbol.currentPrice,
@@ -289,7 +286,13 @@ export class Trade {
 			quantityUSDT / slPrice
 		);
 
-		return { coinQuantity, slPrice, tpPrice };
+		return {
+			coinQuantity,
+			slPrice,
+			tpPrice,
+			realPositionRiskUSDT,
+			realPositionRiskPt,
+		};
 	}
 
 	async handleExistingPositions({
@@ -535,19 +538,24 @@ export class Trade {
 			return;
 		}
 
-		const { coinQuantity, slPrice, tpPrice } = this.getTransactionProps({
+		const {
+			coinQuantity,
+			slPrice,
+			tpPrice,
+			realPositionRiskPt,
+			realPositionRiskUSDT,
+		} = this.getTransactionProps({
 			user,
 			symbol,
 			alert,
 		});
 
 		console.log(
-			"Adding position " +
-				alert.positionSide +
-				" for " +
-				user.name +
-				" in " +
+			`Adding position ${alert.positionSide} for ${user.name} in ${
 				symbol.pair
+			}, real position risk: ${formatPercent(
+				realPositionRiskPt
+			)} $${realPositionRiskUSDT.toFixed(2)}`
 		);
 
 		await this.authExchange.openPosition({

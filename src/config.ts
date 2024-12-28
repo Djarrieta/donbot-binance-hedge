@@ -41,7 +41,7 @@ export const backtestConfig: ConfigBacktest = {
 
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: true,
+		overrideAlerts: false,
 	},
 	apiLimit: 500,
 };
