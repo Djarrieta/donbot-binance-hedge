@@ -93,12 +93,53 @@ export class Trade {
 		this.saveLogs({ type: "Init" });
 	}
 
+	async updateSymbolsCandlestick() {
+		const pairList = this.symbolList.length
+			? this.symbolList.map((s) => s.pair)
+			: await this.exchange.getPairList({
+					minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
+					strategies: this.strategies,
+			  });
+
+		const start =
+			getDate().dateMs -
+			(this.config.lookBackLength + 1) * this.config.interval;
+		const end = start + this.config.lookBackLength * this.config.interval;
+
+		const promiseArray = pairList.map((pair) =>
+			this.exchange.getCandlestick({
+				pair,
+				candlestickAPILimit: this.config.apiLimit,
+				interval: this.config.interval,
+				start,
+				end,
+			})
+		);
+
+		const candlesticks = (await Promise.all(promiseArray)).flat();
+
+		for (
+			let symbolIndex = 0;
+			symbolIndex < this.symbolList.length;
+			symbolIndex++
+		) {
+			const pair = this.symbolList[symbolIndex].pair;
+			this.symbolList[symbolIndex].candlestick = candlesticks.filter(
+				(c) => c.pair === pair
+			);
+			this.symbolList[symbolIndex].currentPrice =
+				this.symbolList[symbolIndex].candlestick[
+					this.symbolList[symbolIndex].candlestick.length - 1
+				].close;
+		}
+	}
+
 	async loop() {
 		if (this.isLoading) {
 			console.log("Loop time but still loading");
 			return;
 		}
-		await delay(1000);
+		await this.updateSymbolsCandlestick();
 		this.showConfig();
 		this.checkSymbols();
 
