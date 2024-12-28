@@ -104,7 +104,7 @@ export class LogServiceFirebase implements ILog {
 		});
 
 		console.log(
-			`Deleting All documents deleted from the 'logs' collection. This can take a while...`
+			`Deleting All documents from the 'logs' collection. This can take a while...`
 		);
 	}
 
