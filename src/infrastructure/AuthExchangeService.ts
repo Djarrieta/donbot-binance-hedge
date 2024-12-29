@@ -207,7 +207,6 @@ export class AuthExchangeService implements IAuthExchange {
 				price: HEPrice,
 			}).fullIdName,
 			timeInForce: "GTC",
-			reduceOnly: "true",
 		});
 
 		const TPPrice = fixPrecision({
@@ -228,7 +227,6 @@ export class AuthExchangeService implements IAuthExchange {
 				positionSide,
 				price: TPPrice,
 			}).fullIdName,
-			reduceOnly: "true",
 		});
 
 		await authExchange.futuresOrder({
