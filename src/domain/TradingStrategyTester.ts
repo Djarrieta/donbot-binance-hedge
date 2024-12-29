@@ -32,48 +32,6 @@ export class TradingStrategyTester {
 		cliProgress.Presets.shades_classic
 	);
 
-	private showConfig() {
-		console.log(`	
-			=================================================================
-			Running backtest and forwardtest for ${(
-				(this.config.forwardTestEnd - this.config.backtestStart) /
-				Interval["1d"]
-			).toFixed(1)} days
-			Interval: ${Interval[this.config.interval]}, ${
-			1 +
-			(this.config.forwardTestEnd - this.config.backtestStart) /
-				this.config.interval
-		} candles
-			Backtest: ${(
-				(this.config.backtestEnd - this.config.backtestStart) /
-				Interval["1d"]
-			).toFixed(1)} days, from ${
-			getDate(this.config.backtestStart).dateString
-		} to ${getDate(this.config.backtestEnd).dateString}
-			ForwardTest: ${(
-				(this.config.forwardTestEnd - this.config.backtestEnd) /
-				Interval["1d"]
-			).toFixed(1)} days, from ${
-			getDate(this.config.backtestEnd).dateString
-		} to ${getDate(this.config.forwardTestEnd).dateString}
-
-			StopLoss array: ${this.config.maxSlArray
-				.map((x) => formatPercent(x))
-				.join(", ")}
-			TP Sl Ratio array: ${this.config.tpSlRatioArray.join(", ")}
-			MaxTradeLength array: ${this.config.maxTradeLengthArray.join(", ")}
-			
-			Steps: 
-				OverrideHistoricalRecords: ${
-					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
-				}
-				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
-				Stats for Winning Pairs Only: ${this.config.winningPairsOnly ? "TRUE" : "FALSE"}
-			=================================================================
-					
-			`);
-	}
-
 	async backtest() {
 		if (
 			this.config.backtestStart >= this.config.backtestEnd ||
@@ -308,7 +266,7 @@ export class TradingStrategyTester {
 				) {
 					pnl =
 						-this.config.feePt -
-						(this.config.leverage * this.config.minAmountToTradeUSDT * calcSl) /
+						(this.config.minAmountToTradeUSDT * calcSl) /
 							this.config.balanceUSDT;
 
 					stickIndex++;
@@ -323,7 +281,7 @@ export class TradingStrategyTester {
 				) {
 					pnl =
 						-this.config.feePt +
-						(this.config.leverage * this.config.minAmountToTradeUSDT * calcTp) /
+						(this.config.minAmountToTradeUSDT * calcTp) /
 							this.config.balanceUSDT;
 
 					stickIndex++;
@@ -359,9 +317,7 @@ export class TradingStrategyTester {
 								: entryPriceUSDT - securePrice) / entryPriceUSDT;
 						pnl =
 							-this.config.feePt +
-							(this.config.leverage *
-								this.config.minAmountToTradeUSDT *
-								pnlGraph) /
+							(this.config.minAmountToTradeUSDT * pnlGraph) /
 								this.config.balanceUSDT;
 
 						secureLength = stickIndex;
@@ -381,7 +337,7 @@ export class TradingStrategyTester {
 
 				pnl =
 					-this.config.feePt +
-					(this.config.leverage * this.config.minAmountToTradeUSDT * pnlGraph) /
+					(this.config.minAmountToTradeUSDT * pnlGraph) /
 						this.config.balanceUSDT;
 			}
 
@@ -617,5 +573,49 @@ export class TradingStrategyTester {
 			time += interval;
 		} while (time <= end);
 		return fixedCandlestick;
+	}
+
+	private showConfig() {
+		console.log(`	
+			=================================================================
+			Running backtest and forwardtest for ${(
+				(this.config.forwardTestEnd - this.config.backtestStart) /
+				Interval["1d"]
+			).toFixed(1)} days
+			Interval: ${Interval[this.config.interval]}, ${
+			1 +
+			(this.config.forwardTestEnd - this.config.backtestStart) /
+				this.config.interval
+		} candles
+			Backtest: ${(
+				(this.config.backtestEnd - this.config.backtestStart) /
+				Interval["1d"]
+			).toFixed(1)} days, from ${
+			getDate(this.config.backtestStart).dateString
+		} to ${getDate(this.config.backtestEnd).dateString}
+			ForwardTest: ${(
+				(this.config.forwardTestEnd - this.config.backtestEnd) /
+				Interval["1d"]
+			).toFixed(1)} days, from ${
+			getDate(this.config.backtestEnd).dateString
+		} to ${getDate(this.config.forwardTestEnd).dateString}
+
+			StopLoss array: ${this.config.maxSlArray
+				.map((x) => formatPercent(x))
+				.join(", ")}
+			TP Sl Ratio array: ${this.config.tpSlRatioArray.join(", ")}
+			MaxTradeLength array: ${this.config.maxTradeLengthArray.join(", ")}
+			
+			Steps: 
+				OverrideHistoricalRecords: ${
+					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
+				}
+				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
+				Stats for Winning Pairs Only: ${this.config.winningPairsOnly ? "TRUE" : "FALSE"}
+
+			Strategies: ${this.strategies.map((s) => s.stgName).join(", ")}
+			=================================================================
+					
+			`);
 	}
 }

@@ -34,8 +34,8 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [1 / 100],
-	tpSlRatioArray: [9],
+	maxSlArray: [5 / 100],
+	tpSlRatioArray: [3],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
@@ -50,8 +50,8 @@ export const tradeConfig: ConfigTrade = {
 	lookBackLength: 200,
 	maxTradeLength: 100,
 
-	maxSl: 1 / 100,
-	tpSlRatio: 9,
+	maxSl: 5 / 100,
+	tpSlRatio: 3,
 	minSlTp: 1 / 100,
 
 	riskPt: 0.25 / 100,
