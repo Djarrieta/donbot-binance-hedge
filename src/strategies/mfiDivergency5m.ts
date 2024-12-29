@@ -7,15 +7,7 @@ export const stg = new Strategy({
 	stgName: "mfiDivergency5m",
 	lookBackLength: 200,
 	interval: Interval["5m"],
-	allowedPairs: [
-		"WIFUSDT",
-		"ARKMUSDT",
-		"PHBUSDT",
-		"CKBUSDT",
-		"TOKENUSDT",
-		"PENDLEUSDT",
-		"MYROUSDT",
-	],
+	allowedPairs: [],
 
 	validate({ candlestick, pair }) {
 		const response: StrategyResponse = {
