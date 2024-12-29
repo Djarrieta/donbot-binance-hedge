@@ -18,7 +18,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate("2024 12 26 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/rsiDivergency5m_2.db";
+export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
 export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
@@ -37,7 +37,7 @@ export const backtestConfig: ConfigBacktest = {
 	maxSlArray: [5 / 100],
 	tpSlRatioArray: [3],
 	minSlTp: 1 / 100,
-	breakEventAlerts: [],
+	breakEventAlerts: [{ break: 2 / 100, trigger: 8 / 100, minLength: 3 }],
 
 	steps: {
 		overrideHistoricalRecords: false,
