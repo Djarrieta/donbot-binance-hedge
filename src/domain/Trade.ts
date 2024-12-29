@@ -278,8 +278,7 @@ export class Trade {
 		);
 
 		const realPositionRiskUSDT = quantityUSDT * calcSl;
-		const realPositionRiskPt =
-			realPositionRiskUSDT / (this.config.leverage * user.balanceUSDT);
+		const realPositionRiskPt = realPositionRiskUSDT / user.balanceUSDT;
 
 		const coinQuantity = Math.max(
 			quantityUSDT / symbol.currentPrice,

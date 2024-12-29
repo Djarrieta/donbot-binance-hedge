@@ -56,13 +56,14 @@ export const tradeConfig: ConfigTrade = {
 
 	riskPt: 0.25 / 100,
 	minAmountToTradeUSDT: 6,
-	leverage: 2,
 	feePt: 0.0005,
+
+	leverage: 10,
+	setLeverage: false,
 
 	maxProtectedPositions: 1,
 	maxHedgePositions: 20,
 
 	breakEventAlerts: [],
 	apiLimit: 500,
-	setLeverage: false,
 };
