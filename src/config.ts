@@ -53,6 +53,7 @@ export const tradeConfig: ConfigTrade = {
 	maxSl: 5 / 100,
 	tpSlRatio: 3,
 	minSlTp: 1 / 100,
+	breakEventAlerts: [{ break: 2 / 100, trigger: 8 / 100, minLength: 3 }],
 
 	riskPt: 0.25 / 100,
 	minAmountToTradeUSDT: 6,
@@ -64,6 +65,5 @@ export const tradeConfig: ConfigTrade = {
 	maxProtectedPositions: 1,
 	maxHedgePositions: 20,
 
-	breakEventAlerts: [],
 	apiLimit: 500,
 };
