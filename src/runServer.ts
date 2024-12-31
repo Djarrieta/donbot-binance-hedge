@@ -6,9 +6,9 @@ Bun.serve({
 	async fetch(req) {
 		const url = new URL(req.url);
 
-		if (url.pathname === "/pairs/") {
+		if (url.pathname.startsWith("/pairs/") && url.pathname.split("/")[2]) {
 			try {
-				const pair = url.searchParams.get("pair") || "";
+				const pair = url.pathname.split("/")[2] || "";
 				const { head, body } = Pairs({ pair });
 
 				return new Response(App({ head, body }), {
