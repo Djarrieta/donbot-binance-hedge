@@ -1,5 +1,6 @@
 import cliProgress from "cli-progress";
 import { formatPercent } from "../utils/formatPercent";
+import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
 import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
 import type { Alert } from "./Alert";
@@ -385,8 +386,10 @@ export class TradingStrategyTester {
 			);
 			const { winRate, accPnl, avPnl } = this.getStats(positionsForPair);
 
-			const positionsForPairAcc = this.getAccPositions(positionsForPair);
-
+			const positionsForPairAcc = getAccPositions({
+				positions: positionsForPair,
+				interval: this.config.interval,
+			});
 			const {
 				winRate: winRateAcc,
 				accPnl: accPnlAcc,
@@ -422,7 +425,10 @@ export class TradingStrategyTester {
 			avPnl: avPnlWP,
 		} = this.getStats(positionsWP);
 
-		const positionsAcc = this.getAccPositions(positionsWP);
+		const positionsAcc = getAccPositions({
+			positions: positionsWP,
+			interval: this.config.interval,
+		});
 
 		const {
 			winRate: winRateAcc,
@@ -439,7 +445,10 @@ export class TradingStrategyTester {
 				winningPairs.map((wp) => wp.pair).includes(p.pair) &&
 				p.startTime > backtestEnd
 		);
-		const positionsFwd = this.getAccPositions(positionsFwdFullList);
+		const positionsFwd = getAccPositions({
+			positions: positionsFwdFullList,
+			interval: this.config.interval,
+		});
 
 		const {
 			winRate: winRateFwd,
@@ -476,20 +485,6 @@ export class TradingStrategyTester {
 		};
 
 		return stats;
-	}
-
-	private getAccPositions(positions: PositionBT[]) {
-		const positionsAcc = [];
-		let lastAccClosedTime = 0;
-		for (const position of positions) {
-			if (position.startTime > lastAccClosedTime) {
-				positionsAcc.push(position);
-				lastAccClosedTime = position.secureLength
-					? position.startTime + position.secureLength * this.config.interval
-					: position.startTime + position.tradeLength * this.config.interval;
-			}
-		}
-		return positionsAcc;
 	}
 
 	private getStats(positions: PositionBT[]) {
