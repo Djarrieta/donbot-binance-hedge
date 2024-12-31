@@ -5,6 +5,7 @@ import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
+import { Anchor } from "./components/anchor";
 import { Table } from "./components/table";
 
 type StatsByPairProps = {
@@ -89,7 +90,10 @@ export const StatsByPair = ({
             `,
 		body: `
             <body>
-			 <a href="http://localhost:3000/stats?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}" >Back to stats for SL ${sl}, TP/SL ${tpSlRatio} and max trade length ${maxTradeLength}</a>
+			${Anchor({
+				href: `http://localhost:3000/stats?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`,
+				label: `Back to stats for SL ${sl}, TP/SL ${tpSlRatio} and max trade length ${maxTradeLength}`,
+			})}
                 <h1>Stats for ${pair}</h1>
                 ${Table({
 									title: "Parameters",

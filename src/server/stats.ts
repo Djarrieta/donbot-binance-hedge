@@ -5,6 +5,7 @@ import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
+import { Anchor } from "./components/anchor";
 import { Table } from "./components/table";
 
 type PairsProps = {
@@ -97,13 +98,17 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 									],
 								})}
 				<div style="display: flex; flex-direction: column; margin-top: 20px">
-					${statsList
-						.map(
-							(stat) =>
-								`<a href="http://localhost:3000/stats?sl=${stat.sl}&tpSlRatio=${stat.tpSlRatio}&maxTradeLength=${stat.maxTradeLength}" >Back to stats for SL ${stat.sl}, TP/SL ${stat.tpSlRatio} and max trade length ${stat.maxTradeLength}</a>`
-						)
-						.join("")}
+						${statsList
+							.map((stat) =>
+								Anchor({
+									label: `Back to stats for SL ${stat.sl}, TP/SL ${stat.tpSlRatio} and max trade length ${stat.maxTradeLength}`,
+									href: `http://localhost:3000/stats?sl=${stat.sl}&tpSlRatio=${stat.tpSlRatio}&maxTradeLength=${stat.maxTradeLength}`,
+								})
+							)
+							.join("")}
 				</div>
+
+
 				
 
                 ${Table({
@@ -149,7 +154,10 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 									rows: pnlArray.map((p) => [
 										p.date,
 										p.side,
-										`<a href="http://localhost:3000/stats/${p.pair}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}" >${p.pair}</a>`,
+										Anchor({
+											label: p.pair,
+											href: `http://localhost:3000/stats/${p.pair}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`,
+										}),
 										formatPercent(p.pnlPt),
 										formatPercent(p.accPnlPt),
 										p.pnlUsdt.toFixed(2),
