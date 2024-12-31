@@ -248,6 +248,26 @@ export class StatsDataService implements IStatsData {
 				pnl: formatPercent(p.pnl),
 			}))
 		);
+
+		console.log("Stats per pair");
+		console.table(
+			winningPairs
+				.sort((a, b) => b.avPnl - a.avPnl)
+				.map(
+					(p) =>
+						`${p.pair} Qty=${p.qty} avPnl=${formatPercent(
+							p.avPnl
+						)} http://localhost:3000/stats/${
+							p.pair
+						}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`
+				)
+		);
+
+		console.log(
+			"Recommended pairs:",
+			winningPairs.filter((p) => p.avPnl > 0).map((p) => p.pair)
+		);
+
 		console.log("Stats summary:");
 		console.table(
 			stats.map((r) => ({
@@ -279,17 +299,6 @@ export class StatsDataService implements IStatsData {
 
 				pairs: r.winningPairs.length,
 			}))
-		);
-
-		console.table(
-			winningPairs
-				.sort((a, b) => b.avPnl - a.avPnl)
-				.map(
-					(p) =>
-						`${p.pair} ${formatPercent(p.avPnl)} http://localhost:3000/pairs/${
-							p.pair
-						}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`
-				)
 		);
 	}
 

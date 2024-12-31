@@ -1,8 +1,8 @@
 import cliProgress from "cli-progress";
+import { getStats } from "../getStats";
 import { formatPercent } from "../utils/formatPercent";
 import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
-import { monteCarloAnalysis } from "../utils/monteCarloAnalysis";
 import type { Alert } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
 import type { ConfigBacktest } from "./ConfigBacktest";
@@ -384,7 +384,7 @@ export class TradingStrategyTester {
 			const positionsForPair = positions.filter(
 				(pos) => pos.pair === pair && pos.startTime <= backtestEnd
 			);
-			const { winRate, accPnl, avPnl } = this.getStats(positionsForPair);
+			const { winRate, accPnl, avPnl } = getStats(positionsForPair);
 
 			const positionsForPairAcc = getAccPositions({
 				positions: positionsForPair,
@@ -395,7 +395,7 @@ export class TradingStrategyTester {
 				accPnl: accPnlAcc,
 				avPnl: avPnlAcc,
 				drawdownMonteCarlo: drawdownAcc,
-			} = this.getStats(positionsForPairAcc);
+			} = getStats(positionsForPairAcc);
 
 			if (avPnl > 0 || !this.config.winningPairsOnly) {
 				winningPairs.push({
@@ -423,7 +423,7 @@ export class TradingStrategyTester {
 			winRate: winRateWP,
 			accPnl: accPnlWP,
 			avPnl: avPnlWP,
-		} = this.getStats(positionsWP);
+		} = getStats(positionsWP);
 
 		const positionsAcc = getAccPositions({
 			positions: positionsWP,
@@ -438,7 +438,7 @@ export class TradingStrategyTester {
 			badRunMonteCarlo: badRunMC,
 			avPnlPerDay,
 			avPosPerDay,
-		} = this.getStats(positionsAcc);
+		} = getStats(positionsAcc);
 
 		const positionsFwdFullList = positions.filter(
 			(p) =>
@@ -454,7 +454,7 @@ export class TradingStrategyTester {
 			winRate: winRateFwd,
 			accPnl: accPnlFwd,
 			avPnl: avPnlFwd,
-		} = this.getStats(positionsFwd);
+		} = getStats(positionsFwd);
 
 		const stats: Stat = {
 			sl,
@@ -485,50 +485,6 @@ export class TradingStrategyTester {
 		};
 
 		return stats;
-	}
-
-	private getStats(positions: PositionBT[]) {
-		if (positions.length === 0) {
-			return {
-				winRate: 0,
-				accPnl: 0,
-				avPnl: 0,
-				avPnlPerDay: 0,
-				avPosPerDay: 0,
-				drawdownMonteCarlo: 0,
-				badRunMonteCarlo: 0,
-			};
-		}
-		const start = positions[0].startTime;
-		const end = positions[positions.length - 1].startTime;
-		const totalDays = (end - start) / Interval["1d"];
-
-		const tradesQty = positions.length;
-		const winningPositions = positions.filter((p) => p.pnl > 0);
-		const lostPositions = positions.filter((p) => p.pnl < 0);
-		const winRate =
-			winningPositions.length /
-			(winningPositions.length + lostPositions.length);
-		const accPnl = positions.reduce((acc, p) => acc + p.pnl, 0);
-		const avPnl = accPnl / tradesQty || 0;
-		const avPnlPerDay = accPnl / totalDays;
-		const avPosPerDay = tradesQty / totalDays;
-
-		const { drawdownMonteCarlo, badRunMonteCarlo } = monteCarloAnalysis({
-			values: positions.map((p) => p.pnl),
-			confidenceLevel: 0.95,
-			amountOfSimulations: 1000,
-		});
-
-		return {
-			winRate,
-			accPnl,
-			avPnl,
-			avPnlPerDay,
-			avPosPerDay,
-			drawdownMonteCarlo,
-			badRunMonteCarlo,
-		};
 	}
 
 	public fixCandlestick({
