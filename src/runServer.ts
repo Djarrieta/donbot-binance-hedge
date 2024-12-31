@@ -10,9 +10,8 @@ Bun.serve({
 			try {
 				const pair = url.searchParams.get("pair") || "";
 				const { head, body } = Pairs({ pair });
-				const html = App({ head, body });
 
-				return new Response(html, {
+				return new Response(App({ head, body }), {
 					headers: { "Content-Type": "text/html" },
 				});
 			} catch (error) {
