@@ -7,13 +7,19 @@ import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
 import { Table } from "./components/table";
 
-type PairsProps = {
+type StatsByPairProps = {
+	pair: string;
 	sl: number;
 	tpSlRatio: number;
 	maxTradeLength: number;
 };
 
-export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
+export const StatsByPair = ({
+	pair,
+	sl,
+	tpSlRatio,
+	maxTradeLength,
+}: StatsByPairProps) => {
 	const statsDataService = new StatsDataService({
 		databaseName: DATA_BASE_NAME,
 		tableName: "STATS_DATA",
@@ -24,8 +30,9 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 		tpSlRatio,
 		maxTradeLength,
 	});
+	const filteredPositions = positions.filter((p) => p.pair === pair);
 	const accPositions = getAccPositions({
-		positions: positions,
+		positions: filteredPositions,
 		interval: backtestConfig.interval,
 	});
 
@@ -46,7 +53,6 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 		side: PositionSide;
 		pnlUsdt: number;
 		balance: number;
-		pair: string;
 		len: string;
 	}[] = [];
 
@@ -60,7 +66,6 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 		pnlArray.push({
 			date: getDate(pos.startTime).dateString,
 			side: pos.positionSide,
-			pair: pos.pair,
 			pnlPt: pos.pnl,
 			accPnlPt,
 			pnlUsdt: pos.pnl * balance,
@@ -79,12 +84,13 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 
 	return {
 		head: `
-            <title>Donbot Stats</title>
+            <title>Donbot Stats for ${pair}</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             `,
 		body: `
             <body>
-                <h1>Stats</h1>
+			 <a href="http://localhost:3000/stats?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}" >Back to stats for SL ${sl}, TP/SL ${tpSlRatio} and max trade length ${maxTradeLength}</a>
+                <h1>Stats for ${pair}</h1>
                 ${Table({
 									title: "Parameters",
 									rows: [
@@ -127,7 +133,6 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 									headers: [
 										"Date",
 										"Position Side",
-										"Pair",
 										"PNL",
 										"Acc PNL",
 										"PNL in USDT",
@@ -137,7 +142,6 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 									rows: pnlArray.map((p) => [
 										p.date,
 										p.side,
-										`<a href="http://localhost:3000/stats/${p.pair}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}" >${p.pair}</a>`,
 										formatPercent(p.pnlPt),
 										formatPercent(p.accPnlPt),
 										p.pnlUsdt.toFixed(2),

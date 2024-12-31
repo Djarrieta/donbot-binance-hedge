@@ -300,6 +300,12 @@ export class StatsDataService implements IStatsData {
 				pairs: r.winningPairs.length,
 			}))
 		);
+		console.table(
+			stats.map(
+				(r) =>
+					`http://localhost:3000/stats?sl=${r.sl}&tpSlRatio=${r.tpSlRatio}&maxTradeLength=${r.maxTradeLength}`
+			)
+		);
 	}
 
 	deleteRows() {

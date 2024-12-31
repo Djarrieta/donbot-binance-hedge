@@ -1,5 +1,6 @@
 import { App } from "./server/app";
 import { Stats } from "./server/stats";
+import { StatsByPair } from "./server/statsByPair";
 
 Bun.serve({
 	port: 3000,
@@ -12,8 +13,22 @@ Bun.serve({
 			const tpSlRatio = Number(url.searchParams.get("tpSlRatio")) || 0;
 			const maxTradeLength =
 				Number(url.searchParams.get("maxTradeLength")) || 0;
-			const { head, body } = Stats({
+			const { head, body } = StatsByPair({
 				pair,
+				sl: Number(sl),
+				tpSlRatio: Number(tpSlRatio),
+				maxTradeLength: Number(maxTradeLength),
+			});
+
+			return App({ head, body });
+		}
+
+		if (url.pathname === "/stats") {
+			const sl = Number(url.searchParams.get("sl")) || 0;
+			const tpSlRatio = Number(url.searchParams.get("tpSlRatio")) || 0;
+			const maxTradeLength =
+				Number(url.searchParams.get("maxTradeLength")) || 0;
+			const { head, body } = Stats({
 				sl: Number(sl),
 				tpSlRatio: Number(tpSlRatio),
 				maxTradeLength: Number(maxTradeLength),
