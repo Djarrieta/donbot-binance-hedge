@@ -18,6 +18,7 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 		databaseName: DATA_BASE_NAME,
 		tableName: "STATS_DATA",
 	});
+	const statsList = statsDataService.getStats();
 	const positions = statsDataService.getPositions({
 		column: "positions",
 		sl,
@@ -84,7 +85,9 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
             `,
 		body: `
             <body>
+				
                 <h1>Stats</h1>
+
                 ${Table({
 									title: "Parameters",
 									rows: [
@@ -93,6 +96,15 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 										["Max Trade Length", maxTradeLength.toFixed(0)],
 									],
 								})}
+				<div style="display: flex; flex-direction: column; margin-top: 20px">
+					${statsList
+						.map(
+							(stat) =>
+								`<a href="http://localhost:3000/stats?sl=${stat.sl}&tpSlRatio=${stat.tpSlRatio}&maxTradeLength=${stat.maxTradeLength}" >Back to stats for SL ${stat.sl}, TP/SL ${stat.tpSlRatio} and max trade length ${stat.maxTradeLength}</a>`
+						)
+						.join("")}
+				</div>
+				
 
                 ${Table({
 									title: "General Stats",
