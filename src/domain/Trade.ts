@@ -108,17 +108,15 @@ export class Trade {
 				(this.config.lookBackLength + 1) * this.config.interval;
 			const end = start + this.config.lookBackLength * this.config.interval;
 
-			const promiseArray = [
-				...pairList.map((pair) =>
-					this.exchange.getCandlestick({
-						pair,
-						candlestickAPILimit: this.config.apiLimit,
-						interval: this.config.interval,
-						start,
-						end,
-					})
-				),
-			];
+			const promiseArray = pairList.map((pair) =>
+				this.exchange.getCandlestick({
+					pair,
+					candlestickAPILimit: this.config.apiLimit,
+					interval: this.config.interval,
+					start,
+					end,
+				})
+			);
 
 			const MAX_PROMISE_TIME = 20000;
 

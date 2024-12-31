@@ -281,31 +281,15 @@ export class StatsDataService implements IStatsData {
 			}))
 		);
 
-		console.log("Stats per pair");
-
 		console.table(
 			winningPairs
-				.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
-				.map((p) => ({
-					pair: p.pair,
-					qty: p.qty,
-					avPnl: formatPercent(p.avPnl),
-					avPnlAcc: formatPercent(p.avPnlAcc),
-					winRate: formatPercent(p.winRate),
-					winRateAcc: formatPercent(p.winRateAcc),
-					accPnl: formatPercent(p.accPnl),
-					accPnlAcc: formatPercent(p.accPnlAcc),
-					drawdownAcc: formatPercent(p.drawdownAcc),
-				}))
-		);
-
-		console.log("Recommended pairs:");
-
-		console.log(
-			winningPairs
-				.filter((p) => p.qty >= 100)
-				.sort((a, b) => b.avPnlAcc - a.avPnlAcc)
-				.map((p) => p.pair)
+				.sort((a, b) => b.avPnl - a.avPnl)
+				.map(
+					(p) =>
+						`${p.pair} ${formatPercent(p.avPnl)} http://localhost:3000/pairs/${
+							p.pair
+						}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`
+				)
 		);
 	}
 

@@ -3,16 +3,23 @@ import { StatsDataService } from "../infrastructure/StatsDataService";
 import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
 
-export const Pairs = ({ pair }: { pair: string }) => {
+type PairsProps = {
+	pair: string;
+	sl: number;
+	tpSlRatio: number;
+	maxTradeLength: number;
+};
+
+export const Pairs = ({ pair, sl, tpSlRatio, maxTradeLength }: PairsProps) => {
 	const statsDataService = new StatsDataService({
 		databaseName: DATA_BASE_NAME,
 		tableName: "STATS_DATA",
 	});
 	const positions = statsDataService.getPositions({
 		column: "positions",
-		sl: 5 / 100,
-		tpSlRatio: 3,
-		maxTradeLength: 100,
+		sl,
+		tpSlRatio,
+		maxTradeLength,
 	});
 	const filteredPositions = positions.filter((p) => p.pair === pair);
 	const accPositions = getAccPositions({

@@ -8,7 +8,16 @@ Bun.serve({
 
 		if (url.pathname.startsWith("/pairs/") && url.pathname.split("/")[2]) {
 			const pair = url.pathname.split("/")[2];
-			const { head, body } = Pairs({ pair });
+			const sl = Number(url.searchParams.get("sl")) || 0;
+			const tpSlRatio = Number(url.searchParams.get("tpSlRatio")) || 0;
+			const maxTradeLength =
+				Number(url.searchParams.get("maxTradeLength")) || 0;
+			const { head, body } = Pairs({
+				pair,
+				sl: Number(sl),
+				tpSlRatio: Number(tpSlRatio),
+				maxTradeLength: Number(maxTradeLength),
+			});
 
 			return App({ head, body });
 		}
