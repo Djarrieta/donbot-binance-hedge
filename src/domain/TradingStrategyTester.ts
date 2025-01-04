@@ -397,7 +397,7 @@ export class TradingStrategyTester {
 				drawdownMonteCarlo: drawdownAcc,
 			} = getStats(positionsForPairAcc);
 
-			if (avPnl > 0 || !this.config.winningPairsOnly) {
+			if (avPnl > 0) {
 				winningPairs.push({
 					pair,
 					avPnl,
@@ -562,7 +562,6 @@ export class TradingStrategyTester {
 					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
 				}
 				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
-				Stats for Winning Pairs Only: ${this.config.winningPairsOnly ? "TRUE" : "FALSE"}
 
 			Strategies: ${this.strategies.map((s) => s.stgName).join(", ")}
 			=================================================================

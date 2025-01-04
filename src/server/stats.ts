@@ -6,22 +6,30 @@ import { formatPercent } from "../utils/formatPercent";
 import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
 import { Anchor } from "./components/anchor";
+import { Link } from "./components/link.ts";
+import { Select } from "./components/select";
 import { Table } from "./components/table";
 
 type PairsProps = {
 	sl: number;
 	tpSlRatio: number;
 	maxTradeLength: number;
+	recommendedPairs: boolean;
 };
 
-export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
+export const Stats = ({
+	sl,
+	tpSlRatio,
+	maxTradeLength,
+	recommendedPairs,
+}: PairsProps) => {
 	const statsDataService = new StatsDataService({
 		databaseName: DATA_BASE_NAME,
 		tableName: "STATS_DATA",
 	});
 	const statsList = statsDataService.getStats();
 	const positions = statsDataService.getPositions({
-		column: "positions",
+		column: recommendedPairs ? "positionsWP" : "positions",
 		sl,
 		tpSlRatio,
 		maxTradeLength,
@@ -86,30 +94,58 @@ export const Stats = ({ sl, tpSlRatio, maxTradeLength }: PairsProps) => {
             `,
 		body: `
             <body>
-				
-                <h1>Stats</h1>
+				<div style="display:flex; gap: 4px;">
+					${Select({
+						options: statsList.map((s) => {
+							return {
+								label: `SL: ${s.sl}, TP/SL: ${s.tpSlRatio}, MaxLen: ${s.maxTradeLength}`,
+								value: Link({
+									sl: s.sl,
+									tpSlRatio: s.tpSlRatio,
+									maxTradeLength: s.maxTradeLength,
+									recommendedPairs,
+								}),
+							};
+						}),
+						selected: Link({
+							sl,
+							tpSlRatio,
+							maxTradeLength,
+							recommendedPairs,
+						}),
+					})}
 
-                ${Table({
-									title: "Parameters",
-									rows: [
-										["Stop Loss", formatPercent(sl)],
-										["Take Profit / Stop Loss Ratio", tpSlRatio.toFixed(0)],
-										["Max Trade Length", maxTradeLength.toFixed(0)],
-									],
-								})}
-				<div style="display: flex; flex-direction: column; margin-top: 20px">
-						${statsList
-							.map((stat) =>
-								Anchor({
-									label: `Back to stats for SL ${stat.sl}, TP/SL ${stat.tpSlRatio} and max trade length ${stat.maxTradeLength}`,
-									href: `http://localhost:3000/stats?sl=${stat.sl}&tpSlRatio=${stat.tpSlRatio}&maxTradeLength=${stat.maxTradeLength}`,
-								})
-							)
-							.join("")}
+					${Select({
+						options: [
+							{
+								label: "Recommended Pairs",
+								value: Link({
+									sl,
+									tpSlRatio,
+									maxTradeLength,
+									recommendedPairs: true,
+								}),
+							},
+							{
+								label: "All Pairs",
+								value: Link({
+									sl,
+									tpSlRatio,
+									maxTradeLength,
+									recommendedPairs: false,
+								}),
+							},
+						],
+						selected: Link({
+							sl,
+							tpSlRatio,
+							maxTradeLength,
+							recommendedPairs,
+						}),
+					})}
 				</div>
-
-
 				
+                <h1>Stats sl ${sl} TP/SL: ${tpSlRatio} MaxLen: ${maxTradeLength} </h1>
 
                 ${Table({
 									title: "General Stats",

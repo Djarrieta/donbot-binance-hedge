@@ -2,8 +2,8 @@ import { Database } from "bun:sqlite";
 import type { IStatsData } from "../domain/IStatsData";
 import type { PositionBT } from "../domain/Position";
 import type { Stat, WinningPair } from "../domain/Stat";
-import { getDate } from "../utils/getDate";
 import { formatPercent } from "../utils/formatPercent";
+import { Link } from "../server/components/link";
 
 export class StatsDataService implements IStatsData {
 	private db: Database;
@@ -177,134 +177,58 @@ export class StatsDataService implements IStatsData {
 
 	showStats() {
 		const stats = this.getStats();
+		const statsWithHeaders = [
+			{
+				SL: "sl tp/sl MaxLen",
+				QTY: "ps  wp      acc      fwd",
+				WINRATE: "wp      acc      fwd",
+				AVPNL: "wp      acc      fwd",
+				ACCPNL: "wp      acc      fwd",
+				"DD badRun": "",
+				PerDay: "pnl     Qty",
+				pairs: "",
+			},
+			...stats.map((r) => ({
+				SL: `${formatPercent(r.sl)} ${r.tpSlRatio} ${r.maxTradeLength}`,
 
-		const { sl, tpSlRatio, maxTradeLength } = stats[0];
-		console.log(
-			`\n\n===============================================================================================\n` +
-				`Stats for the best combination sl=${formatPercent(
-					sl
-				)}, tpSlRatio=${formatPercent(
-					tpSlRatio
-				)}, maxTradeLength=${maxTradeLength}\n
-				===============================================================================================\n\n`
-		);
+				QTY: `${r.positions?.length || 0} ${r.positionsWP?.length || 0} ${
+					r.positionsAcc?.length || 0
+				} ${r.positionsFwd?.length || 0}`,
 
-		const winningPairs = this.getWinningPairs({
-			sl,
-			tpSlRatio,
-			maxTradeLength,
-		});
-		console.log(`Winning pairs : ${winningPairs.length}`);
-
-		console.log(winningPairs.map((p) => p.pair));
-
-		const positionsWP = this.getPositions({
-			sl,
-			tpSlRatio,
-			maxTradeLength,
-			column: "positionsWP",
-		});
-		console.log(
-			`Showing last 20 possible Positions for winning pairs: ${positionsWP.length}`
-		);
-		console.table(
-			positionsWP.slice(-20).map((p) => ({
-				...p,
-				startTime: getDate(p.startTime).dateString,
-				pnl: formatPercent(p.pnl),
-			}))
-		);
-
-		const positionsAcc = this.getPositions({
-			sl,
-			tpSlRatio,
-			maxTradeLength,
-			column: "positionsAcc",
-		});
-		console.log(
-			`Showing last 20 possible Positions with accumulation for winning pairs: ${positionsAcc.length}`
-		);
-		console.table(
-			positionsAcc.slice(-20).map((p) => ({
-				...p,
-				startTime: getDate(p.startTime).dateString,
-				pnl: formatPercent(p.pnl),
-			}))
-		);
-
-		const positionsFwd = this.getPositions({
-			sl,
-			tpSlRatio,
-			maxTradeLength,
-			column: "positionsFwd",
-		});
-		console.log(
-			`Showing last possible Positions in forward test: ${positionsFwd.length}`
-		);
-		console.table(
-			positionsFwd.slice(-20).map((p) => ({
-				...p,
-				startTime: getDate(p.startTime).dateString,
-				pnl: formatPercent(p.pnl),
-			}))
-		);
-
-		console.log("Stats per pair");
-		console.table(
-			winningPairs
-				.sort((a, b) => b.avPnl - a.avPnl)
-				.map(
-					(p) =>
-						`${p.pair} Qty=${p.qty} avPnl=${formatPercent(
-							p.avPnl
-						)} http://localhost:3000/stats/${
-							p.pair
-						}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`
-				)
-		);
-
-		console.log(
-			"Recommended pairs:",
-			winningPairs.filter((p) => p.avPnl > 0).map((p) => p.pair)
-		);
-
-		console.log("Stats summary:");
-		console.table(
-			stats.map((r) => ({
-				"SL TPSLRatio MaxLen": `${formatPercent(r.sl)} ${r.tpSlRatio} ${
-					r.maxTradeLength
-				}`,
-
-				"QTY ps wp acc fwd": `${r.positions?.length || 0} ${
-					r.positionsWP?.length || 0
-				} ${r.positionsAcc?.length || 0} ${r.positionsFwd?.length || 0}`,
-
-				"WINRATE wp acc fwd": `${formatPercent(r.winRateWP)} ${formatPercent(
+				WINRATE: `${formatPercent(r.winRateWP)} ${formatPercent(
 					r.winRateAcc
 				)} ${formatPercent(r.winRateFwd)}`,
 
-				"AVPNL wp acc fwd": `${formatPercent(r.avPnlWP)} ${formatPercent(
+				AVPNL: `${formatPercent(r.avPnlWP)} ${formatPercent(
 					r.avPnlAcc
 				)} ${formatPercent(r.avPnlFwd)}`,
 
-				"ACCPNL wp acc fwd": `${formatPercent(r.accPnlWP)} ${formatPercent(
+				ACCPNL: `${formatPercent(r.accPnlWP)} ${formatPercent(
 					r.accPnlAcc
 				)} ${formatPercent(r.accPnlFwd)}`,
 
 				"DD badRun": `${formatPercent(r.drawdownMC)} ${r.badRunMC}`,
 
-				"PerDay pnl Qty": `${formatPercent(
-					r.avPnlPerDay
-				)}  ${r.avPosPerDay.toFixed(2)}`,
+				PerDay: `${formatPercent(r.avPnlPerDay)} ${r.avPosPerDay.toFixed(2)}`,
 
 				pairs: r.winningPairs.length,
-			}))
-		);
+			})),
+		];
+
+		console.log("Stats summary:");
+		console.table(statsWithHeaders);
 		console.table(
-			stats.map(
-				(r) =>
-					`http://localhost:3000/stats?sl=${r.sl}&tpSlRatio=${r.tpSlRatio}&maxTradeLength=${r.maxTradeLength}`
-			)
+			stats.map((r) => {
+				return {
+					params: `${formatPercent(r.sl)} ${r.tpSlRatio} ${r.maxTradeLength}`,
+					Url: Link({
+						sl: r.sl,
+						tpSlRatio: r.tpSlRatio,
+						maxTradeLength: r.maxTradeLength,
+						recommendedPairs: true,
+					}),
+				};
+			})
 		);
 	}
 

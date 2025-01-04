@@ -26,12 +26,15 @@ Bun.serve({
 		if (url.pathname === "/stats") {
 			const sl = Number(url.searchParams.get("sl")) || 0;
 			const tpSlRatio = Number(url.searchParams.get("tpSlRatio")) || 0;
+			const recommendedPairs =
+				url.searchParams.get("recommendedPairs") === "true";
 			const maxTradeLength =
 				Number(url.searchParams.get("maxTradeLength")) || 0;
 			const { head, body } = Stats({
 				sl: Number(sl),
 				tpSlRatio: Number(tpSlRatio),
 				maxTradeLength: Number(maxTradeLength),
+				recommendedPairs,
 			});
 
 			return App({ head, body });

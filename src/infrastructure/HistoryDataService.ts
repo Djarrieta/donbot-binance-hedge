@@ -97,7 +97,8 @@ export class HistoryDataService implements IHistoryData {
 			`
 			Saved candlestick for ${pairsCount} pairs. 
 			From ${getDate(result[0].startTime).dateString} 
-			To ${getDate(result[0].endTime).dateString}`
+			To ${getDate(result[0].endTime).dateString}
+			resulted in ${result[0].count}  candles`
 		);
 	};
 

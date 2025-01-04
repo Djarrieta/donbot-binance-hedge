@@ -6,9 +6,6 @@ import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 
 import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
-import { stg as rsiDivergency15m } from "./strategies/rsiDivergency15m";
-import { stg as supertrend5m } from "./strategies/supertrend5m";
-import { stg as mfiDivergency5m } from "./strategies/mfiDivergency5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
@@ -27,17 +24,16 @@ export const backtestConfig: ConfigBacktest = {
 	interval,
 	lookBackLength: 200,
 	maxTradeLengthArray: [100],
-	winningPairsOnly: false,
 
 	minAmountToTradeUSDT: 6,
 	leverage: 2,
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [5 / 100],
-	tpSlRatioArray: [3],
+	maxSlArray: [4 / 100, 5 / 100],
+	tpSlRatioArray: [9, 10, 12],
 	minSlTp: 1 / 100,
-	breakEventAlerts: [{ break: 2 / 100, trigger: 8 / 100, minLength: 3 }],
+	breakEventAlerts: [],
 
 	steps: {
 		overrideHistoricalRecords: false,
