@@ -87,6 +87,16 @@ export const Stats = ({
 		],
 	};
 
+	const symbolList = Array.from(new Set(accPositions.map((p) => p.pair)));
+	const positionsPerSymbol = symbolList
+		.map((s) => {
+			return {
+				pair: s,
+				value: accPositions.filter((p) => p.pair === s).length,
+			};
+		})
+		.sort((a, b) => b.value - a.value);
+
 	return {
 		head: `
             <title>Donbot Stats</title>
@@ -151,29 +161,35 @@ export const Stats = ({
 									title: "General Stats",
 									headers: ["Stat", "Value"],
 									rows: [
+										["Positions", accPositions.length.toFixed()],
 										["Win Rate", formatPercent(winRate)],
 										["Accumulated PNL", formatPercent(accPnl)],
 										["Average PNL", formatPercent(avPnl)],
 										["Average PNL per Day", formatPercent(avPnlPerDay)],
 										["Average Position per Day", avPosPerDay.toFixed(2)],
-										["Bad Run Monte Carlo", badRunMonteCarlo.toFixed(2)],
+										["Bad Run Monte Carlo", badRunMonteCarlo.toFixed()],
 										["Drawdown Monte Carlo", formatPercent(drawdownMonteCarlo)],
 									],
 								})}
                 
+				<div style="width:100%; display:flex; gap: 70px; flex-direction:column">
+					<div style="width:100%; height: 400px;">
+						<h2>Accumulated Chart</h2>
+						<canvas id="pnlChart"></canvas>
+					</div>
 
+					<div style="width:100%; ">
+						<h2>Positions per Symbol</h2>
+						<canvas id="positionsPerSymbolBarChart"></canvas>
+					</div>
 
-                <div id="chart-wrapper" style="width:100%; height: 400px;">
-                    <h2>Accumulated Chart</h2>
-                    <canvas id="pnlChart"></canvas>
-                </div>
-
-                <div style="width: 100%; margin-top: 70px; ">
-                    <h2 >Long Short Chart</h2>
-                    <div id="pie-chart-wrapper" style="width: 100%;  ">
-                        <canvas id="longShortChart"></canvas>
-                    </div>
-                </div>
+					<div style="width: 100%; margin-top: 70px; ">
+						<h2 >Long Short Chart</h2>
+						<div id="pie-chart-wrapper" style="width: 100%;  ">
+							<canvas id="longShortChart"></canvas>
+						</div>
+					</div>
+				</div>
 
                 ${Table({
 									title: "Positions",
@@ -202,6 +218,7 @@ export const Stats = ({
 									]),
 								})}
                 <script>
+					// Line Chart
                     const ctx = document.getElementById('pnlChart').getContext('2d');
                     const pnlChart = new Chart(ctx, {
                         type: 'line', 
@@ -243,6 +260,20 @@ export const Stats = ({
                             maintainAspectRatio:false
                         }
                     });
+
+					//Bar Chart for positions per pair
+					const barCtx = document.getElementById('positionsPerSymbolBarChart').getContext('2d');
+					const positionsPerSymbolBarChart= new Chart(barCtx, {
+						type: 'bar',
+						data: {
+							labels: ${JSON.stringify(positionsPerSymbol.map((p) => p.pair))},
+							datasets: [{
+								label: 'Positions per Symbol',
+								data: ${JSON.stringify(positionsPerSymbol.map((p) => p.value))},
+							}]
+						}
+					})
+					
                 </script>
 
             </body>`,
