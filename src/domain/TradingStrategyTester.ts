@@ -380,6 +380,8 @@ export class TradingStrategyTester {
 
 		let winningPairs: WinningPair[] = [];
 
+		//TODO: refactor
+
 		for (const pair of pairList) {
 			const positionsForPair = positions.filter(
 				(pos) => pos.pair === pair && pos.startTime <= backtestEnd

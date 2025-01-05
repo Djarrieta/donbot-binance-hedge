@@ -5,39 +5,78 @@ import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
+import { getWinningPairs } from "../utils/getWinningPairs.ts";
 import { Anchor } from "./components/anchor";
 import { Link } from "./components/link.ts";
 import { Select } from "./components/select";
 import { Table } from "./components/table";
 
+export type TimeFrame = "Backtest" | "Forwardtest" | "All";
 type PairsProps = {
 	sl: number;
 	tpSlRatio: number;
 	maxTradeLength: number;
-	recommendedPairs: boolean;
+	timeFrame: TimeFrame;
+	pair: "All" | "Winning" | string;
 };
 
 export const Stats = ({
 	sl,
 	tpSlRatio,
 	maxTradeLength,
-	recommendedPairs,
+	timeFrame,
+	pair = "All",
 }: PairsProps) => {
 	const statsDataService = new StatsDataService({
 		databaseName: DATA_BASE_NAME,
 		tableName: "STATS_DATA",
 	});
 	const statsList = statsDataService.getStats();
-	const positions = statsDataService.getPositions({
-		column: recommendedPairs ? "positionsWP" : "positions",
+
+	let positions = statsDataService.getPositions({
+		column: "positions",
 		sl,
 		tpSlRatio,
 		maxTradeLength,
 	});
-	const accPositions = getAccPositions({
+
+	//TimeFrame filter
+	if (timeFrame === "Backtest") {
+		positions = positions.filter(
+			(p) => p.startTime <= backtestConfig.backtestEnd
+		);
+	} else if (timeFrame === "Forwardtest") {
+		positions = positions.filter(
+			(p) => p.startTime > backtestConfig.backtestEnd
+		);
+	}
+
+	//Pair filter
+	if (pair && pair !== "All" && pair !== "Winning") {
+		positions = positions.filter((p) => p.pair === pair);
+	} else if (pair === "Winning") {
+		const winningPairs = getWinningPairs({
+			positions,
+			pairList: Array.from(new Set(positions.map((p) => p.pair))),
+			interval: backtestConfig.interval,
+		});
+
+		positions = positions.filter((p) => winningPairs.includes(p.pair));
+	}
+
+	positions = getAccPositions({
 		positions: positions,
 		interval: backtestConfig.interval,
 	});
+
+	const symbolList = Array.from(new Set(positions.map((p) => p.pair)))
+		.map((s) => {
+			return {
+				pair: s,
+				value: positions.filter((p) => p.pair === s).length,
+			};
+		})
+		.sort((a, b) => b.value - a.value);
 
 	const {
 		winRate,
@@ -47,7 +86,7 @@ export const Stats = ({
 		avPosPerDay,
 		badRunMonteCarlo,
 		drawdownMonteCarlo,
-	} = getStats(accPositions);
+	} = getStats(positions);
 
 	const pnlArray: {
 		date: string;
@@ -62,8 +101,8 @@ export const Stats = ({
 
 	let accPnlPt = 0;
 	let balance = backtestConfig.balanceUSDT;
-	for (let i = 0; i < accPositions.length; i++) {
-		const pos = accPositions[i];
+	for (let i = 0; i < positions.length; i++) {
+		const pos = positions[i];
 		accPnlPt += pos.pnl;
 		balance = balance * (1 + pos.pnl);
 
@@ -82,20 +121,10 @@ export const Stats = ({
 	const pieChartData = {
 		labels: ["Shorts", "Longs"],
 		data: [
-			accPositions.filter((pos) => pos.positionSide === "SHORT").length,
-			accPositions.filter((pos) => pos.positionSide === "LONG").length,
+			positions.filter((pos) => pos.positionSide === "SHORT").length,
+			positions.filter((pos) => pos.positionSide === "LONG").length,
 		],
 	};
-
-	const symbolList = Array.from(new Set(accPositions.map((p) => p.pair)));
-	const positionsPerSymbol = symbolList
-		.map((s) => {
-			return {
-				pair: s,
-				value: accPositions.filter((p) => p.pair === s).length,
-			};
-		})
-		.sort((a, b) => b.value - a.value);
 
 	return {
 		head: `
@@ -113,7 +142,8 @@ export const Stats = ({
 									sl: s.sl,
 									tpSlRatio: s.tpSlRatio,
 									maxTradeLength: s.maxTradeLength,
-									recommendedPairs,
+									timeFrame,
+									pair,
 								}),
 							};
 						}),
@@ -121,10 +151,51 @@ export const Stats = ({
 							sl,
 							tpSlRatio,
 							maxTradeLength,
-							recommendedPairs,
+							timeFrame,
+							pair,
 						}),
 					})}
-
+					${Select({
+						options: [
+							{
+								label: "Backtest",
+								value: Link({
+									sl,
+									tpSlRatio,
+									maxTradeLength,
+									timeFrame: "Backtest",
+									pair,
+								}),
+							},
+							{
+								label: "Forwardtest",
+								value: Link({
+									sl,
+									tpSlRatio,
+									maxTradeLength,
+									timeFrame: "Forwardtest",
+									pair,
+								}),
+							},
+							{
+								label: "All Time",
+								value: Link({
+									sl,
+									tpSlRatio,
+									maxTradeLength,
+									timeFrame: "All",
+									pair,
+								}),
+							},
+						],
+						selected: Link({
+							sl,
+							tpSlRatio,
+							maxTradeLength,
+							timeFrame,
+							pair,
+						}),
+					})}
 					${Select({
 						options: [
 							{
@@ -133,7 +204,8 @@ export const Stats = ({
 									sl,
 									tpSlRatio,
 									maxTradeLength,
-									recommendedPairs: true,
+									timeFrame,
+									pair: "Winning",
 								}),
 							},
 							{
@@ -142,15 +214,29 @@ export const Stats = ({
 									sl,
 									tpSlRatio,
 									maxTradeLength,
-									recommendedPairs: false,
+									timeFrame,
+									pair: "All",
 								}),
 							},
+							...symbolList.map((s) => {
+								return {
+									label: `${s.pair}`,
+									value: Link({
+										sl,
+										tpSlRatio,
+										maxTradeLength,
+										timeFrame,
+										pair: s.pair,
+									}),
+								};
+							}),
 						],
 						selected: Link({
 							sl,
 							tpSlRatio,
 							maxTradeLength,
-							recommendedPairs,
+							timeFrame,
+							pair,
 						}),
 					})}
 				</div>
@@ -161,7 +247,7 @@ export const Stats = ({
 									title: "General Stats",
 									headers: ["Stat", "Value"],
 									rows: [
-										["Positions", accPositions.length.toFixed()],
+										["Positions", positions.length.toFixed()],
 										["Win Rate", formatPercent(winRate)],
 										["Accumulated PNL", formatPercent(accPnl)],
 										["Average PNL", formatPercent(avPnl)],
@@ -178,17 +264,31 @@ export const Stats = ({
 						<canvas id="pnlChart"></canvas>
 					</div>
 
+					${
+						symbolList.length > 1
+							? `
 					<div style="width:100%; ">
 						<h2>Positions per Symbol</h2>
 						<canvas id="positionsPerSymbolBarChart"></canvas>
-					</div>
+						<details><summary>Symbols List</summary>
+							<pre>${JSON.stringify(
+								symbolList.map((s) => s.pair),
+								null,
+								2
+							)}</pre>
+						</details>
+						
+					</div>`
+							: ""
+					}
 
-					<div style="width: 100%; margin-top: 70px; ">
+					<div style="width: 100%;  ">
 						<h2 >Long Short Chart</h2>
 						<div id="pie-chart-wrapper" style="width: 100%;  ">
 							<canvas id="longShortChart"></canvas>
 						</div>
 					</div>
+					
 				</div>
 
                 ${Table({
@@ -266,10 +366,10 @@ export const Stats = ({
 					const positionsPerSymbolBarChart= new Chart(barCtx, {
 						type: 'bar',
 						data: {
-							labels: ${JSON.stringify(positionsPerSymbol.map((p) => p.pair))},
+							labels: ${JSON.stringify(symbolList.map((p) => p.pair))},
 							datasets: [{
 								label: 'Positions per Symbol',
-								data: ${JSON.stringify(positionsPerSymbol.map((p) => p.value))},
+								data: ${JSON.stringify(symbolList.map((p) => p.value))},
 							}]
 						}
 					})

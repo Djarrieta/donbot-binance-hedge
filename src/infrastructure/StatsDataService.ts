@@ -225,7 +225,8 @@ export class StatsDataService implements IStatsData {
 						sl: r.sl,
 						tpSlRatio: r.tpSlRatio,
 						maxTradeLength: r.maxTradeLength,
-						recommendedPairs: true,
+						timeFrame: "Backtest",
+						pair: "Winning",
 					}),
 				};
 			})
