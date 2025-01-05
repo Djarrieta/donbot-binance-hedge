@@ -1,4 +1,4 @@
-import { backtestConfig, DATA_BASE_NAME } from "../config";
+import { backtestConfig, DATA_BASE_NAME, strategies } from "../config";
 import type { PositionSide } from "../domain/Position";
 import { getStats } from "../getStats";
 import { StatsDataService } from "../infrastructure/StatsDataService";
@@ -52,6 +52,12 @@ export const Stats = ({
 	}
 
 	//Pair filter
+	const pairsInStrategies = Array.from(
+		new Set(strategies.map((s) => s.allowedPairs).flat())
+	);
+	if (pairsInStrategies.length) {
+		positions = positions.filter((p) => pairsInStrategies.includes(p.pair));
+	}
 	if (pair && pair !== "All" && pair !== "Winning") {
 		positions = positions.filter((p) => p.pair === pair);
 	} else if (pair === "Winning") {

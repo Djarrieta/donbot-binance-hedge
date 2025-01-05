@@ -30,10 +30,16 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [4 / 100, 5 / 100],
-	tpSlRatioArray: [9, 10, 12],
+	maxSlArray: [4 / 100, 5 / 100, 6 / 100, 7 / 100],
+	tpSlRatioArray: [5, 6, 7, 8, 9],
 	minSlTp: 1 / 100,
-	breakEventAlerts: [],
+	breakEventAlerts: [
+		{
+			trigger: 7 / 100,
+			break: 1 / 100,
+			minLength: 3,
+		},
+	],
 
 	steps: {
 		overrideHistoricalRecords: false,
@@ -46,10 +52,16 @@ export const tradeConfig: ConfigTrade = {
 	lookBackLength: 200,
 	maxTradeLength: 100,
 
-	maxSl: 5 / 100,
-	tpSlRatio: 3,
+	maxSl: 6 / 100,
+	tpSlRatio: 6,
 	minSlTp: 1 / 100,
-	breakEventAlerts: [{ break: 2 / 100, trigger: 8 / 100, minLength: 3 }],
+	breakEventAlerts: [
+		{
+			trigger: 7 / 100,
+			break: 1 / 100,
+			minLength: 3,
+		},
+	],
 
 	riskPt: 0.25 / 100,
 	minAmountToTradeUSDT: 6,

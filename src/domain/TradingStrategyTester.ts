@@ -399,7 +399,7 @@ export class TradingStrategyTester {
 				drawdownMonteCarlo: drawdownAcc,
 			} = getStats(positionsForPairAcc);
 
-			if (avPnl > 0) {
+			if (avPnl > 0 && avPnlAcc > 0) {
 				winningPairs.push({
 					pair,
 					avPnl,
