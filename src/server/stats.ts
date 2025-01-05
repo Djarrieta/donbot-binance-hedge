@@ -137,7 +137,7 @@ export const Stats = ({
 					${Select({
 						options: statsList.map((s) => {
 							return {
-								label: `SL: ${s.sl}, TP/SL: ${s.tpSlRatio}, MaxLen: ${s.maxTradeLength}`,
+								label: `SL: ${s.sl} TP/SL: ${s.tpSlRatio} MaxLen: ${s.maxTradeLength}`,
 								value: Link({
 									sl: s.sl,
 									tpSlRatio: s.tpSlRatio,
@@ -199,7 +199,7 @@ export const Stats = ({
 					${Select({
 						options: [
 							{
-								label: "Recommended Pairs",
+								label: "Winning Pairs",
 								value: Link({
 									sl,
 									tpSlRatio,
@@ -241,7 +241,6 @@ export const Stats = ({
 					})}
 				</div>
 				
-                <h1>Stats sl ${sl} TP/SL: ${tpSlRatio} MaxLen: ${maxTradeLength} </h1>
 
                 ${Table({
 									title: "General Stats",
@@ -270,7 +269,8 @@ export const Stats = ({
 					<div style="width:100%; ">
 						<h2>Positions per Symbol</h2>
 						<canvas id="positionsPerSymbolBarChart"></canvas>
-						<details><summary>Symbols List</summary>
+						<details>
+							<summary>Pair List</summary>
 							<pre>${JSON.stringify(
 								symbolList.map((s) => s.pair),
 								null,
@@ -308,7 +308,13 @@ export const Stats = ({
 										p.side,
 										Anchor({
 											label: p.pair,
-											href: `http://localhost:3000/stats/${p.pair}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}`,
+											href: Link({
+												sl,
+												tpSlRatio,
+												maxTradeLength,
+												timeFrame,
+												pair: p.pair,
+											}),
 										}),
 										formatPercent(p.pnlPt),
 										formatPercent(p.accPnlPt),
