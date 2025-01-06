@@ -66,7 +66,7 @@ export class ExchangeService implements IExchange {
 		interval,
 		candlestickAPILimit,
 	}: GetCandlestickProps): Promise<CandleBt[]> {
-		let candlestick: CandleBt[] = [];
+		const promises: Promise<CandleChartResult[]>[] = [];
 
 		let dynamicStart = start;
 
@@ -75,19 +75,20 @@ export class ExchangeService implements IExchange {
 				Math.floor((end - dynamicStart) / interval),
 				candlestickAPILimit
 			);
-			const unformattedCandlestick = await this.fetchCandles(
-				pair,
-				interval,
-				dynamicStart,
-				lookBackLength
+			promises.push(
+				this.fetchCandles(pair, interval, dynamicStart, lookBackLength)
 			);
-
-			candlestick.push(...this.formatCandlestick(unformattedCandlestick, pair));
-
 			dynamicStart = dynamicStart + lookBackLength * interval;
 		}
 
-		return candlestick;
+		const unformattedCandlesticks = (await Promise.all(promises)).flat();
+
+		const candlestick: CandleBt[] = this.formatCandlestick(
+			unformattedCandlesticks,
+			pair
+		);
+
+		return candlestick.sort((a, b) => a.openTime - b.openTime);
 	}
 
 	private isValidSymbol(
