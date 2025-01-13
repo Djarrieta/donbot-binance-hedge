@@ -1,8 +1,7 @@
 import cliProgress from "cli-progress";
-import { getStats } from "../getStats";
 import { formatPercent } from "../utils/formatPercent";
-import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
+import { processStats } from "../utils/processStats";
 import type { Alert } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
 import type { ConfigBacktest } from "./ConfigBacktest";
@@ -12,7 +11,7 @@ import type { IHistoryData } from "./IHistoryData";
 import { Interval } from "./Interval";
 import type { IStatsData } from "./IStatsData";
 import type { PositionBT, PositionSide } from "./Position";
-import type { Stat, WinningPair } from "./Stat";
+import type { Stat } from "./Stat";
 import type { Strategy } from "./Strategy";
 
 export class TradingStrategyTester {
@@ -81,14 +80,86 @@ export class TradingStrategyTester {
 						tpSlRatio,
 						maxTradeLength,
 					});
+					const positionsBacktest = positions.filter(
+						(p) => p.startTime <= this.config.backtestEnd
+					);
+					const positionsForward = positions.filter(
+						(p) => p.startTime > this.config.backtestEnd
+					);
 
-					const stats = this.processStats({
-						positions,
-						tpSlRatio,
+					const {
+						winRate,
+						avPnl,
+						accPnl,
+						drawdownAcc,
+						badRunAcc,
+						drawdownMonteCarloAcc,
+						badRunMonteCarloAcc,
+						winningPairs,
+					} = processStats({
+						positions: positionsBacktest,
 						sl,
+						tpSlRatio,
 						maxTradeLength,
-						backtestEnd: this.config.backtestEnd,
+						strategies: this.strategies,
+						interval: this.config.interval,
 					});
+					const positionsAccWinningPairs = positions.filter((p) =>
+						winningPairs.includes(p.pair)
+					);
+					const {
+						winRate: winRateAcc,
+						avPnl: avPnlAcc,
+						accPnl: accPnlAcc,
+						avPnlPerDay,
+						avPosPerDay,
+					} = processStats({
+						positions: positionsAccWinningPairs,
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						strategies: this.strategies,
+						interval: this.config.interval,
+					});
+					const {
+						winRate: winRateFwd,
+						avPnl: avPnlFwd,
+						accPnl: accPnlFwd,
+					} = processStats({
+						positions: positionsForward,
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						strategies: this.strategies,
+						interval: this.config.interval,
+					});
+					const stats: Stat = {
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						positions,
+
+						winRate,
+						winRateAcc,
+						winRateFwd,
+
+						avPnl,
+						avPnlAcc,
+						avPnlFwd,
+
+						accPnl,
+						accPnlAcc,
+						accPnlFwd,
+
+						drawdown: drawdownAcc || 0,
+						badRun: badRunAcc || 0,
+
+						drawdownMC: drawdownMonteCarloAcc,
+						badRunMC: badRunMonteCarloAcc,
+
+						avPnlPerDay,
+						avPosPerDay,
+					};
 					this.statsDataService.save(stats);
 				}
 			}
@@ -355,138 +426,6 @@ export class TradingStrategyTester {
 		}
 
 		return closedPositions;
-	}
-
-	public processStats({
-		positions,
-		sl,
-		tpSlRatio,
-		maxTradeLength,
-		backtestEnd,
-	}: {
-		positions: PositionBT[];
-		sl: number;
-		tpSlRatio: number;
-		maxTradeLength: number;
-		backtestEnd: number;
-	}) {
-		const pairsInStrategies = Array.from(
-			new Set(this.strategies.map((s) => s.allowedPairs).flat())
-		) as string[];
-
-		const pairList = pairsInStrategies.length
-			? pairsInStrategies
-			: new Set<string>(positions.map((p) => p.pair));
-
-		let winningPairs: WinningPair[] = [];
-
-		//TODO: refactor
-
-		for (const pair of pairList) {
-			const positionsForPair = positions.filter(
-				(pos) => pos.pair === pair && pos.startTime <= backtestEnd
-			);
-			const { winRate, accPnl, avPnl } = getStats(positionsForPair);
-
-			const positionsForPairAcc = getAccPositions({
-				positions: positionsForPair,
-				interval: this.config.interval,
-			});
-			const {
-				winRate: winRateAcc,
-				accPnl: accPnlAcc,
-				avPnl: avPnlAcc,
-				drawdownMonteCarlo: drawdownAcc,
-			} = getStats(positionsForPairAcc);
-
-			if (avPnl > 0 && avPnlAcc > 0) {
-				winningPairs.push({
-					pair,
-					avPnl,
-					qty: positionsForPair.length || 0,
-					winRate,
-					accPnl,
-					winRateAcc,
-					accPnlAcc,
-					avPnlAcc,
-					drawdownAcc,
-				});
-			}
-		}
-
-		const positionsWP = positions.filter((p) => {
-			return (
-				p.startTime <= backtestEnd &&
-				winningPairs.map((wp) => wp.pair).includes(p.pair)
-			);
-		});
-
-		const {
-			winRate: winRateWP,
-			accPnl: accPnlWP,
-			avPnl: avPnlWP,
-		} = getStats(positionsWP);
-
-		const positionsAcc = getAccPositions({
-			positions: positionsWP,
-			interval: this.config.interval,
-		});
-
-		const {
-			winRate: winRateAcc,
-			accPnl: accPnlAcc,
-			avPnl: avPnlAcc,
-			drawdownMonteCarlo: drawdownMC,
-			badRunMonteCarlo: badRunMC,
-			avPnlPerDay,
-			avPosPerDay,
-		} = getStats(positionsAcc);
-
-		const positionsFwdFullList = positions.filter(
-			(p) =>
-				winningPairs.map((wp) => wp.pair).includes(p.pair) &&
-				p.startTime > backtestEnd
-		);
-		const positionsFwd = getAccPositions({
-			positions: positionsFwdFullList,
-			interval: this.config.interval,
-		});
-
-		const {
-			winRate: winRateFwd,
-			accPnl: accPnlFwd,
-			avPnl: avPnlFwd,
-		} = getStats(positionsFwd);
-
-		const stats: Stat = {
-			sl,
-			tpSlRatio,
-			maxTradeLength,
-			winningPairs,
-			positions,
-			positionsWP,
-			positionsAcc,
-			positionsFwd,
-
-			winRateWP,
-			winRateAcc,
-			winRateFwd,
-
-			avPnlWP,
-			avPnlAcc,
-			avPnlFwd,
-
-			accPnlWP,
-			accPnlAcc,
-			accPnlFwd,
-
-			drawdownMC,
-			badRunMC,
-			avPnlPerDay,
-			avPosPerDay,
-		};
-
-		return stats;
 	}
 
 	public fixCandlestick({

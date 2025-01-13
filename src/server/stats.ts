@@ -1,11 +1,9 @@
 import { backtestConfig, DATA_BASE_NAME, strategies } from "../config";
 import type { PositionSide } from "../domain/Position";
-import { getStats } from "../getStats";
 import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
-import { getAccPositions } from "../utils/getAccPositions";
 import { getDate } from "../utils/getDate";
-import { getWinningPairs } from "../utils/getWinningPairs.ts";
+import { processStats } from "../utils/processStats.ts";
 import { Anchor } from "./components/anchor";
 import { Link } from "./components/link.ts";
 import { Select } from "./components/select";
@@ -34,24 +32,31 @@ export const Stats = ({
 	const statsList = statsDataService.getStats();
 
 	let positions = statsDataService.getPositions({
-		column: "positions",
 		sl,
 		tpSlRatio,
 		maxTradeLength,
 	});
-
+	positions = positions.sort((a, b) => a.startTime - b.startTime);
 	//TimeFrame filter
-	if (timeFrame === "Backtest") {
+	if (timeFrame === "Backtest")
 		positions = positions.filter(
 			(p) => p.startTime <= backtestConfig.backtestEnd
 		);
-	} else if (timeFrame === "Forwardtest") {
+
+	if (timeFrame === "Forwardtest")
 		positions = positions.filter(
 			(p) => p.startTime > backtestConfig.backtestEnd
 		);
-	}
 
 	//Pair filter
+	const { winningPairs } = processStats({
+		positions,
+		sl,
+		tpSlRatio,
+		maxTradeLength,
+		strategies,
+		interval: backtestConfig.interval,
+	});
 	const pairsInStrategies = Array.from(
 		new Set(strategies.map((s) => s.allowedPairs).flat())
 	);
@@ -60,18 +65,29 @@ export const Stats = ({
 	}
 	if (pair && pair !== "All" && pair !== "Winning") {
 		positions = positions.filter((p) => p.pair === pair);
-	} else if (pair === "Winning") {
-		const winningPairs = getWinningPairs({
-			positions,
-			pairList: Array.from(new Set(positions.map((p) => p.pair))),
-			interval: backtestConfig.interval,
-		});
-
+	}
+	if (pair === "Winning") {
 		positions = positions.filter((p) => winningPairs.includes(p.pair));
 	}
 
-	positions = getAccPositions({
-		positions: positions,
+	const {
+		winRate,
+		winRateAcc,
+		accPnl,
+		avPnl,
+		avPnlAcc,
+		avPnlPerDay,
+		avPosPerDay,
+		badRunAcc,
+		badRunMonteCarloAcc,
+		drawdownAcc,
+		drawdownMonteCarloAcc,
+	} = processStats({
+		positions,
+		sl,
+		tpSlRatio,
+		maxTradeLength,
+		strategies,
 		interval: backtestConfig.interval,
 	});
 
@@ -83,16 +99,6 @@ export const Stats = ({
 			};
 		})
 		.sort((a, b) => b.value - a.value);
-
-	const {
-		winRate,
-		accPnl,
-		avPnl,
-		avPnlPerDay,
-		avPosPerDay,
-		badRunMonteCarlo,
-		drawdownMonteCarlo,
-	} = getStats(positions);
 
 	const pnlArray: {
 		date: string;
@@ -247,19 +253,28 @@ export const Stats = ({
 					})}
 				</div>
 				
-
                 ${Table({
 									title: "General Stats",
 									headers: ["Stat", "Value"],
 									rows: [
 										["Positions", positions.length.toFixed()],
 										["Win Rate", formatPercent(winRate)],
+										["Win Rate Accumulated", formatPercent(winRateAcc)],
 										["Accumulated PNL", formatPercent(accPnl)],
 										["Average PNL", formatPercent(avPnl)],
+										["Average PNL Accumulated", formatPercent(avPnlAcc)],
 										["Average PNL per Day", formatPercent(avPnlPerDay)],
 										["Average Position per Day", avPosPerDay.toFixed(2)],
-										["Bad Run Monte Carlo", badRunMonteCarlo.toFixed()],
-										["Drawdown Monte Carlo", formatPercent(drawdownMonteCarlo)],
+										["Bad Run Accumulated", badRunAcc?.toFixed() || "-"],
+										[
+											"Bad Run Monte Carlo",
+											badRunMonteCarloAcc?.toFixed() || "-",
+										],
+										["Drawdown Accumulated", formatPercent(drawdownAcc || 0)],
+										[
+											"Drawdown Monte Carlo",
+											formatPercent(drawdownMonteCarloAcc),
+										],
 									],
 								})}
                 

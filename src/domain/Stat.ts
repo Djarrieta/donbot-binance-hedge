@@ -4,39 +4,25 @@ export type Stat = {
 	sl: number;
 	tpSlRatio: number;
 	maxTradeLength: number;
+
 	positions: PositionBT[];
 
-	winningPairs: WinningPair[];
-	positionsWP: PositionBT[];
-	positionsAcc: PositionBT[];
-	positionsFwd: PositionBT[];
-
-	winRateWP: number;
+	winRate: number;
 	winRateAcc: number;
 	winRateFwd: number;
 
-	avPnlWP: number;
+	avPnl: number;
 	avPnlAcc: number;
 	avPnlFwd: number;
 
-	accPnlWP: number;
+	accPnl: number;
 	accPnlAcc: number;
 	accPnlFwd: number;
 
+	drawdown: number;
+	badRun: number;
 	drawdownMC: number;
 	badRunMC: number;
 	avPnlPerDay: number;
 	avPosPerDay: number;
-};
-
-export type WinningPair = {
-	pair: string;
-	avPnl: number;
-	qty: number;
-	winRate: number;
-	accPnl: number;
-	winRateAcc: number;
-	accPnlAcc: number;
-	avPnlAcc: number;
-	drawdownAcc: number;
 };

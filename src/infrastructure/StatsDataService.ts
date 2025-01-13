@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 import type { IStatsData } from "../domain/IStatsData";
 import type { PositionBT } from "../domain/Position";
-import type { Stat, WinningPair } from "../domain/Stat";
+import type { Stat } from "../domain/Stat";
 import { formatPercent } from "../utils/formatPercent";
 import { Link } from "../server/components/link";
 
@@ -27,54 +27,54 @@ export class StatsDataService implements IStatsData {
 			tpSlRatio,
 			maxTradeLength,
 	
-			winningPairs,
 			positions,
-			positionsWP,
-			positionsAcc,
-			positionsFwd,
 	
-			winRateWP,
+			winRate,
 			winRateAcc,
 			winRateFwd,
 			
-			avPnlWP,
+			avPnl,
 			avPnlAcc,
 			avPnlFwd,
 	
-			accPnlWP,
+			accPnl,
 			accPnlAcc,
 			accPnlFwd,
 	
+			drawdown,
 			drawdownMC,
+
+			badRun,
 			badRunMC,
+
 			avPnlPerDay,
 			avPosPerDay
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+		) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`;
 		const values = [
 			stats.sl,
 			stats.tpSlRatio,
 			stats.maxTradeLength,
 
-			JSON.stringify(stats.winningPairs),
 			JSON.stringify(stats.positions),
-			JSON.stringify(stats.positionsWP),
-			JSON.stringify(stats.positionsAcc),
-			JSON.stringify(stats.positionsFwd),
 
-			stats.winRateWP,
+			stats.winRate,
 			stats.winRateAcc,
 			stats.winRateFwd,
 
-			stats.avPnlWP,
+			stats.avPnl,
 			stats.avPnlAcc,
 			stats.avPnlFwd,
 
-			stats.accPnlWP,
+			stats.accPnl,
 			stats.accPnlAcc,
 			stats.accPnlFwd,
 
+			stats.drawdown,
 			stats.drawdownMC,
+
+			stats.badRun,
 			stats.badRunMC,
+
 			stats.avPnlPerDay,
 			stats.avPosPerDay,
 		];
@@ -92,26 +92,26 @@ export class StatsDataService implements IStatsData {
 			tpSlRatio: Number(r.tpSlRatio),
 			maxTradeLength: Number(r.maxTradeLength),
 
-			winningPairs: JSON.parse(r.winningPairs),
 			positions: JSON.parse(r.positions),
-			positionsAcc: JSON.parse(r.positionsAcc),
-			positionsFwd: JSON.parse(r.positionsFwd),
-			positionsWP: JSON.parse(r.positionsWP),
 
-			winRateWP: Number(r.winRateWP),
+			winRate: Number(r.winRate),
 			winRateAcc: Number(r.winRateAcc),
 			winRateFwd: Number(r.winRateFwd),
 
-			avPnlWP: Number(r.avPnlWP),
+			avPnl: Number(r.avPnl),
 			avPnlAcc: Number(r.avPnlAcc),
 			avPnlFwd: Number(r.avPnlFwd),
 
-			accPnlWP: Number(r.accPnlWP || 0),
+			accPnl: Number(r.accPnl || 0),
 			accPnlAcc: Number(r.accPnlAcc || 0),
 			accPnlFwd: Number(r.accPnlFwd || 0),
 
+			drawdown: Number(r.drawdown || 0),
 			drawdownMC: Number(r.drawdownMC || 0),
+
+			badRun: Number(r.badRun || 0),
 			badRunMC: Number(r.badRunMC || 0),
+
 			avPnlPerDay: Number(r.avPnlPerDay || 0),
 			avPosPerDay: Number(r.avPosPerDay || 0),
 		}));
@@ -119,99 +119,63 @@ export class StatsDataService implements IStatsData {
 		return stats;
 	}
 
-	getWinningPairs({
-		sl,
-		tpSlRatio,
-		maxTradeLength,
-	}: {
-		sl: number;
-		tpSlRatio: number;
-		maxTradeLength: number;
-	}) {
-		const unformattedResults = this.db
-			.query(
-				`SELECT winningPairs 
-				FROM ${this.tableName} 
-				WHERE sl = ${sl}  
-				AND tpSlRatio = ${tpSlRatio}  
-				AND maxTradeLength = ${maxTradeLength} 
-				AND winningPairs IS NOT NULL
-				LIMIT 1`
-			)
-			.get() as any;
-
-		const winningPairs: WinningPair[] = JSON.parse(
-			unformattedResults.winningPairs
-		);
-		return winningPairs;
-	}
-
 	getPositions({
 		sl,
 		tpSlRatio,
 		maxTradeLength,
-		column,
 	}: {
 		sl: number;
 		tpSlRatio: number;
 		maxTradeLength: number;
-		column: "positionsWP" | "positionsAcc" | "positionsFwd" | "positions";
 	}) {
 		const unformattedPositions = this.db
 			.query(
-				`SELECT ${column} 
+				`SELECT positions 
 				FROM ${this.tableName} 
 				WHERE sl = ${sl}  
 				AND tpSlRatio = ${tpSlRatio}  
 				AND maxTradeLength = ${maxTradeLength} 
-				AND ${column} IS NOT NULL
 				LIMIT 1`
 			)
 			.get() as any;
 
 		const positions: PositionBT[] =
-			(unformattedPositions && JSON.parse(unformattedPositions[column])) || [];
+			(unformattedPositions && JSON.parse(unformattedPositions.positions)) ||
+			[];
 
 		return positions;
 	}
 
 	showStats() {
+		//TODO: add qty
 		const stats = this.getStats();
 		const statsWithHeaders = [
 			{
 				SL: "sl tp/sl MaxLen",
-				QTY: "ps  wp      acc      fwd",
-				WINRATE: "wp      acc      fwd",
-				AVPNL: "wp      acc      fwd",
-				ACCPNL: "wp      acc      fwd",
-				"DD badRun": "",
+				WINRATE: "all     accWP      fwd",
+				AVPNL: "all      accWP      fwd",
+				ACCPNL: "all      accWP      fwd",
+				Drawdown: "DD MC",
+				BadRun: "BR MC",
 				PerDay: "pnl     Qty",
-				pairs: "",
 			},
 			...stats.map((r) => ({
 				SL: `${formatPercent(r.sl)} ${r.tpSlRatio} ${r.maxTradeLength}`,
-
-				QTY: `${r.positions?.length || 0} ${r.positionsWP?.length || 0} ${
-					r.positionsAcc?.length || 0
-				} ${r.positionsFwd?.length || 0}`,
-
-				WINRATE: `${formatPercent(r.winRateWP)} ${formatPercent(
+				WINRATE: `${formatPercent(r.winRate)} ${formatPercent(
 					r.winRateAcc
 				)} ${formatPercent(r.winRateFwd)}`,
 
-				AVPNL: `${formatPercent(r.avPnlWP)} ${formatPercent(
+				AVPNL: `${formatPercent(r.avPnl)} ${formatPercent(
 					r.avPnlAcc
 				)} ${formatPercent(r.avPnlFwd)}`,
 
-				ACCPNL: `${formatPercent(r.accPnlWP)} ${formatPercent(
+				ACCPNL: `${formatPercent(r.accPnl)} ${formatPercent(
 					r.accPnlAcc
 				)} ${formatPercent(r.accPnlFwd)}`,
 
-				"DD badRun": `${formatPercent(r.drawdownMC)} ${r.badRunMC}`,
-
+				Drawdown: `${formatPercent(r.drawdown)} ${formatPercent(r.drawdownMC)}`,
+				BadRun: `${r.badRun} ${r.badRunMC}`,
 				PerDay: `${formatPercent(r.avPnlPerDay)} ${r.avPosPerDay.toFixed(2)}`,
-
-				pairs: r.winningPairs.length,
 			})),
 		];
 
@@ -247,26 +211,26 @@ export class StatsDataService implements IStatsData {
 					tpSlRatio REAL,
 					maxTradeLength INTEGER,
 
-					winningPairs TEXT,
 					positions TEXT,
-					positionsWP TEXT,
-					positionsAcc TEXT,
-					positionsFwd TEXT,
 					
-					winRateWP REAL,
+					winRate REAL,
 					winRateAcc REAL,
 					winRateFwd REAL,
 					
-					avPnlWP REAL,
+					avPnl REAL,
 					avPnlAcc REAL,
 					avPnlFwd REAL,
 					
-					accPnlWP REAL,
+					accPnl REAL,
 					accPnlAcc REAL,
 					accPnlFwd REAL,
 
+					drawdown REAL,
 					drawdownMC REAL,
+					
+					badRun REAL,
 					badRunMC REAL,
+					
 					avPnlPerDay REAL,
 					avPosPerDay REAL
 				)
