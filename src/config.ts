@@ -9,13 +9,13 @@ import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 2000,
+	candleCount: 300000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate("2025 01 12 00:00:00" as DateString).dateMs,
+	lastDate: getDate().dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/test.db";
+export const DATA_BASE_NAME = "./db/letsSee.db";
 export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
