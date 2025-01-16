@@ -170,6 +170,7 @@ export class TradingStrategyTester {
 
 	public async saveHistoricalRecords(): Promise<void> {
 		console.log("Saving historical records...");
+
 		this.historyDataService.deleteRows();
 
 		const pairList = await this.exchange.getPairList({

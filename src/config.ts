@@ -46,16 +46,10 @@ export const tradeConfig: ConfigTrade = {
 	lookBackLength: 200,
 	maxTradeLength: 100,
 
-	maxSl: 6 / 100,
-	tpSlRatio: 6,
+	maxSl: 7 / 100,
+	tpSlRatio: 5,
 	minSlTp: 1 / 100,
-	breakEventAlerts: [
-		{
-			trigger: 7 / 100,
-			break: 1 / 100,
-			minLength: 3,
-		},
-	],
+	breakEventAlerts: [],
 
 	riskPt: 0.25 / 100,
 	minAmountToTradeUSDT: 6,
