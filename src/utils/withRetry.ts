@@ -1,5 +1,7 @@
+import { delay } from "./delay";
+
 export function withRetry<T>(fn: () => T | Promise<T>): T | Promise<T> {
-	const maxAttempts = 3;
+	const maxAttempts = 30;
 	let attempt = 0;
 
 	while (attempt < maxAttempts) {
@@ -22,6 +24,7 @@ export function withRetry<T>(fn: () => T | Promise<T>): T | Promise<T> {
 			if (attempt >= maxAttempts) {
 				throw error;
 			}
+			delay(5000);
 		}
 	}
 

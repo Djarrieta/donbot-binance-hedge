@@ -2,6 +2,7 @@ import cliProgress from "cli-progress";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { processStats } from "../utils/processStats";
+import { withRetry } from "../utils/withRetry";
 import type { Alert } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
 import type { ConfigBacktest } from "./ConfigBacktest";
@@ -49,7 +50,7 @@ export class TradingStrategyTester {
 		if (this.config.steps.overrideHistoricalRecords) {
 			await this.saveHistoricalRecords();
 		} else {
-			this.historyDataService.showSavedCandlestick();
+			this.historyDataService.showSavedData();
 		}
 
 		console.log(getDate().dateString);
@@ -171,39 +172,60 @@ export class TradingStrategyTester {
 	public async saveHistoricalRecords(): Promise<void> {
 		console.log("Saving historical records...");
 
-		this.historyDataService.deleteRows();
+		const {
+			startTime: savedStartTime,
+			endTime: savedEndTime,
+			pairsCount,
+		} = this.historyDataService.getSavedData();
+		const savedPairs = pairsCount ? this.historyDataService.getPairList() : [];
 
-		const pairList = await this.exchange.getPairList({
+		const availablePairs = await this.exchange.getPairList({
 			minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
 			strategies: this.strategies,
 		});
-		console.log("Available trading pairs:", pairList.length);
 
-		this.progressBar.start(pairList.length, 0);
+		const pairList = availablePairs.filter((p) => !savedPairs.includes(p));
+
+		if (
+			!savedPairs.length ||
+			this.config.backtestStart !== savedStartTime ||
+			this.config.forwardTestEnd !== savedEndTime
+		) {
+			this.historyDataService.deleteRows();
+		}
+
+		console.log("Available pairs:", availablePairs.length);
+
+		this.progressBar.start(availablePairs.length, savedPairs.length);
 		for (let pairIndex = 0; pairIndex < pairList.length; pairIndex++) {
 			const pair = pairList[pairIndex];
+			let candlestick: Candle[] = [];
+			const rawCandlesticks = await withRetry(
+				async () =>
+					await this.exchange.getCandlestick({
+						pair,
+						start:
+							savedStartTime > 0 ? savedStartTime : this.config.backtestStart,
+						end: savedEndTime > 0 ? savedEndTime : this.config.forwardTestEnd,
+						interval: this.config.interval,
+						candlestickAPILimit: this.config.apiLimit,
+					})
+			);
 
-			const rawCandlesticks = await this.exchange.getCandlestick({
-				pair,
-				start: this.config.backtestStart,
-				end: this.config.forwardTestEnd,
-				interval: this.config.interval,
-				candlestickAPILimit: this.config.apiLimit,
-			});
-
-			const fixedCandlesticks = this.fixCandlestick({
+			candlestick = this.fixCandlestick({
 				candlestick: rawCandlesticks,
 				start: this.config.backtestStart,
 				end: this.config.forwardTestEnd,
 				interval: this.config.interval,
 			});
 
-			this.historyDataService.saveCandlestick(fixedCandlesticks);
+			this.historyDataService.saveCandlestick(candlestick);
+
 			this.progressBar.update(pairIndex + 1);
 		}
 		this.progressBar.stop();
 
-		this.historyDataService.showSavedCandlestick();
+		this.historyDataService.showSavedData();
 	}
 
 	private saveAlerts({

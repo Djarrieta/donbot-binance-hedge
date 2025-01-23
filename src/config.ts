@@ -15,7 +15,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate().dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/letsSee.db";
+export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
 export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
