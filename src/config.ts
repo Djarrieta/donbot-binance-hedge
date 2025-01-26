@@ -30,8 +30,8 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 25.2,
 	feePt: 0.0005,
 
-	maxSlArray: [4 / 100, 5 / 100, 6 / 100, 7 / 100],
-	tpSlRatioArray: [2,3,4,5, 6, 7],
+	maxSlArray: [ 7 / 100],
+	tpSlRatioArray: [5],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [{
 		trigger:5/100,

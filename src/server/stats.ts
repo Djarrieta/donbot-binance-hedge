@@ -2,7 +2,7 @@ import { backtestConfig, DATA_BASE_NAME, strategies } from "../config";
 import type { PositionSide } from "../domain/Position";
 import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
-import { getDate, type DateString } from "../utils/getDate";
+import { getDate} from "../utils/getDate";
 import { processStats } from "../utils/processStats.ts";
 import { Anchor } from "./components/anchor";
 import { Link } from "./components/link.ts";
@@ -73,14 +73,17 @@ export const Stats = ({
 		accPnl,
 		avPnl,
 		avPnlAcc,
-		avPnlPerDay,
-		avPosPerDay,
 		badRunAcc,
 		badRunMonteCarloAcc,
 		drawdownAcc,
 		drawdownMonteCarloAcc,
 		positionsAcc,
-		sharpeRatio
+		sharpeRatio,
+		start, 
+		end, 
+		totalDays,
+		avPnlPerDay, 
+		avPosPerDay
 	} = processStats({
 		positions,
 		sl,
@@ -114,9 +117,7 @@ export const Stats = ({
 	let balance = backtestConfig.balanceUSDT;
 	for (let i = 0; i < positionsAcc.length; i++) {
 		const pos = positionsAcc[i];
-		if(getDate(pos.startTime).dateString==="2024 04 12 11:25:00" as DateString){
-			console.log(pos);
-		}
+
 		accPnlPt += pos.pnl;
 		balance = balance * (1 + pos.pnl);
 
@@ -149,138 +150,141 @@ export const Stats = ({
             <body>
 				<div style="display:flex; gap: 4px;">
 					${Select({
-						options: statsList.map((s) => {
-							return {
-								label: `SL: ${s.sl} TP/SL: ${s.tpSlRatio} MaxLen: ${s.maxTradeLength}`,
-								value: Link({
-									sl: s.sl,
-									tpSlRatio: s.tpSlRatio,
-									maxTradeLength: s.maxTradeLength,
-									timeFrame,
-									pair,
-								}),
-							};
-						}),
-						selected: Link({
-							sl,
-							tpSlRatio,
-							maxTradeLength,
-							timeFrame,
-							pair,
-						}),
-					})}
+			options: statsList.map((s) => {
+				return {
+					label: `SL: ${s.sl} TP/SL: ${s.tpSlRatio} MaxLen: ${s.maxTradeLength}`,
+					value: Link({
+						sl: s.sl,
+						tpSlRatio: s.tpSlRatio,
+						maxTradeLength: s.maxTradeLength,
+						timeFrame,
+						pair,
+					}),
+				};
+			}),
+			selected: Link({
+				sl,
+				tpSlRatio,
+				maxTradeLength,
+				timeFrame,
+				pair,
+			}),
+		})}
 					${Select({
-						options: [
-							{
-								label: "Backtest",
-								value: Link({
-									sl,
-									tpSlRatio,
-									maxTradeLength,
-									timeFrame: "Backtest",
-									pair,
-								}),
-							},
-							{
-								label: "Forwardtest",
-								value: Link({
-									sl,
-									tpSlRatio,
-									maxTradeLength,
-									timeFrame: "Forwardtest",
-									pair,
-								}),
-							},
-							{
-								label: "All Time",
-								value: Link({
-									sl,
-									tpSlRatio,
-									maxTradeLength,
-									timeFrame: "All",
-									pair,
-								}),
-							},
-						],
-						selected: Link({
-							sl,
-							tpSlRatio,
-							maxTradeLength,
-							timeFrame,
-							pair,
-						}),
-					})}
+			options: [
+				{
+					label: "Backtest",
+					value: Link({
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						timeFrame: "Backtest",
+						pair,
+					}),
+				},
+				{
+					label: "Forwardtest",
+					value: Link({
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						timeFrame: "Forwardtest",
+						pair,
+					}),
+				},
+				{
+					label: "All Time",
+					value: Link({
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						timeFrame: "All",
+						pair,
+					}),
+				},
+			],
+			selected: Link({
+				sl,
+				tpSlRatio,
+				maxTradeLength,
+				timeFrame,
+				pair,
+			}),
+		})}
 					${Select({
-						options: [
-							{
-								label: "Winning Pairs",
-								value: Link({
-									sl,
-									tpSlRatio,
-									maxTradeLength,
-									timeFrame,
-									pair: "Winning",
-								}),
-							},
-							{
-								label: "All Pairs",
-								value: Link({
-									sl,
-									tpSlRatio,
-									maxTradeLength,
-									timeFrame,
-									pair: "All",
-								}),
-							},
-							...symbolList.map((s) => {
-								return {
-									label: `${s.pair}`,
-									value: Link({
-										sl,
-										tpSlRatio,
-										maxTradeLength,
-										timeFrame,
-										pair: s.pair,
-									}),
-								};
-							}),
-						],
-						selected: Link({
+			options: [
+				{
+					label: "Winning Pairs",
+					value: Link({
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						timeFrame,
+						pair: "Winning",
+					}),
+				},
+				{
+					label: "All Pairs",
+					value: Link({
+						sl,
+						tpSlRatio,
+						maxTradeLength,
+						timeFrame,
+						pair: "All",
+					}),
+				},
+				...symbolList.map((s) => {
+					return {
+						label: `${s.pair}`,
+						value: Link({
 							sl,
 							tpSlRatio,
 							maxTradeLength,
 							timeFrame,
-							pair,
+							pair: s.pair,
 						}),
-					})}
+					};
+				}),
+			],
+			selected: Link({
+				sl,
+				tpSlRatio,
+				maxTradeLength,
+				timeFrame,
+				pair,
+			}),
+		})}
 				</div>
 				
                 ${Table({
-									title: "General Stats",
-									headers: ["Stat", "Value"],
-									rows: [
-										["Positions", positions.length.toFixed()],
-										["Positions Accumulated", positionsAcc.length.toFixed()],
-										["Win Rate", formatPercent(winRate)],
-										["Win Rate Accumulated", formatPercent(winRateAcc)],
-										["Accumulated PNL", formatPercent(accPnl)],
-										["Average PNL", formatPercent(avPnl)],
-										["Average PNL Accumulated", formatPercent(avPnlAcc)],
-										["Average PNL per Day", formatPercent(avPnlPerDay)],
-										["Average Position per Day", avPosPerDay.toFixed(2)],
-										["Bad Run Accumulated", badRunAcc?.toFixed() || "-"],
-										[
-											"Bad Run Monte Carlo",
-											badRunMonteCarloAcc?.toFixed() || "-",
-										],
-										["Drawdown Accumulated", formatPercent(drawdownAcc || 0)],
-										[
-											"Drawdown Monte Carlo",
-											formatPercent(drawdownMonteCarloAcc),
-										],
-										["Sharpe Ratio", sharpeRatio.toFixed(2)],
-									],
-								})}
+			title: "General Stats",
+			headers: ["Stat", "Value"],
+			rows: [
+				["Start Date", getDate(start).dateString],
+				["Final Date", getDate(end).dateString],
+				["Total Days", (totalDays || 0).toFixed()],
+				["Positions", positions.length.toFixed()],
+				["Positions Accumulated", positionsAcc.length.toFixed()],
+				["Win Rate", formatPercent(winRate)],
+				["Win Rate Accumulated", formatPercent(winRateAcc)],
+				["Accumulated PNL", formatPercent(accPnl)],
+				["Average PNL", formatPercent(avPnl)],
+				["Average PNL Accumulated", formatPercent(avPnlAcc)],
+				["Average PNL per Day", formatPercent(avPnlPerDay)],
+				["Average Position per Day", avPosPerDay.toFixed(2)],
+				["Bad Run Accumulated", badRunAcc?.toFixed() || "-"],
+				[
+					"Bad Run Monte Carlo",
+					badRunMonteCarloAcc?.toFixed() || "-",
+				],
+				["Drawdown Accumulated", formatPercent(drawdownAcc || 0)],
+				[
+					"Drawdown Monte Carlo",
+					formatPercent(drawdownMonteCarloAcc),
+				],
+				["Sharpe Ratio", sharpeRatio.toFixed(2)],
+			],
+		})}
                 
 				<div style="width:100%; display:flex; gap: 70px; flex-direction:column">
 					<div style="width:100%; height: 400px;">
@@ -288,24 +292,23 @@ export const Stats = ({
 						<canvas id="pnlChart"></canvas>
 					</div>
 
-					${
-						symbolList.length > 1
-							? `
+					${symbolList.length > 1
+				? `
 					<div style="width:100%; ">
 						<h2>Positions per Symbol</h2>
 						<canvas id="positionsPerSymbolBarChart"></canvas>
 						<details>
 							<summary>Pair List</summary>
 							<pre>${JSON.stringify(
-								symbolList.map((s) => s.pair),
-								null,
-								2
-							)}</pre>
+					symbolList.map((s) => s.pair),
+					null,
+					2
+				)}</pre>
 						</details>
 						
 					</div>`
-							: ""
-					}
+				: ""
+			}
 
 					<div style="width: 100%;  ">
 						<h2 >Long Short Chart</h2>
@@ -317,37 +320,37 @@ export const Stats = ({
 				</div>
 
                 ${Table({
-									title: "Positions Acc",
-									headers: [
-										"Date",
-										"Position Side",
-										"Pair",
-										"PNL",
-										"Acc PNL",
-										"PNL in USDT",
-										"Balance",
-										"Trade Length",
-									],
-									rows: pnlArray.map((p) => [
-										p.date,
-										p.side,
-										Anchor({
-											label: p.pair,
-											href: Link({
-												sl,
-												tpSlRatio,
-												maxTradeLength,
-												timeFrame,
-												pair: p.pair,
-											}),
-										}),
-										formatPercent(p.pnlPt),
-										formatPercent(p.accPnlPt),
-										p.pnlUsdt.toFixed(2),
-										p.balance.toFixed(2),
-										p.len,
-									]),
-								})}
+				title: "Positions Acc",
+				headers: [
+					"Date",
+					"Position Side",
+					"Pair",
+					"PNL",
+					"Acc PNL",
+					"PNL in USDT",
+					"Balance",
+					"Trade Length",
+				],
+				rows: pnlArray.map((p) => [
+					p.date,
+					p.side,
+					Anchor({
+						label: p.pair,
+						href: Link({
+							sl,
+							tpSlRatio,
+							maxTradeLength,
+							timeFrame,
+							pair: p.pair,
+						}),
+					}),
+					formatPercent(p.pnlPt),
+					formatPercent(p.accPnlPt),
+					p.pnlUsdt.toFixed(2),
+					p.balance.toFixed(2),
+					p.len,
+				]),
+			})}
                 <script>
 					// Line Chart
                     const ctx = document.getElementById('pnlChart').getContext('2d');
@@ -355,13 +358,13 @@ export const Stats = ({
                         type: 'line', 
                         data: {
                             labels: ${JSON.stringify(
-															pnlArray.map((p) => p.date)
-														)},
+				pnlArray.map((p) => p.date)
+			)},
                             datasets: [{
                                 label: 'Balance',
                                 data: ${JSON.stringify(
-																	pnlArray.map((p) => p.balance)
-																)},
+				pnlArray.map((p) => p.balance)
+			)},
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 backgroundColor: "white",
                                 borderWidth: 1,

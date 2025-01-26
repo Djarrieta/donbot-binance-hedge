@@ -111,12 +111,12 @@ export class TradingStrategyTester {
 						avPnlAcc,
 						accPnlAcc,
 						accPnl,
-						avPnlPerDay,
-						avPosPerDay,
 						drawdownAcc,
 						drawdownMonteCarloAcc,
 						badRunAcc,
-						badRunMonteCarloAcc
+						badRunMonteCarloAcc,
+						avPnlPerDay,
+						avPosPerDay
 					} = processStats({
 						positions: positionsWinningPairs,
 						sl,
@@ -125,6 +125,7 @@ export class TradingStrategyTester {
 						strategies: this.strategies,
 						interval: this.config.interval,
 					});
+
 					const {
 						winRateAcc: winRateFwd,
 						avPnlAcc: avPnlFwd,
