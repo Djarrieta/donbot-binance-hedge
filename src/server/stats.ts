@@ -2,7 +2,7 @@ import { backtestConfig, DATA_BASE_NAME, strategies } from "../config";
 import type { PositionSide } from "../domain/Position";
 import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
-import { getDate} from "../utils/getDate";
+import { getDate } from "../utils/getDate";
 import { processStats } from "../utils/processStats.ts";
 import { Anchor } from "./components/anchor";
 import { Link } from "./components/link.ts";
@@ -29,7 +29,7 @@ export const Stats = ({
 		databaseName: DATA_BASE_NAME,
 		tableName: "STATS_DATA",
 	});
-	const statsList = statsDataService.getStats();
+	const statsList= statsDataService.getStats().sort((a,b)=>b.accPnlAcc-a.accPnlAcc);
 
 	let positions = statsDataService.getPositions({
 		sl,
@@ -70,7 +70,7 @@ export const Stats = ({
 	const {
 		winRate,
 		winRateAcc,
-		accPnl,
+		accPnlAcc,
 		avPnl,
 		avPnlAcc,
 		badRunAcc,
@@ -79,10 +79,10 @@ export const Stats = ({
 		drawdownMonteCarloAcc,
 		positionsAcc,
 		sharpeRatio,
-		start, 
-		end, 
+		start,
+		end,
 		totalDays,
-		avPnlPerDay, 
+		avPnlPerDay,
 		avPosPerDay
 	} = processStats({
 		positions,
@@ -267,7 +267,7 @@ export const Stats = ({
 				["Positions Accumulated", positionsAcc.length.toFixed()],
 				["Win Rate", formatPercent(winRate)],
 				["Win Rate Accumulated", formatPercent(winRateAcc)],
-				["Accumulated PNL", formatPercent(accPnl)],
+				["Accumulated PNL", formatPercent(accPnlAcc)],
 				["Average PNL", formatPercent(avPnl)],
 				["Average PNL Accumulated", formatPercent(avPnlAcc)],
 				["Average PNL per Day", formatPercent(avPnlPerDay)],
@@ -285,6 +285,12 @@ export const Stats = ({
 				["Sharpe Ratio", sharpeRatio.toFixed(2)],
 			],
 		})}
+
+		${backtestConfig.breakEventAlerts.length ? Table({
+			title: "Break Event",
+			headers: ["Trigger", "Break", "Min Length"],
+			rows: backtestConfig.breakEventAlerts.map(be => [formatPercent(be.trigger), formatPercent(be.break), be.minLength.toFixed()])
+		}) :""}
                 
 				<div style="width:100%; display:flex; gap: 70px; flex-direction:column">
 					<div style="width:100%; height: 400px;">

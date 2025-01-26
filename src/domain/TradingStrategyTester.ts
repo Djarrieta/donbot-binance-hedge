@@ -171,6 +171,7 @@ export class TradingStrategyTester {
 		}
 
 		this.statsDataService.showStats();
+		console.log(getDate().dateString);
 	}
 
 	public async saveHistoricalRecords(): Promise<void> {

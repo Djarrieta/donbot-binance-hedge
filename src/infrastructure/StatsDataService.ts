@@ -147,8 +147,8 @@ export class StatsDataService implements IStatsData {
 	}
 
 	showStats() {
-		//TODO: add qty
-		const stats = this.getStats();
+		const stats = this.getStats()
+		const sortedStats=stats.sort((a,b)=>b.accPnlAcc-a.accPnlAcc);
 		const statsWithHeaders = [
 			{
 				SL: "sl tp/sl MaxLen",
@@ -159,7 +159,7 @@ export class StatsDataService implements IStatsData {
 				BadRun: "BR MC",
 				PerDay: "pnl     Qty",
 			},
-			...stats.map((r) => ({
+			...sortedStats.map((r) => ({
 				SL: `${formatPercent(r.sl)} ${r.tpSlRatio} ${r.maxTradeLength}`,
 				WINRATE: `${formatPercent(r.winRate)} ${formatPercent(
 					r.winRateAcc
@@ -182,7 +182,7 @@ export class StatsDataService implements IStatsData {
 		console.log("Stats summary:");
 		console.table(statsWithHeaders);
 		console.table(
-			stats.map((r) => {
+			sortedStats.map((r) => {
 				return {
 					params: `${formatPercent(r.sl)} ${r.tpSlRatio} ${r.maxTradeLength}`,
 					Url: Link({

@@ -7,6 +7,7 @@
     "lint": "bunx oxlint && tsc ",
     "runTrade": "bun ./src/runTrade.ts",
     "runBacktest": "bun ./src/runBacktest.ts",
+    "showStats": "bun ./src/showStats.ts",
     "runServer": "bun ./src/runServer.ts",
     "showTradeLogs": "bun ./src/showTradeLogs.ts",
     "flushLogs": "bun ./src/flushLogs.ts"
