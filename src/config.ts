@@ -57,7 +57,7 @@ export const tradeConfig: ConfigTrade = {
 	minSlTp: 1 / 100,
 	breakEventAlerts: [],
 
-	riskPt: 1 / 100,
+	riskPt: 3 / 100,
 	minAmountToTradeUSDT: 6,
 	feePt: 0.0005,
 

@@ -1,7 +1,7 @@
 import cliProgress from "cli-progress";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
-import { getAccPositions, processStats } from "../utils/processStats";
+import { processStats } from "../utils/processStats";
 import { withRetry } from "../utils/withRetry";
 import type { Alert } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
