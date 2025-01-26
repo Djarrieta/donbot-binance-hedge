@@ -12,7 +12,7 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	candleCount: 300000,
 	backtestPercent: 0.75,
 	interval,
-	lastDate: getDate().dateMs,
+	lastDate: getDate("2025 01 19 00:00:00" as DateString).dateMs,
 });
 
 export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
@@ -31,9 +31,13 @@ export const backtestConfig: ConfigBacktest = {
 	feePt: 0.0005,
 
 	maxSlArray: [4 / 100, 5 / 100, 6 / 100, 7 / 100],
-	tpSlRatioArray: [5, 6, 7],
+	tpSlRatioArray: [2,3,4,5, 6, 7],
 	minSlTp: 1 / 100,
-	breakEventAlerts: [],
+	breakEventAlerts: [{
+		trigger:5/100,
+		break:1/100,
+		minLength:3
+	}],
 
 	steps: {
 		overrideHistoricalRecords: false,

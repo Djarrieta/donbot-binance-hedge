@@ -2,7 +2,7 @@ import { backtestConfig, DATA_BASE_NAME, strategies } from "../config";
 import type { PositionSide } from "../domain/Position";
 import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
-import { getDate } from "../utils/getDate";
+import { getDate, type DateString } from "../utils/getDate";
 import { processStats } from "../utils/processStats.ts";
 import { Anchor } from "./components/anchor";
 import { Link } from "./components/link.ts";
@@ -36,8 +36,6 @@ export const Stats = ({
 		tpSlRatio,
 		maxTradeLength,
 	});
-	positions = positions.sort((a, b) => a.startTime - b.startTime);
-	//TimeFrame filter
 	if (timeFrame === "Backtest")
 		positions = positions.filter(
 			(p) => p.startTime <= backtestConfig.backtestEnd
@@ -48,7 +46,6 @@ export const Stats = ({
 			(p) => p.startTime > backtestConfig.backtestEnd
 		);
 
-	//Pair filter
 	const { winningPairs } = processStats({
 		positions,
 		sl,
@@ -82,6 +79,7 @@ export const Stats = ({
 		badRunMonteCarloAcc,
 		drawdownAcc,
 		drawdownMonteCarloAcc,
+		positionsAcc
 	} = processStats({
 		positions,
 		sl,
@@ -113,8 +111,11 @@ export const Stats = ({
 
 	let accPnlPt = 0;
 	let balance = backtestConfig.balanceUSDT;
-	for (let i = 0; i < positions.length; i++) {
-		const pos = positions[i];
+	for (let i = 0; i < positionsAcc.length; i++) {
+		const pos = positionsAcc[i];
+		if(getDate(pos.startTime).dateString==="2024 04 12 11:25:00" as DateString){
+			console.log(pos);
+		}
 		accPnlPt += pos.pnl;
 		balance = balance * (1 + pos.pnl);
 
@@ -313,7 +314,7 @@ export const Stats = ({
 				</div>
 
                 ${Table({
-									title: "Positions",
+									title: "Positions Acc",
 									headers: [
 										"Date",
 										"Position Side",

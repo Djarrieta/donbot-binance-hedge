@@ -21,6 +21,8 @@ export const processStats = ({
 	strategies,
 	interval,
 }: ProcessStatsProps) => {
+	positions = positions.sort((a, b) => a.startTime - b.startTime);
+
 	const pairsInStrategies = Array.from(
 		new Set(strategies.map((s) => s.allowedPairs).flat())
 	) as string[];
@@ -69,7 +71,7 @@ export const processStats = ({
 		tpSlRatio,
 		maxTradeLength,
 
-		positions,
+		positionsAcc,
 		winningPairs,
 
 		winRate,

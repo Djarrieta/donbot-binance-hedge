@@ -105,17 +105,19 @@ export class TradingStrategyTester {
 						strategies: this.strategies,
 						interval: this.config.interval,
 					});
-					const positionsAccWinningPairs = positions.filter((p) =>
+
+					const positionsWinningPairs = positions.filter((p) =>
 						winningPairs.includes(p.pair)
 					);
+					
 					const {
-						winRate: winRateAcc,
-						avPnl: avPnlAcc,
-						accPnl: accPnlAcc,
+						winRateAcc,
+						avPnlAcc,
+						 accPnlAcc,
 						avPnlPerDay,
 						avPosPerDay,
 					} = processStats({
-						positions: positionsAccWinningPairs,
+						positions: positionsWinningPairs,
 						sl,
 						tpSlRatio,
 						maxTradeLength,
