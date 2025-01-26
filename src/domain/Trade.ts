@@ -14,7 +14,7 @@ import type { PositionSide } from "./Position";
 import type { Strategy, StrategyResponse } from "./Strategy";
 import type { Symbol } from "./Symbol";
 import type { User } from "./User";
-import { promiseWithTimeout } from "../promiseWithTimeout";
+import { promiseWithTimeout } from "../utils/promiseWithTimeout";
 
 export class Trade {
 	exchange: IExchange;

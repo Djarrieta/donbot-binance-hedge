@@ -79,7 +79,8 @@ export const Stats = ({
 		badRunMonteCarloAcc,
 		drawdownAcc,
 		drawdownMonteCarloAcc,
-		positionsAcc
+		positionsAcc,
+		sharpeRatio
 	} = processStats({
 		positions,
 		sl,
@@ -259,6 +260,7 @@ export const Stats = ({
 									headers: ["Stat", "Value"],
 									rows: [
 										["Positions", positions.length.toFixed()],
+										["Positions Accumulated", positionsAcc.length.toFixed()],
 										["Win Rate", formatPercent(winRate)],
 										["Win Rate Accumulated", formatPercent(winRateAcc)],
 										["Accumulated PNL", formatPercent(accPnl)],
@@ -276,6 +278,7 @@ export const Stats = ({
 											"Drawdown Monte Carlo",
 											formatPercent(drawdownMonteCarloAcc),
 										],
+										["Sharpe Ratio", sharpeRatio.toFixed(2)],
 									],
 								})}
                 

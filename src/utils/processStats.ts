@@ -40,10 +40,10 @@ export const processStats = ({
 			interval,
 		});
 
-		const { avPnl } = getStats(positionsForPair);
-		const { avPnl: avPnlAcc } = getStats(positionsForPairAcc);
+		const { avPnl } = getAccStats(positionsForPair);
+		const { avPnl: avPnlAcc , sharpeRatio} = getAccStats(positionsForPairAcc);
 
-		if (avPnl > 0 && avPnlAcc > 0) {
+		if (avPnl > 0 && avPnlAcc > 0 && sharpeRatio > 0) {
 			winningPairs.push(pair);
 		}
 	}
@@ -54,7 +54,7 @@ export const processStats = ({
 	});
 
 	const { winRate, accPnl, avPnl, avPnlPerDay, avPosPerDay } =
-		getStats(positions);
+		getAccStats(positions);
 
 	const {
 		winRate: winRateAcc,
@@ -64,7 +64,8 @@ export const processStats = ({
 		badRunMonteCarlo: badRunMonteCarloAcc,
 		drawdown: drawdownAcc,
 		badRun: badRunAcc,
-	} = getStats(positionsAcc);
+		sharpeRatio
+	} = getAccStats(positionsAcc);
 
 	return {
 		sl,
@@ -84,11 +85,15 @@ export const processStats = ({
 		accPnlAcc,
 
 		drawdownAcc,
-		badRunAcc,
 		drawdownMonteCarloAcc,
+		
+		badRunAcc,
 		badRunMonteCarloAcc,
+
 		avPnlPerDay,
 		avPosPerDay,
+		
+		sharpeRatio,
 	};
 };
 
@@ -111,7 +116,7 @@ export const getAccPositions = ({
 	return positionsAcc;
 };
 
-export const getStats = (positions: PositionBT[]) => {
+export const getAccStats = (positions: PositionBT[]) => {
 	if (positions.length === 0) {
 		return {
 			winRate: 0,
@@ -121,6 +126,7 @@ export const getStats = (positions: PositionBT[]) => {
 			avPosPerDay: 0,
 			drawdownMonteCarlo: 0,
 			badRunMonteCarlo: 0,
+			sharpeRatio:0
 		};
 	}
 	const start = positions[0].startTime;
@@ -136,6 +142,10 @@ export const getStats = (positions: PositionBT[]) => {
 	const avPnl = accPnl / tradesQty || 0;
 	const avPnlPerDay = accPnl / totalDays;
 	const avPosPerDay = tradesQty / totalDays;
+
+	const RISK_FREE_RATE = (5.4/100)/365; // Using current 3-month T-Bill rate
+	const stdDev = Math.sqrt(positions.map(p => p.pnl).reduce((acc, r) => acc + Math.pow(r - avPnlPerDay, 2), 0) / (tradesQty - 1)); 
+	const sharpeRatio = (avPnlPerDay - RISK_FREE_RATE) / stdDev || 0; 
 
 	const { drawdown, badRun } = getDrawdown({
 		pnlArray: positions.map((p) => p.pnl),
@@ -153,6 +163,7 @@ export const getStats = (positions: PositionBT[]) => {
 		avPnl,
 		avPnlPerDay,
 		avPosPerDay,
+		sharpeRatio,
 		drawdownMonteCarlo,
 		badRunMonteCarlo,
 		drawdown,

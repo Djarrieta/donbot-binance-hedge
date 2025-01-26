@@ -1,7 +1,7 @@
 import cliProgress from "cli-progress";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
-import { processStats } from "../utils/processStats";
+import { getAccPositions, processStats } from "../utils/processStats";
 import { withRetry } from "../utils/withRetry";
 import type { Alert } from "./Alert";
 import type { CandleBt as Candle } from "./Candle";
@@ -57,16 +57,16 @@ export class TradingStrategyTester {
 
 		const alerts = this.config.steps.overrideAlerts
 			? this.saveAlerts({
-					start: this.config.backtestStart,
-					end: this.config.forwardTestEnd,
-					lookBackLength: this.config.lookBackLength,
-					maxTradeLength: Math.max(...this.config.maxTradeLengthArray),
-					interval: this.config.interval,
-			  })
+				start: this.config.backtestStart,
+				end: this.config.forwardTestEnd,
+				lookBackLength: this.config.lookBackLength,
+				maxTradeLength: Math.max(...this.config.maxTradeLengthArray),
+				interval: this.config.interval,
+			})
 			: await this.alertService.getAlerts({
-					start: this.config.backtestStart,
-					end: this.config.forwardTestEnd,
-			  });
+				start: this.config.backtestStart,
+				end: this.config.forwardTestEnd,
+			});
 
 		console.log(getDate().dateString);
 
@@ -89,13 +89,6 @@ export class TradingStrategyTester {
 					);
 
 					const {
-						winRate,
-						avPnl,
-						accPnl,
-						drawdownAcc,
-						badRunAcc,
-						drawdownMonteCarloAcc,
-						badRunMonteCarloAcc,
 						winningPairs,
 					} = processStats({
 						positions: positionsBacktest,
@@ -109,13 +102,21 @@ export class TradingStrategyTester {
 					const positionsWinningPairs = positions.filter((p) =>
 						winningPairs.includes(p.pair)
 					);
-					
+
+
 					const {
+						winRate,
+						avPnl,
 						winRateAcc,
 						avPnlAcc,
-						 accPnlAcc,
+						accPnlAcc,
+						accPnl,
 						avPnlPerDay,
 						avPosPerDay,
+						drawdownAcc,
+						drawdownMonteCarloAcc,
+						badRunAcc,
+						badRunMonteCarloAcc
 					} = processStats({
 						positions: positionsWinningPairs,
 						sl,
@@ -125,9 +126,9 @@ export class TradingStrategyTester {
 						interval: this.config.interval,
 					});
 					const {
-						winRate: winRateFwd,
-						avPnl: avPnlFwd,
-						accPnl: accPnlFwd,
+						winRateAcc: winRateFwd,
+						avPnlAcc: avPnlFwd,
+						accPnlAcc: accPnlFwd,
 					} = processStats({
 						positions: positionsForward,
 						sl,
@@ -315,8 +316,8 @@ export class TradingStrategyTester {
 
 			const calcSl =
 				alert.sl &&
-				Number(alert.sl) > this.config.minSlTp &&
-				Number(alert.sl) < sl
+					Number(alert.sl) > this.config.minSlTp &&
+					Number(alert.sl) < sl
 					? alert.sl
 					: sl;
 			let calcTp =
@@ -364,7 +365,7 @@ export class TradingStrategyTester {
 					pnl =
 						-this.config.feePt -
 						(this.config.minAmountToTradeUSDT * calcSl) /
-							this.config.balanceUSDT;
+						this.config.balanceUSDT;
 
 					stickIndex++;
 					break indexLoop;
@@ -379,7 +380,7 @@ export class TradingStrategyTester {
 					pnl =
 						-this.config.feePt +
 						(this.config.minAmountToTradeUSDT * calcTp) /
-							this.config.balanceUSDT;
+						this.config.balanceUSDT;
 
 					stickIndex++;
 					break indexLoop;
@@ -415,7 +416,7 @@ export class TradingStrategyTester {
 						pnl =
 							-this.config.feePt +
 							(this.config.minAmountToTradeUSDT * pnlGraph) /
-								this.config.balanceUSDT;
+							this.config.balanceUSDT;
 
 						secureLength = stickIndex;
 						break indexLoop;
@@ -435,7 +436,7 @@ export class TradingStrategyTester {
 				pnl =
 					-this.config.feePt +
 					(this.config.minAmountToTradeUSDT * pnlGraph) /
-						this.config.balanceUSDT;
+					this.config.balanceUSDT;
 			}
 
 			closedPositions.push({
@@ -499,23 +500,20 @@ export class TradingStrategyTester {
 				(this.config.forwardTestEnd - this.config.backtestStart) /
 				Interval["1d"]
 			).toFixed(1)} days
-			Interval: ${Interval[this.config.interval]}, ${
-			1 +
+			Interval: ${Interval[this.config.interval]}, ${1 +
 			(this.config.forwardTestEnd - this.config.backtestStart) /
-				this.config.interval
-		} candles
+			this.config.interval
+			} candles
 			Backtest: ${(
 				(this.config.backtestEnd - this.config.backtestStart) /
 				Interval["1d"]
-			).toFixed(1)} days, from ${
-			getDate(this.config.backtestStart).dateString
-		} to ${getDate(this.config.backtestEnd).dateString}
+			).toFixed(1)} days, from ${getDate(this.config.backtestStart).dateString
+			} to ${getDate(this.config.backtestEnd).dateString}
 			ForwardTest: ${(
 				(this.config.forwardTestEnd - this.config.backtestEnd) /
 				Interval["1d"]
-			).toFixed(1)} days, from ${
-			getDate(this.config.backtestEnd).dateString
-		} to ${getDate(this.config.forwardTestEnd).dateString}
+			).toFixed(1)} days, from ${getDate(this.config.backtestEnd).dateString
+			} to ${getDate(this.config.forwardTestEnd).dateString}
 
 			StopLoss array: ${this.config.maxSlArray
 				.map((x) => formatPercent(x))
@@ -524,9 +522,8 @@ export class TradingStrategyTester {
 			MaxTradeLength array: ${this.config.maxTradeLengthArray.join(", ")}
 			
 			Steps: 
-				OverrideHistoricalRecords: ${
-					this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
-				}
+				OverrideHistoricalRecords: ${this.config.steps.overrideHistoricalRecords ? "TRUE" : "FALSE"
+			}
 				OverrideAlerts: ${this.config.steps.overrideAlerts ? "TRUE" : "FALSE"}
 
 			Strategies: ${this.strategies.map((s) => s.stgName).join(", ")}
