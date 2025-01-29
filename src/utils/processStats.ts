@@ -31,7 +31,7 @@ export const processStats = ({
 		? pairsInStrategies
 		: new Set<string>(positions.map((p) => p.pair));
 
-	let winningPairs: string[] = [];
+	let winningPairs: {pair:string,sharpeRatio:number }[] = [];
 
 	for (const pair of pairList) {
 		const positionsForPair = positions.filter((pos) => pos.pair === pair);
@@ -44,9 +44,11 @@ export const processStats = ({
 		const { avPnl: avPnlAcc, sharpeRatio } = getAccStats(positionsForPairAcc);
 
 		if (avPnl > 0 && avPnlAcc > 0 && sharpeRatio > 0) {
-			winningPairs.push(pair);
+			winningPairs.push({pair,sharpeRatio});
 		}
 	}
+
+	winningPairs.sort((a, b) => b.sharpeRatio - a.sharpeRatio);
 
 	const positionsAcc = getAccPositions({
 		positions,
@@ -77,7 +79,7 @@ export const processStats = ({
 		maxTradeLength,
 
 		positionsAcc,
-		winningPairs,
+		winningPairs:winningPairs.map(p => p.pair),
 
 		winRate,
 		winRateAcc,
