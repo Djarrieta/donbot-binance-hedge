@@ -84,9 +84,7 @@ export class TradingStrategyTester {
 					const positionsBacktest = positions.filter(
 						(p) => p.startTime <= this.config.backtestEnd
 					);
-					const positionsForward = positions.filter(
-						(p) => p.startTime > this.config.backtestEnd
-					);
+
 
 					const {
 						winningPairs,
@@ -126,12 +124,16 @@ export class TradingStrategyTester {
 						interval: this.config.interval,
 					});
 
+					const positionsFwdWinningPairs = positions.filter((p) =>
+						winningPairs.includes(p.pair) &&  p.startTime > this.config.backtestEnd
+					);
+
 					const {
 						winRateAcc: winRateFwd,
 						avPnlAcc: avPnlFwd,
 						accPnlAcc: accPnlFwd,
 					} = processStats({
-						positions: positionsForward,
+						positions: positionsFwdWinningPairs,
 						sl,
 						tpSlRatio,
 						maxTradeLength,
