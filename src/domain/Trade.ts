@@ -564,7 +564,10 @@ export class Trade {
 		this.userList[userIndex].isAddingPosition = false;
 		this.saveLogs({
 			type: "OpenPos",
-			eventData: { userName: user.name, alert },
+			eventData: { userName: user.name, alert, realRisk:{
+				percent:realPositionRiskPt,
+				usdt:realPositionRiskUSDT
+			} },
 		});
 	}
 	async quitPosition({
