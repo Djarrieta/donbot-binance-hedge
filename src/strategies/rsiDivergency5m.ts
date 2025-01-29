@@ -7,31 +7,54 @@ export const stg = new Strategy({
 	lookBackLength: 200,
 	interval: Interval["5m"],
 	allowedPairs: [
-		"ZENUSDT",
-		"SANDUSDT",
-		"PEOPLEUSDT",
+		"XMRUSDT",
 		"TRUUSDT",
-		"ARBUSDT",
-		"1000LUNCUSDT",
 		"BLURUSDT",
-		"HIFIUSDT",
-		"BEAMXUSDT",
+		"CKBUSDT",
 		"BICOUSDT",
-		"CAKEUSDT",
-		"KASUSDT",
+		"MASKUSDT",
+		"ENSUSDT",
+		"CFXUSDT",
+		"XRPUSDT",
+		"LRCUSDT",
+		"1000LUNCUSDT",
 		"ZETAUSDT",
+		"OGNUSDT",
+		"ENAUSDT",
 		"NFPUSDT",
-		"ALTUSDT",
-		"PIXELUSDT",
-		"STRKUSDT",
 		"MYROUSDT",
 		"PORTALUSDT",
-		"BOMEUSDT",
-		"ETHFIUSDT",
-		"ENAUSDT",
-		"TAOUSDT",
-		"TNSRUSDT",
-		"OMNIUSDT"
+		"STRKUSDT",
+		"PIXELUSDT",
+		"WUSDT",
+		"USTCUSDT",
+		"1000SATSUSDT",
+		"OMNIUSDT",
+		"FLOWUSDT",
+		"SYNUSDT",
+		"BANANAUSDT",
+		"VIDTUSDT",
+		"FLUXUSDT",
+		"VOXELUSDT",
+		"GHSTUSDT",
+		"LOKAUSDT",
+		"REIUSDT",
+		"AERGOUSDT",
+		"TROYUSDT",
+		"FIDAUSDT",
+		"1000CHEEMSUSDT",
+		"1000XUSDT",
+		"HIPPOUSDT",
+		"RAYSOLUSDT",
+		"AKTUSDT",
+		"USUALUSDT",
+		"SLERFUSDT",
+		"DEGOUSDT",
+		"SWARMSUSDT",
+		"ZEREBROUSDT",
+		"ORCAUSDT",
+		"BIOUSDT",
+		"ARCUSDT"
 	  ],
 
 
@@ -131,9 +154,10 @@ export const stg = new Strategy({
 	},
 });
 
+
 // ┌───┬─────────────────┬────────────────────────┬─────────────────────────┬─────────────────────────┬───────────────┬────────┬─────────────┐
 // │   │ SL              │ WINRATE                │ AVPNL                   │ ACCPNL                  │ Drawdown      │ BadRun │ PerDay      │
 // ├───┼─────────────────┼────────────────────────┼─────────────────────────┼─────────────────────────┼───────────────┼────────┼─────────────┤
 // │ 0 │ sl tp/sl MaxLen │ all     accWP      fwd │ all      accWP      fwd │ all      accWP      fwd │ DD MC         │ BR MC  │ pnl     Qty │
-// │ 1 │ 14.00% 4 100    │ 50.78% 53.46% 43.59%   │ 0.02% 0.06% -0.07%      │ 233.92% 94.65% -53.49%  │ 33.20% 32.80% │ 11 8   │ 0.09% 1.63  │
+// │ 1 │ 7.00% 5 100     │ 52.08% 51.99% 40.58%   │ 0.06% 0.05% -0.13%      │ 421.45% 55.01% -58.91%  │ 21.27% 27.68% │ 11 9   │ 0.11% 2.08  │
 // └───┴─────────────────┴────────────────────────┴─────────────────────────┴─────────────────────────┴───────────────┴────────┴─────────────┘

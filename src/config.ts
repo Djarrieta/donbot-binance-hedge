@@ -9,7 +9,7 @@ import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 300000,
+	candleCount: 150000,
 	backtestPercent: 0.75,
 	interval,
 	lastDate: getDate("2025 01 19 00:00:00" as DateString).dateMs,
@@ -30,8 +30,8 @@ export const backtestConfig: ConfigBacktest = {
 	balanceUSDT: 27,
 	feePt: 0.0005,
 
-	maxSlArray: [14 / 100,],
-	tpSlRatioArray: [4],
+	maxSlArray: [7/ 100,],
+	tpSlRatioArray: [5],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [
 		{
