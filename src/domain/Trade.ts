@@ -228,10 +228,7 @@ export class Trade {
 					user,
 					handleClearOrders: () => {
 						this.clearOrders.bind(this);
-						this.saveLogs({
-							type: "ClosePos",
-							eventData: { userName: user.name },
-						});
+						
 					},
 				});
 			} catch (e) {
