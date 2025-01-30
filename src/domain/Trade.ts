@@ -99,9 +99,9 @@ export class Trade {
 			const pairList = this.symbolList.length
 				? this.symbolList.map((s) => s.pair)
 				: await this.exchange.getPairList({
-						minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
-						strategies: this.strategies,
-				  });
+					minAmountToTradeUSDT: this.config.minAmountToTradeUSDT,
+					strategies: this.strategies,
+				});
 
 			const start =
 				getDate().dateMs -
@@ -228,7 +228,7 @@ export class Trade {
 					user,
 					handleClearOrders: () => {
 						this.clearOrders.bind(this);
-						
+
 					},
 				});
 			} catch (e) {
@@ -246,12 +246,22 @@ export class Trade {
 		symbol: Symbol;
 		alert: StrategyResponse;
 	}) {
+
 		const calcSl =
 			alert.sl &&
-			Number(alert.sl) > this.config.minSlTp &&
-			Number(alert.sl) < this.config.maxSl
+				Number(alert.sl) > this.config.minSlTp &&
+				Number(alert.sl) < this.config.maxSl
 				? alert.sl
 				: this.config.maxSl;
+
+		//TODO: Delete after check
+				console.log({
+			calcSl,
+			alertSl: alert.sl,
+			minSlTp: this.config.minSlTp,
+			maxSl: this.config.maxSl,
+		}
+		)
 		let calcTp =
 			alert.tp && Number(alert.tp) > calcSl * this.config.tpSlRatio
 				? alert.tp
@@ -361,11 +371,11 @@ export class Trade {
 					if (!pos.coinQuantity) continue;
 					console.log(
 						"Quitting good pnl " +
-							pos.positionSide +
-							" position for" +
-							this.userList[userIndex].name +
-							" in " +
-							symbol.pair
+						pos.positionSide +
+						" position for" +
+						this.userList[userIndex].name +
+						" in " +
+						symbol.pair
 					);
 					await this.quitPosition({
 						user,
@@ -395,11 +405,11 @@ export class Trade {
 			if (!symbol) continue;
 			console.log(
 				"Quitting " +
-					positionSide +
-					" position taking too long for" +
-					this.userList[userIndex].name +
-					" in " +
-					symbol.pair
+				positionSide +
+				" position taking too long for" +
+				this.userList[userIndex].name +
+				" in " +
+				symbol.pair
 			);
 			this.quitPosition({
 				user,
@@ -422,11 +432,11 @@ export class Trade {
 			if (!symbol) continue;
 			console.log(
 				"Quitting unbalanced " +
-					positionSide +
-					" position for" +
-					this.userList[userIndex].name +
-					" in " +
-					symbol.pair
+				positionSide +
+				" position for" +
+				this.userList[userIndex].name +
+				" in " +
+				symbol.pair
 			);
 			this.quitPosition({
 				user,
@@ -457,11 +467,11 @@ export class Trade {
 			if (!symbol) continue;
 			console.log(
 				"Quitting " +
-					positionSide +
-					" position trending in opposite direction for " +
-					this.userList[userIndex].name +
-					" in " +
-					symbol.pair
+				positionSide +
+				" position trending in opposite direction for " +
+				this.userList[userIndex].name +
+				" in " +
+				symbol.pair
 			);
 			this.quitPosition({
 				user,
@@ -515,7 +525,7 @@ export class Trade {
 		const tooManyOpenWithHedge =
 			hedgedPosUniquePairs.length &&
 			openPosUnsecuredUniquePairs.length - hedgedPosUniquePairs.length >=
-				this.config.maxProtectedPositions;
+			this.config.maxProtectedPositions;
 
 		const tooManyHedge =
 			hedgedPosUniquePairs.length >= this.config.maxHedgePositions;
@@ -546,8 +556,7 @@ export class Trade {
 		});
 
 		console.log(
-			`Adding position ${alert.positionSide} for ${user.name} in ${
-				symbol.pair
+			`Adding position ${alert.positionSide} for ${user.name} in ${symbol.pair
 			}, real position risk: ${formatPercent(
 				realPositionRiskPt
 			)} $${realPositionRiskUSDT.toFixed(2)}`
@@ -564,10 +573,12 @@ export class Trade {
 		this.userList[userIndex].isAddingPosition = false;
 		this.saveLogs({
 			type: "OpenPos",
-			eventData: { userName: user.name, alert, realRisk:{
-				percent:realPositionRiskPt,
-				usdt:realPositionRiskUSDT
-			} },
+			eventData: {
+				userName: user.name, alert, realRisk: {
+					percent: realPositionRiskPt,
+					usdt: realPositionRiskUSDT
+				}
+			},
 		});
 	}
 	async quitPosition({
@@ -713,11 +724,11 @@ export class Trade {
 							: pos.entryPriceUSDT * (1 - breakeven.break);
 					console.log(
 						"Securing position for " +
-							this.userList[userIndex].name +
-							" " +
-							pos.pair +
-							" " +
-							pos.positionSide
+						this.userList[userIndex].name +
+						" " +
+						pos.pair +
+						" " +
+						pos.positionSide
 					);
 					try {
 						this.authExchange.securePosition({
@@ -876,9 +887,8 @@ export class Trade {
 
 	showConfig() {
 		const userText = `${this.userList.map((u) => u.text).join(`\n`)}`;
-		const symbolText = `${
-			this.symbolList.filter((s) => s.isReady).length
-		} symbols ready of ${this.symbolList.length}.`;
+		const symbolText = `${this.symbolList.filter((s) => s.isReady).length
+			} symbols ready of ${this.symbolList.length}.`;
 
 		const strategiesText = `Strategies: ${this.strategies
 			.map((s) => s.stgName)

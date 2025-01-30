@@ -17,8 +17,8 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate("2025 01 19 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/supertrend5m.db";
-export const strategies: Strategy[] = [supertrend5m];
+export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
+export const strategies: Strategy[] = [rsiDivergency5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
