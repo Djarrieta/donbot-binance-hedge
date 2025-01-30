@@ -6,6 +6,8 @@ import { getDate, type DateString } from "./utils/getDate";
 import { getSuggestedDates } from "./utils/getSuggestedDates";
 
 import { stg as rsiDivergency5m } from "./strategies/rsiDivergency5m";
+import { stg as supertrend5m } from "./strategies/supertrend5m";
+
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
@@ -15,23 +17,23 @@ const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
 	lastDate: getDate("2025 01 19 00:00:00" as DateString).dateMs,
 });
 
-export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
-export const strategies: Strategy[] = [rsiDivergency5m];
+export const DATA_BASE_NAME = "./db/supertrend5m.db";
+export const strategies: Strategy[] = [supertrend5m];
 export const backtestConfig: ConfigBacktest = {
 	backtestStart,
 	backtestEnd,
 	forwardTestEnd,
 	interval,
 	lookBackLength: 200,
-	maxTradeLengthArray: [100],
+	maxTradeLengthArray: [80, 100, 120],
 
 	minAmountToTradeUSDT: 6,
 	leverage: 10,
 	balanceUSDT: 27,
 	feePt: 0.0005,
 
-	maxSlArray: [8 / 100],
-	tpSlRatioArray: [6],
+	maxSlArray: [2 / 100, 4 / 100, 6 / 100, 8 / 100, 10 / 100],
+	tpSlRatioArray: [2, 3, 4, 5, 6, 7, 8, 9, 10],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [
 		{
@@ -43,7 +45,7 @@ export const backtestConfig: ConfigBacktest = {
 
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: false,
+		overrideAlerts: true,
 	},
 	apiLimit: 500,
 };
