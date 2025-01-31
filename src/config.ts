@@ -11,7 +11,7 @@ import { stg as supertrend5m } from "./strategies/supertrend5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-	candleCount: 150000,
+	candleCount: 300000,
 	backtestPercent: 0.75,
 	interval,
 	lastDate: getDate("2025 01 19 00:00:00" as DateString).dateMs,
@@ -25,15 +25,15 @@ export const backtestConfig: ConfigBacktest = {
 	forwardTestEnd,
 	interval,
 	lookBackLength: 200,
-	maxTradeLengthArray: [80, 100, 120],
+	maxTradeLengthArray: [100],
 
 	minAmountToTradeUSDT: 6,
 	leverage: 10,
 	balanceUSDT: 27,
 	feePt: 0.0005,
 
-	maxSlArray: [2 / 100, 4 / 100, 6 / 100, 8 / 100, 10 / 100],
-	tpSlRatioArray: [2, 3, 4, 5, 6, 7, 8, 9, 10],
+	maxSlArray: [8 / 100],
+	tpSlRatioArray: [6],
 	minSlTp: 1 / 100,
 	breakEventAlerts: [
 		{
@@ -45,7 +45,7 @@ export const backtestConfig: ConfigBacktest = {
 
 	steps: {
 		overrideHistoricalRecords: false,
-		overrideAlerts: true,
+		overrideAlerts: false,
 	},
 	apiLimit: 500,
 };

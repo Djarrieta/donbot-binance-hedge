@@ -1,4 +1,5 @@
 import cliProgress from "cli-progress";
+import { calculateStopLossTakeProfit } from "../utils/calculateStopLossTakeProfit";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { processStats } from "../utils/processStats";
@@ -125,7 +126,7 @@ export class TradingStrategyTester {
 					});
 
 					const positionsFwdWinningPairs = positions.filter((p) =>
-						winningPairs.includes(p.pair) &&  p.startTime > this.config.backtestEnd
+						winningPairs.includes(p.pair) && p.startTime > this.config.backtestEnd
 					);
 
 					const {
@@ -301,7 +302,7 @@ export class TradingStrategyTester {
 
 	private processPositions({
 		alerts,
-		sl,
+		sl: maxSl,
 		tpSlRatio,
 		maxTradeLength,
 	}: {
@@ -317,17 +318,12 @@ export class TradingStrategyTester {
 			const profitStick = maxProfitStick?.slice(0, maxTradeLength) || [];
 
 			const entryPriceUSDT = profitStick[0].open;
-
-			const calcSl =
-				alert.sl &&
-					Number(alert.sl) > this.config.minSlTp &&
-					Number(alert.sl) < sl
-					? alert.sl
-					: sl;
-			let calcTp =
-				alert.tp && Number(alert.tp) > calcSl * tpSlRatio
-					? alert.tp
-					: calcSl * tpSlRatio;
+			const { calcSl, calcTp } = calculateStopLossTakeProfit({
+				sl: alert.sl,
+				minSlTp: this.config.minSlTp,
+				maxSl: maxSl,
+				tpSlRatio,
+			});
 
 			const stopLoss =
 				alert.positionSide === "LONG"

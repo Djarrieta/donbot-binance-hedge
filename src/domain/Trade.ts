@@ -1,8 +1,10 @@
 import cliProgress from "cli-progress";
+import { calculateStopLossTakeProfit } from "../utils/calculateStopLossTakeProfit";
 import { delay } from "../utils/delay";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
 import { getVolatility } from "../utils/getVolatility";
+import { promiseWithTimeout } from "../utils/promiseWithTimeout";
 import type { Alert } from "./Alert";
 import type { ConfigTrade } from "./ConfigTrade";
 import type { IAuthExchange } from "./IAuthExchange";
@@ -14,7 +16,6 @@ import type { PositionSide } from "./Position";
 import type { Strategy, StrategyResponse } from "./Strategy";
 import type { Symbol } from "./Symbol";
 import type { User } from "./User";
-import { promiseWithTimeout } from "../utils/promiseWithTimeout";
 
 export class Trade {
 	exchange: IExchange;
@@ -247,25 +248,12 @@ export class Trade {
 		alert: StrategyResponse;
 	}) {
 
-		const calcSl =
-			alert.sl &&
-				Number(alert.sl) > this.config.minSlTp &&
-				Number(alert.sl) < this.config.maxSl
-				? alert.sl
-				: this.config.maxSl;
-
-		//TODO: Delete after check
-				console.log({
-			calcSl,
-			alertSl: alert.sl,
+		const { calcSl, calcTp } = calculateStopLossTakeProfit({
+			sl: alert.sl,
 			minSlTp: this.config.minSlTp,
 			maxSl: this.config.maxSl,
-		}
-		)
-		let calcTp =
-			alert.tp && Number(alert.tp) > calcSl * this.config.tpSlRatio
-				? alert.tp
-				: calcSl * this.config.tpSlRatio;
+			tpSlRatio: this.config.tpSlRatio,
+		});
 
 		const slPrice =
 			alert.positionSide === "LONG"
