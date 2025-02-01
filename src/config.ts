@@ -64,7 +64,7 @@ export const tradeConfig: ConfigTrade = {
     },
   ],
 
-  riskPt: 3 / 100,
+  riskPt: 1 / 100,
   minAmountToTradeUSDT: 6,
   feePt: 0.0005,
 
