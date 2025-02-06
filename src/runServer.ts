@@ -1,6 +1,7 @@
 import { App } from "./server/app";
-import { Stats, type TimeFrame } from "./server/stats";
+import { Stats } from "./server/stats";
 import { Positions } from "./server/positions";
+import type { TimeFrame } from "./server/utils";
 
 Bun.serve({
   port: 3000,
@@ -28,18 +29,24 @@ Bun.serve({
     }
 
     if (url.pathname === "/positions") {
-      const start = Number(url.searchParams.get("start")) || 0;
-      const end = Number(url.searchParams.get("end")) || 0;
-      const symbol = url.searchParams.get("symbol") || "";
-      const startPrice = Number(url.searchParams.get("startPrice")) || 0;
-      const endPrice = Number(url.searchParams.get("endPrice")) || 0;
+      const sl = Number(url.searchParams.get("sl")) || 0;
+      const tpSlRatio = Number(url.searchParams.get("tpSlRatio")) || 0;
+      const maxTradeLength =
+        Number(url.searchParams.get("maxTradeLength")) || 0;
+      const pair = url.searchParams.get("pair") || "All";
+      const timeFrame: TimeFrame =
+        (url.searchParams.get("timeFrame") as TimeFrame) || "Backtest";
 
-      const { head, body } = Positions({
-        start,
-        end,
-        symbol,
-        startPrice,
-        endPrice,
+      const positionsIndex =
+        Number(url.searchParams.get("positionsIndex")) || 0;
+
+      const { head, body } = await Positions({
+        sl: Number(sl),
+        tpSlRatio: Number(tpSlRatio),
+        maxTradeLength: Number(maxTradeLength),
+        pair,
+        timeFrame,
+        positionsIndex,
       });
 
       return App({ head, body });

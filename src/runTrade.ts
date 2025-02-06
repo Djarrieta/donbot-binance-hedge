@@ -12,11 +12,11 @@ const authExchangeService = new AuthExchangeService();
 const logService = new LogServiceFirebase();
 
 const trade = new Trade(
-	exchangeService,
-	authExchangeService,
-	tradeConfig,
-	strategies,
-	logService
+  exchangeService,
+  authExchangeService,
+  tradeConfig,
+  strategies,
+  logService
 );
 
 trade.initialize();
@@ -24,9 +24,9 @@ trade.initialize();
 const cronInterval = intervalToCron(Interval["5m"]);
 
 cron.schedule(cronInterval, async () => {
-	try {
-		await trade.loop();
-	} catch (error) {
-		trade.saveLogs({ type: "Error", eventData: error });
-	}
+  try {
+    await trade.loop();
+  } catch (error) {
+    trade.saveLogs({ type: "Error", eventData: error });
+  }
 });

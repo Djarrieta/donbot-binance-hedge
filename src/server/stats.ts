@@ -1,296 +1,253 @@
-import { backtestConfig, DATA_BASE_NAME, strategies } from "../config";
+import { backtestConfig } from "../config";
 import type { PositionSide } from "../domain/Position";
-import { StatsDataService } from "../infrastructure/StatsDataService";
 import { formatPercent } from "../utils/formatPercent";
 import { getDate } from "../utils/getDate";
-import { processStats } from "../utils/processStats.ts";
 import { Anchor } from "./components/anchor";
 import { Link } from "./components/link.ts";
 import { Select } from "./components/select";
 import { Table } from "./components/table";
-
-export type TimeFrame = "Backtest" | "Forwardtest" | "All";
-type PairsProps = {
-	sl: number;
-	tpSlRatio: number;
-	maxTradeLength: number;
-	timeFrame: TimeFrame;
-	pair: "All" | "Winning" | string;
-};
+import { getPositionsList, type GetPositionsListProps } from "./utils.ts";
 
 export const Stats = ({
-	sl,
-	tpSlRatio,
-	maxTradeLength,
-	timeFrame,
-	pair = "All",
-}: PairsProps) => {
-	const statsDataService = new StatsDataService({
-		databaseName: DATA_BASE_NAME,
-		tableName: "STATS_DATA",
-	});
-	const statsList= statsDataService.getStats().sort((a,b)=>b.accPnlAcc-a.accPnlAcc);
+  sl,
+  tpSlRatio,
+  maxTradeLength,
+  timeFrame,
+  pair = "All",
+}: GetPositionsListProps) => {
+  const {
+    winRate,
+    winRateAcc,
+    accPnlAcc,
+    avPnl,
+    avPnlAcc,
+    badRunAcc,
+    badRunMonteCarloAcc,
+    drawdownAcc,
+    drawdownMonteCarloAcc,
+    positionsAcc,
+    sharpeRatio,
+    start,
+    end,
+    totalDays,
+    avPnlPerDay,
+    avPosPerDay,
+    positions,
+    statsList,
+  } = getPositionsList({
+    sl,
+    tpSlRatio,
+    maxTradeLength,
+    timeFrame,
+    pair,
+  });
 
-	let positions = statsDataService.getPositions({
-		sl,
-		tpSlRatio,
-		maxTradeLength,
-	});
-	if (timeFrame === "Backtest")
-		positions = positions.filter(
-			(p) => p.startTime <= backtestConfig.backtestEnd
-		);
+  const symbolList = Array.from(new Set(positions.map((p) => p.pair)))
+    .map((s) => {
+      return {
+        pair: s,
+        value: positions.filter((p) => p.pair === s).length,
+      };
+    })
+    .sort((a, b) => b.value - a.value);
 
-	if (timeFrame === "Forwardtest")
-		positions = positions.filter(
-			(p) => p.startTime > backtestConfig.backtestEnd
-		);
+  const pnlArray: {
+    date: string;
+    pnlPt: number;
+    accPnlPt: number;
+    side: PositionSide;
+    pnlUsdt: number;
+    balance: number;
+    pair: string;
+    len: string;
+  }[] = [];
 
-	const { winningPairs } = processStats({
-		positions,
-		sl,
-		tpSlRatio,
-		maxTradeLength,
-		strategies,
-		interval: backtestConfig.interval,
-	});
-	const pairsInStrategies = Array.from(
-		new Set(strategies.map((s) => s.allowedPairs).flat())
-	);
-	if (pairsInStrategies.length) {
-		positions = positions.filter((p) => pairsInStrategies.includes(p.pair));
-	}
-	if (pair && pair !== "All" && pair !== "Winning") {
-		positions = positions.filter((p) => p.pair === pair);
-	}
-	if (pair === "Winning") {
-		positions = positions.filter((p) => winningPairs.includes(p.pair));
-	}
+  let accPnlPt = 0;
+  let balance = backtestConfig.balanceUSDT;
+  for (let i = 0; i < positionsAcc.length; i++) {
+    const pos = positionsAcc[i];
 
-	const {
-		winRate,
-		winRateAcc,
-		accPnlAcc,
-		avPnl,
-		avPnlAcc,
-		badRunAcc,
-		badRunMonteCarloAcc,
-		drawdownAcc,
-		drawdownMonteCarloAcc,
-		positionsAcc,
-		sharpeRatio,
-		start,
-		end,
-		totalDays,
-		avPnlPerDay,
-		avPosPerDay
-	} = processStats({
-		positions,
-		sl,
-		tpSlRatio,
-		maxTradeLength,
-		strategies,
-		interval: backtestConfig.interval,
-	});
+    accPnlPt += pos.pnl;
+    balance = balance * (1 + pos.pnl);
 
-	const symbolList = Array.from(new Set(positions.map((p) => p.pair)))
-		.map((s) => {
-			return {
-				pair: s,
-				value: positions.filter((p) => p.pair === s).length,
-			};
-		})
-		.sort((a, b) => b.value - a.value);
+    pnlArray.push({
+      date: getDate(pos.startTime).dateString,
+      side: pos.positionSide,
+      pair: pos.pair,
+      pnlPt: pos.pnl,
+      accPnlPt,
+      pnlUsdt: pos.pnl * balance,
+      balance,
+      len: `${pos.tradeLength.toFixed(0)}(${pos.secureLength?.toFixed(0)})`,
+    });
+  }
 
-	const pnlArray: {
-		date: string;
-		pnlPt: number;
-		accPnlPt: number;
-		side: PositionSide;
-		pnlUsdt: number;
-		balance: number;
-		pair: string;
-		len: string;
-	}[] = [];
+  const pieChartData = {
+    labels: ["Shorts", "Longs"],
+    data: [
+      positions.filter((pos) => pos.positionSide === "SHORT").length,
+      positions.filter((pos) => pos.positionSide === "LONG").length,
+    ],
+  };
 
-	let accPnlPt = 0;
-	let balance = backtestConfig.balanceUSDT;
-	for (let i = 0; i < positionsAcc.length; i++) {
-		const pos = positionsAcc[i];
-
-		accPnlPt += pos.pnl;
-		balance = balance * (1 + pos.pnl);
-
-		pnlArray.push({
-			date: getDate(pos.startTime).dateString,
-			side: pos.positionSide,
-			pair: pos.pair,
-			pnlPt: pos.pnl,
-			accPnlPt,
-			pnlUsdt: pos.pnl * balance,
-			balance,
-			len: `${pos.tradeLength.toFixed(0)}(${pos.secureLength?.toFixed(0)})`,
-		});
-	}
-
-	const pieChartData = {
-		labels: ["Shorts", "Longs"],
-		data: [
-			positions.filter((pos) => pos.positionSide === "SHORT").length,
-			positions.filter((pos) => pos.positionSide === "LONG").length,
-		],
-	};
-
-	return {
-		head: `
+  return {
+    head: `
             <title>Donbot Stats</title>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             `,
-		body: `
+    body: `
             <body>
 				<div style="display:flex; gap: 4px;">
 					${Select({
-			options: statsList.map((s) => {
-				return {
-					label: `SL: ${s.sl} TP/SL: ${s.tpSlRatio} MaxLen: ${s.maxTradeLength}`,
-					value: Link({
-						sl: s.sl,
-						tpSlRatio: s.tpSlRatio,
-						maxTradeLength: s.maxTradeLength,
-						timeFrame,
-						pair,
-					}),
-				};
-			}),
-			selected: Link({
-				sl,
-				tpSlRatio,
-				maxTradeLength,
-				timeFrame,
-				pair,
-			}),
-		})}
+            options: statsList.map((s) => {
+              return {
+                label: `SL: ${s.sl} TP/SL: ${s.tpSlRatio} MaxLen: ${s.maxTradeLength}`,
+                value: Link({
+                  sl: s.sl,
+                  tpSlRatio: s.tpSlRatio,
+                  maxTradeLength: s.maxTradeLength,
+                  timeFrame,
+                  pair,
+                }),
+              };
+            }),
+            selected: Link({
+              sl,
+              tpSlRatio,
+              maxTradeLength,
+              timeFrame,
+              pair,
+            }),
+          })}
 					${Select({
-			options: [
-				{
-					label: "Backtest",
-					value: Link({
-						sl,
-						tpSlRatio,
-						maxTradeLength,
-						timeFrame: "Backtest",
-						pair,
-					}),
-				},
-				{
-					label: "Forwardtest",
-					value: Link({
-						sl,
-						tpSlRatio,
-						maxTradeLength,
-						timeFrame: "Forwardtest",
-						pair,
-					}),
-				},
-				{
-					label: "All Time",
-					value: Link({
-						sl,
-						tpSlRatio,
-						maxTradeLength,
-						timeFrame: "All",
-						pair,
-					}),
-				},
-			],
-			selected: Link({
-				sl,
-				tpSlRatio,
-				maxTradeLength,
-				timeFrame,
-				pair,
-			}),
-		})}
+            options: [
+              {
+                label: "Backtest",
+                value: Link({
+                  sl,
+                  tpSlRatio,
+                  maxTradeLength,
+                  timeFrame: "Backtest",
+                  pair,
+                }),
+              },
+              {
+                label: "Forwardtest",
+                value: Link({
+                  sl,
+                  tpSlRatio,
+                  maxTradeLength,
+                  timeFrame: "Forwardtest",
+                  pair,
+                }),
+              },
+              {
+                label: "All Time",
+                value: Link({
+                  sl,
+                  tpSlRatio,
+                  maxTradeLength,
+                  timeFrame: "All",
+                  pair,
+                }),
+              },
+            ],
+            selected: Link({
+              sl,
+              tpSlRatio,
+              maxTradeLength,
+              timeFrame,
+              pair,
+            }),
+          })}
 					${Select({
-			options: [
-				{
-					label: "Winning Pairs",
-					value: Link({
-						sl,
-						tpSlRatio,
-						maxTradeLength,
-						timeFrame,
-						pair: "Winning",
-					}),
-				},
-				{
-					label: "All Pairs",
-					value: Link({
-						sl,
-						tpSlRatio,
-						maxTradeLength,
-						timeFrame,
-						pair: "All",
-					}),
-				},
-				...symbolList.map((s) => {
-					return {
-						label: `${s.pair}`,
-						value: Link({
-							sl,
-							tpSlRatio,
-							maxTradeLength,
-							timeFrame,
-							pair: s.pair,
-						}),
-					};
-				}),
-			],
-			selected: Link({
-				sl,
-				tpSlRatio,
-				maxTradeLength,
-				timeFrame,
-				pair,
-			}),
-		})}
+            options: [
+              {
+                label: "Winning Pairs",
+                value: Link({
+                  sl,
+                  tpSlRatio,
+                  maxTradeLength,
+                  timeFrame,
+                  pair: "Winning",
+                }),
+              },
+              {
+                label: "All Pairs",
+                value: Link({
+                  sl,
+                  tpSlRatio,
+                  maxTradeLength,
+                  timeFrame,
+                  pair: "All",
+                }),
+              },
+              ...symbolList.map((s) => {
+                return {
+                  label: `${s.pair}`,
+                  value: Link({
+                    sl,
+                    tpSlRatio,
+                    maxTradeLength,
+                    timeFrame,
+                    pair: s.pair,
+                  }),
+                };
+              }),
+            ],
+            selected: Link({
+              sl,
+              tpSlRatio,
+              maxTradeLength,
+              timeFrame,
+              pair,
+            }),
+          })}
 				</div>
 				
                 ${Table({
-			title: "General Stats",
-			headers: ["Stat", "Value"],
-			rows: [
-				["Start Date", getDate(start).dateString],
-				["Final Date", getDate(end).dateString],
-				["Total Days", (totalDays || 0).toFixed()],
-				["Positions", positions.length.toFixed()],
-				["Positions Accumulated", positionsAcc.length.toFixed()],
-				["Win Rate", formatPercent(winRate)],
-				["Win Rate Accumulated", formatPercent(winRateAcc)],
-				["Accumulated PNL", formatPercent(accPnlAcc)],
-				["Average PNL", formatPercent(avPnl)],
-				["Average PNL Accumulated", formatPercent(avPnlAcc)],
-				["Average PNL per Day", formatPercent(avPnlPerDay)],
-				["Average Position per Day", avPosPerDay.toFixed(2)],
-				["Bad Run Accumulated", badRunAcc?.toFixed() || "-"],
-				[
-					"Bad Run Monte Carlo",
-					badRunMonteCarloAcc?.toFixed() || "-",
-				],
-				["Drawdown Accumulated", formatPercent(drawdownAcc || 0)],
-				[
-					"Drawdown Monte Carlo",
-					formatPercent(drawdownMonteCarloAcc),
-				],
-				["Sharpe Ratio", sharpeRatio.toFixed(2)],
-			],
-		})}
+                  title: "General Stats",
+                  headers: ["Stat", "Value"],
+                  rows: [
+                    ["Start Date", getDate(start).dateString],
+                    ["Final Date", getDate(end).dateString],
+                    ["Total Days", (totalDays || 0).toFixed()],
+                    ["Positions", positions.length.toFixed()],
+                    ["Positions Accumulated", positionsAcc.length.toFixed()],
+                    ["Win Rate", formatPercent(winRate)],
+                    ["Win Rate Accumulated", formatPercent(winRateAcc)],
+                    ["Accumulated PNL", formatPercent(accPnlAcc)],
+                    ["Average PNL", formatPercent(avPnl)],
+                    ["Average PNL Accumulated", formatPercent(avPnlAcc)],
+                    ["Average PNL per Day", formatPercent(avPnlPerDay)],
+                    ["Average Position per Day", avPosPerDay.toFixed(2)],
+                    ["Bad Run Accumulated", badRunAcc?.toFixed() || "-"],
+                    [
+                      "Bad Run Monte Carlo",
+                      badRunMonteCarloAcc?.toFixed() || "-",
+                    ],
+                    ["Drawdown Accumulated", formatPercent(drawdownAcc || 0)],
+                    [
+                      "Drawdown Monte Carlo",
+                      formatPercent(drawdownMonteCarloAcc),
+                    ],
+                    ["Sharpe Ratio", sharpeRatio.toFixed(2)],
+                  ],
+                })}
 
-		${backtestConfig.breakEventAlerts.length ? Table({
-			title: "Break Event",
-			headers: ["Trigger", "Break", "Min Length"],
-			rows: backtestConfig.breakEventAlerts.map(be => [formatPercent(be.trigger), formatPercent(be.break), be.minLength.toFixed()])
-		}) :""}
+		${
+      backtestConfig.breakEventAlerts.length
+        ? Table({
+            title: "Break Event",
+            headers: ["Trigger", "Break", "Min Length"],
+            rows: backtestConfig.breakEventAlerts.map((be) => [
+              formatPercent(be.trigger),
+              formatPercent(be.break),
+              be.minLength.toFixed(),
+            ]),
+          })
+        : ""
+    }
                 
 				<div style="width:100%; display:flex; gap: 70px; flex-direction:column">
 					<div style="width:100%; height: 400px;">
@@ -298,23 +255,24 @@ export const Stats = ({
 						<canvas id="pnlChart"></canvas>
 					</div>
 
-					${symbolList.length > 1
-				? `
+					${
+            symbolList.length > 1
+              ? `
 					<div style="width:100%; ">
 						<h2>Positions per Symbol</h2>
 						<canvas id="positionsPerSymbolBarChart"></canvas>
 						<details>
 							<summary>Pair List</summary>
 							<pre>${JSON.stringify(
-					symbolList.map((s) => s.pair),
-					null,
-					2
-				)}</pre>
+                symbolList.map((s) => s.pair),
+                null,
+                2
+              )}</pre>
 						</details>
 						
 					</div>`
-				: ""
-			}
+              : ""
+          }
 
 					<div style="width: 100%;  ">
 						<h2 >Long Short Chart</h2>
@@ -326,37 +284,37 @@ export const Stats = ({
 				</div>
 
                 ${Table({
-				title: "Positions Acc",
-				headers: [
-					"Date",
-					"Position Side",
-					"Pair",
-					"PNL",
-					"Acc PNL",
-					"PNL in USDT",
-					"Balance",
-					"Trade Length",
-				],
-				rows: pnlArray.map((p) => [
-					p.date,
-					p.side,
-					Anchor({
-						label: p.pair,
-						href: Link({
-							sl,
-							tpSlRatio,
-							maxTradeLength,
-							timeFrame,
-							pair: p.pair,
-						}),
-					}),
-					formatPercent(p.pnlPt),
-					formatPercent(p.accPnlPt),
-					p.pnlUsdt.toFixed(2),
-					p.balance.toFixed(2),
-					p.len,
-				]),
-			})}
+                  title: "Positions Acc",
+                  headers: [
+                    "Date",
+                    "Position Side",
+                    "Pair",
+                    "PNL",
+                    "Acc PNL",
+                    "PNL in USDT",
+                    "Balance",
+                    "Trade Length",
+                  ],
+                  rows: pnlArray.map((p) => [
+                    p.date,
+                    p.side,
+                    Anchor({
+                      label: p.pair,
+                      href: Link({
+                        sl,
+                        tpSlRatio,
+                        maxTradeLength,
+                        timeFrame,
+                        pair: p.pair,
+                      }),
+                    }),
+                    formatPercent(p.pnlPt),
+                    formatPercent(p.accPnlPt),
+                    p.pnlUsdt.toFixed(2),
+                    p.balance.toFixed(2),
+                    p.len,
+                  ]),
+                })}
                 <script>
 					// Line Chart
                     const ctx = document.getElementById('pnlChart').getContext('2d');
@@ -364,13 +322,13 @@ export const Stats = ({
                         type: 'line', 
                         data: {
                             labels: ${JSON.stringify(
-				pnlArray.map((p) => p.date)
-			)},
+                              pnlArray.map((p) => p.date)
+                            )},
                             datasets: [{
                                 label: 'Balance',
                                 data: ${JSON.stringify(
-				pnlArray.map((p) => p.balance)
-			)},
+                                  pnlArray.map((p) => p.balance)
+                                )},
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 backgroundColor: "white",
                                 borderWidth: 1,
@@ -417,5 +375,5 @@ export const Stats = ({
                 </script>
 
             </body>`,
-	};
+  };
 };
