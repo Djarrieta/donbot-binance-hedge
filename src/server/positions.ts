@@ -25,14 +25,17 @@ export const Positions = async ({
     position.startTime -
     backtestConfig.lookBackLength * backtestConfig.interval;
   const end = position.startTime + maxTradeLength * backtestConfig.interval;
-
   const shapes = [
     {
       type: "rect",
       x0: position.startTime,
       y0: position.entryPriceUSDT,
       x1: position.startTime + position.tradeLength * backtestConfig.interval,
-      y1: position.entryPriceUSDT * (1 + position.pnl),
+      y1:
+        position.entryPriceUSDT *
+        (1 +
+          (position.pnl * backtestConfig.balanceUSDT) /
+            backtestConfig.minAmountToTradeUSDT),
       line: {
         color:
           position.pnl > 0 ? "rgba(0, 255, 0, 0.7)" : "rgba(255, 0, 0, 0.7)",
