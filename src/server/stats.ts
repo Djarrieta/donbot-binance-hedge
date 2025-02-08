@@ -283,38 +283,27 @@ export const Stats = ({
 					
 				</div>
 
-                ${Table({
-                  title: "Positions Acc",
-                  headers: [
-                    "Date",
-                    "Position Side",
-                    "Pair",
-                    "PNL",
-                    "Acc PNL",
-                    "PNL in USDT",
-                    "Balance",
-                    "Trade Length",
-                  ],
-                  rows: pnlArray.map((p) => [
-                    p.date,
-                    p.side,
-                    Anchor({
-                      label: p.pair,
-                      href: Link({
-                        sl,
-                        tpSlRatio,
-                        maxTradeLength,
-                        timeFrame,
-                        pair: p.pair,
-                      }),
-                    }),
-                    formatPercent(p.pnlPt),
-                    formatPercent(p.accPnlPt),
-                    p.pnlUsdt.toFixed(2),
-                    p.balance.toFixed(2),
-                    p.len,
-                  ]),
+        
+        <h2>Positions</h2>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap">
+            ${symbolList.map((symbol) => {
+              return `<div style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px">
+                ${Anchor({
+                  label: symbol.pair,
+                  href: Link({
+                    page: "positions",
+                    sl,
+                    tpSlRatio,
+                    maxTradeLength,
+                    timeFrame,
+                    pair: symbol.pair,
+                  }),
                 })}
+              </div>`;
+            })}
+        </div>
+       
+              
                 <script>
 					// Line Chart
                     const ctx = document.getElementById('pnlChart').getContext('2d');

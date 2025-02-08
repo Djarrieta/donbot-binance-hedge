@@ -1,18 +1,22 @@
-import type { TimeFrame } from "../stats";
+import type { TimeFrame } from "../utils";
 
 type LinkProps = {
-	sl: number;
-	tpSlRatio: number;
-	maxTradeLength: number;
-	timeFrame: TimeFrame;
-	pair: string;
+  page?: "positions" | "stats";
+  sl: number;
+  tpSlRatio: number;
+  maxTradeLength: number;
+  timeFrame: TimeFrame;
+  pair: string;
+  positionsIndex?: number;
 };
 
 export const Link = ({
-	sl,
-	tpSlRatio,
-	maxTradeLength,
-	timeFrame,
-	pair,
+  page = "stats",
+  sl,
+  tpSlRatio,
+  maxTradeLength,
+  timeFrame,
+  pair,
+  positionsIndex = 0,
 }: LinkProps) =>
-	`http://localhost:3000/stats?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}&timeFrame=${timeFrame}&pair=${pair}`;
+  `http://localhost:3000/${page}?sl=${sl}&tpSlRatio=${tpSlRatio}&maxTradeLength=${maxTradeLength}&timeFrame=${timeFrame}&pair=${pair}&positionsIndex=${positionsIndex}`;
