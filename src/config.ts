@@ -40,6 +40,11 @@ export const backtestConfig: ConfigBacktest = {
       break: 1 / 100,
       minLength: 3,
     },
+    {
+      trigger: 3 / 100,
+      break: 2 / 100,
+      minLength: 70,
+    },
   ],
 
   steps: {
