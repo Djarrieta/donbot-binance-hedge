@@ -40,6 +40,7 @@ export const Stats = ({
     maxTradeLength,
     timeFrame,
     pair,
+    maxProtectedPositions: backtestConfig.maxProtectedPositions,
   });
 
   const symbolList = Array.from(new Set(positions.map((p) => p.pair)))

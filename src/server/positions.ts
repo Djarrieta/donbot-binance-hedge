@@ -23,6 +23,7 @@ export const Positions = async ({
     maxTradeLength,
     timeFrame,
     pair,
+    maxProtectedPositions: backtestConfig.maxProtectedPositions,
   });
 
   const position = positionsAcc[positionsIndex];

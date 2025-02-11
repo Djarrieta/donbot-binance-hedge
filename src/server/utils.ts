@@ -10,6 +10,7 @@ export type GetPositionsListProps = {
   maxTradeLength: number;
   timeFrame: TimeFrame;
   pair: "All" | "Winning" | string;
+  maxProtectedPositions: number;
 };
 
 export const getPositionsList = ({
@@ -18,6 +19,7 @@ export const getPositionsList = ({
   maxTradeLength,
   timeFrame,
   pair,
+  maxProtectedPositions,
 }: GetPositionsListProps) => {
   const statsDataService = new StatsDataService({
     databaseName: DATA_BASE_NAME,
@@ -50,6 +52,7 @@ export const getPositionsList = ({
     maxTradeLength,
     strategies,
     interval: backtestConfig.interval,
+    maxProtectedPositions,
   });
   const pairsInStrategies = Array.from(
     new Set(strategies.map((s) => s.allowedPairs).flat())
@@ -88,6 +91,7 @@ export const getPositionsList = ({
     maxTradeLength,
     strategies,
     interval: backtestConfig.interval,
+    maxProtectedPositions,
   });
 
   return {

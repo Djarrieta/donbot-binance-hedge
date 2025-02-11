@@ -93,6 +93,7 @@ export class TradingStrategyTester {
             maxTradeLength,
             strategies: this.strategies,
             interval: this.config.interval,
+            maxProtectedPositions: this.config.maxProtectedPositions,
           });
 
           const positionsWinningPairs = positions.filter((p) =>
@@ -119,6 +120,7 @@ export class TradingStrategyTester {
             maxTradeLength,
             strategies: this.strategies,
             interval: this.config.interval,
+            maxProtectedPositions: this.config.maxProtectedPositions,
           });
 
           const positionsFwdWinningPairs = positions.filter(
@@ -138,6 +140,7 @@ export class TradingStrategyTester {
             maxTradeLength,
             strategies: this.strategies,
             interval: this.config.interval,
+            maxProtectedPositions: this.config.maxProtectedPositions,
           });
           const stats: Stat = {
             sl,

@@ -25,6 +25,7 @@ export const backtestConfig: ConfigBacktest = {
   interval,
   lookBackLength: 200,
   maxTradeLengthArray: [100],
+  maxProtectedPositions: 2,
 
   minAmountToTradeUSDT: 6,
   leverage: 10,
@@ -81,7 +82,7 @@ export const tradeConfig: ConfigTrade = {
   leverage: 10,
   setLeverage: false,
 
-  maxProtectedPositions: 1,
+  maxProtectedPositions: 2,
   maxHedgePositions: 20,
 
   apiLimit: 500,

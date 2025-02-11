@@ -2,6 +2,7 @@ import { App } from "./server/app";
 import { Stats } from "./server/stats";
 import { Positions } from "./server/positions";
 import type { TimeFrame } from "./server/utils";
+import { backtestConfig } from "./config";
 
 Bun.serve({
   port: 3000,
@@ -23,6 +24,7 @@ Bun.serve({
         maxTradeLength: Number(maxTradeLength),
         pair,
         timeFrame,
+        maxProtectedPositions: backtestConfig.maxProtectedPositions,
       });
 
       return App({ head, body });
@@ -47,6 +49,7 @@ Bun.serve({
         pair,
         timeFrame,
         positionsIndex,
+        maxProtectedPositions: backtestConfig.maxProtectedPositions,
       });
 
       return App({ head, body });
