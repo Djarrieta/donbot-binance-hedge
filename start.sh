@@ -1,6 +1,5 @@
 #!/bin/bash
 
-git checkout main
 git pull
 sudo docker rm -f donbot-c
 sudo docker rmi donbot-i
