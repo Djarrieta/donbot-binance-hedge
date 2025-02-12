@@ -168,6 +168,20 @@ export const Positions = async ({
     body: `
             <body>
                 <div style="width:100%; display:flex; gap: 70px; flex-direction:column">
+                    <div style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px">
+                        ${Anchor({
+                          label: "Go back to stats ",
+                          href: Link({
+                            page: "stats",
+                            sl,
+                            tpSlRatio,
+                            maxTradeLength,
+                            timeFrame,
+                            pair,
+                          }),
+                        })}
+                    </div>
+                </div>
                 ${Table({
                   title: "Position Info",
                   headers: [

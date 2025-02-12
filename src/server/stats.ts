@@ -283,12 +283,11 @@ export const Stats = ({
 					</div>
 					
 				</div>
-
-        
-          <div style="display: flex; gap: 4px; flex-wrap: wrap">
+        <h2>Postions </h2>
+        <div style="display: flex; gap: 4px; flex-wrap: wrap">
             <div style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px">
               ${Anchor({
-                label: "See all positions for " + pair,
+                label: "See positions for " + pair,
                 href: Link({
                   page: "positions",
                   sl,
@@ -299,7 +298,32 @@ export const Stats = ({
                 }),
               })}
             </div>
+            ${
+              symbolList.length > 1
+                ? symbolList.map(
+                    (
+                      s
+                    ) => ` <div style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px">
+                ${Anchor({
+                  label: s.pair,
+                  href: Link({
+                    page: "positions",
+                    sl,
+                    tpSlRatio,
+                    maxTradeLength,
+                    timeFrame,
+                    pair: s.pair,
+                  }),
+                })}
+              </div>`
+                  )
+                : ""
+            }
+          
           </div>
+
+        
+  
           
                 <script>
 					// Line Chart
