@@ -182,30 +182,8 @@ export const Positions = async ({
                         })}
                     </div>
                 </div>
-                ${Table({
-                  title: "Position Info",
-                  headers: [
-                    "Entry Time",
-                    "Strategy Name",
-                    "Position Side",
-                    "Entry Price",
-                    "PNL",
-                    "Trade Length",
-                    "Secure Length",
-                  ],
-                  rows: [
-                    [
-                      getDate(position.startTime).dateString,
-                      position.stgName,
-                      position.positionSide,
-                      position.entryPriceUSDT.toFixed(4),
-                      formatPercent(position.pnl),
-                      position.tradeLength.toFixed(0),
-                      position.secureLength?.toFixed(0) || "N/A",
-                    ],
-                  ],
-                })}
-                <div  style="display:flex; gap:10px"; justify-content:center; width:100%>
+
+                 <div  style="display:flex; gap:10px"; justify-content:center; width:100%>
                     ${Anchor({
                       disabled: positionsIndex === 0,
                       label: "Prev",
@@ -236,6 +214,30 @@ export const Positions = async ({
                       }),
                     })}
                 </div>
+                ${Table({
+                  title: "Position Info",
+                  headers: [
+                    "Entry Time",
+                    "Strategy Name",
+                    "Position Side",
+                    "Entry Price",
+                    "PNL",
+                    "Trade Length",
+                    "Secure Length",
+                  ],
+                  rows: [
+                    [
+                      getDate(position.startTime).dateString,
+                      position.stgName,
+                      position.positionSide,
+                      position.entryPriceUSDT.toFixed(4),
+                      formatPercent(position.pnl),
+                      position.tradeLength.toFixed(0),
+                      position.secureLength?.toFixed(0) || "N/A",
+                    ],
+                  ],
+                })}
+               
                     <div style="width:100%; height: 400px;">
                         <h2>Position Chart - ${pair}</h2>
                         <div id="chart"></div>

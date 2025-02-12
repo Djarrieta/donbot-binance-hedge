@@ -524,6 +524,7 @@ export class TradingStrategyTester {
         .join(", ")}
 			TP Sl Ratio array: ${this.config.tpSlRatioArray.join(", ")}
 			MaxTradeLength array: ${this.config.maxTradeLengthArray.join(", ")}
+      Max number of protected positions ${this.config.maxProtectedPositions}
       Break Even array: ${this.config.breakEventAlerts
         .map((x) => `${formatPercent(x.break)}@${formatPercent(x.trigger)}`)
         .join(", ")}

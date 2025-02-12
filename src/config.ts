@@ -10,7 +10,7 @@ import { stg as supertrend5m } from "./strategies/supertrend5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-  candleCount: 20000,
+  candleCount: 50000,
   backtestPercent: 0.75,
   interval,
   lastDate: getDate().dateMs,
