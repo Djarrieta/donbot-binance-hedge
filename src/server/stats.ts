@@ -285,26 +285,22 @@ export const Stats = ({
 				</div>
 
         
-        <h2>Positions</h2>
           <div style="display: flex; gap: 4px; flex-wrap: wrap">
-            ${symbolList.map((symbol) => {
-              return `<div style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px">
-                ${Anchor({
-                  label: symbol.pair,
-                  href: Link({
-                    page: "positions",
-                    sl,
-                    tpSlRatio,
-                    maxTradeLength,
-                    timeFrame,
-                    pair: symbol.pair,
-                  }),
-                })}
-              </div>`;
-            })}
-        </div>
-       
-              
+            <div style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px">
+              ${Anchor({
+                label: "See all positions for " + pair,
+                href: Link({
+                  page: "positions",
+                  sl,
+                  tpSlRatio,
+                  maxTradeLength,
+                  timeFrame,
+                  pair,
+                }),
+              })}
+            </div>
+          </div>
+          
                 <script>
 					// Line Chart
                     const ctx = document.getElementById('pnlChart').getContext('2d');

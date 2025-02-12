@@ -10,10 +10,10 @@ import { stg as supertrend5m } from "./strategies/supertrend5m";
 
 const interval = Interval["5m"];
 const { backtestStart, backtestEnd, forwardTestEnd } = getSuggestedDates({
-  candleCount: 300000,
+  candleCount: 10000,
   backtestPercent: 0.75,
   interval,
-  lastDate: getDate("2025 01 19 00:00:00" as DateString).dateMs,
+  lastDate: getDate().dateMs,
 });
 
 export const DATA_BASE_NAME = "./db/rsiDivergency5m.db";
@@ -49,8 +49,8 @@ export const backtestConfig: ConfigBacktest = {
   ],
 
   steps: {
-    overrideHistoricalRecords: false,
-    overrideAlerts: false,
+    overrideHistoricalRecords: true,
+    overrideAlerts: true,
   },
   apiLimit: 500,
 };

@@ -14,7 +14,7 @@ export const Positions = async ({
   tpSlRatio,
   maxTradeLength,
   timeFrame,
-  pair,
+  pair = "All",
   positionsIndex,
 }: PositionsProps) => {
   const { positionsAcc } = getPositionsList({
@@ -108,7 +108,7 @@ export const Positions = async ({
   const candlesticks = await exchangeService.getCandlestick({
     start: start || 0,
     end: end || 0,
-    pair,
+    pair: position.pair,
     interval: backtestConfig.interval,
     candlestickAPILimit: backtestConfig.apiLimit,
   });
