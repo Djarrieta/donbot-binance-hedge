@@ -119,7 +119,9 @@ export const getAccPositions = ({
   maxProtectedPositions,
 }: GetAccPositionsProps) => {
   const positionsAcc = [];
-  const lastAccClosedTime = new Array(maxProtectedPositions).fill(0);
+  const lastAccClosedTime = Array.from<number>({
+    length: maxProtectedPositions,
+  }).fill(0);
   for (const position of positions) {
     if (lastAccClosedTime.some((closed) => position.startTime > closed)) {
       positionsAcc.push(position);

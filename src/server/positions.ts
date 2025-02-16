@@ -185,7 +185,6 @@ export const Positions = async ({
 
                  <div  style="display:flex; gap:10px"; justify-content:center; width:100%>
                     ${Anchor({
-                      disabled: positionsIndex === 0,
                       label: "Prev",
                       href: Link({
                         page: "positions",
@@ -201,7 +200,6 @@ export const Positions = async ({
                         ${positionsIndex}
                     </span>
                     ${Anchor({
-                      disabled: positionsIndex === positionsAcc.length,
                       label: "Next",
                       href: Link({
                         page: "positions",
