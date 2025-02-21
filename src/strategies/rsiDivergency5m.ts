@@ -32,6 +32,7 @@ export const stg = new Strategy({
     };
 
     if (candlestick.length < this.lookBackLength) return response;
+    if (candlestick[0].close === 0) return response;
     if (this.allowedPairs?.length && !this.allowedPairs.includes(pair))
       return response;
 
